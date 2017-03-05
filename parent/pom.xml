@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+     Copyright 2017 Gunnar Morling (http://www.gunnarmorling.de/)
+     and/or other contributors as indicated by the @authors tag. See the
+     copyright.txt file in the distribution for a full listing of all
+     contributors.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ModiTect Parent</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>ASF License v2.0 applies to this code base with the exception of ASM</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>gunnarmorling</id>
+            <name>Gunnar Morling</name>
+            <email>gunnar.morling@googlemail.com</email>
+            <url>http://www.gunnarmorling.de/</url>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>moditect</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>moditect-asm</artifactId>
+                <classifier>6.0.0.Alpha2</classifier>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.javaparser</groupId>
+                <artifactId>javaparser-core</artifactId>
+                <version>3.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.testing.compile</groupId>
+                <artifactId>compile-testing</artifactId>
+                <version>0.10</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                    <version>3.6.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>3.5</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>moditect-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <header>${basedir}/../etc/license.txt</header>
+                    <strictCheck>true</strictCheck>
+<!--                     <excludes> -->
+<!--                         <exclude>.idea/**</exclude> -->
+<!--                         <exclude>**/build-config/checkstyle.xml</exclude> -->
+<!--                         <exclude>**/build-config/import-control.xml</exclude> -->
+<!--                         <exclude>copyright.txt</exclude> -->
+<!--                         <exclude>**/LICENSE.txt</exclude> -->
+<!--                         <exclude>**/mapstruct.xml</exclude> -->
+<!--                         <exclude>**/toolchains-*.xml</exclude> -->
+<!--                         <exclude>**/eclipse-formatter-config.xml</exclude> -->
+<!--                         <exclude>**/checkstyle-for-generated-sources.xml</exclude> -->
+<!--                         <exclude>**/nb-configuration.xml</exclude> -->
+<!--                         <exclude>maven-settings.xml</exclude> -->
+<!--                         <exclude>readme.md</exclude> -->
+<!--                         <exclude>CONTRIBUTING.md</exclude> -->
+<!--                         <exclude>.gitattributes</exclude> -->
+<!--                         <exclude>.gitignore</exclude> -->
+<!--                         <exclude>.factorypath</exclude> -->
+<!--                         <exclude>.checkstyle</exclude> -->
+<!--                     </excludes> -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
