@@ -40,12 +40,6 @@
             <artifactId>moditect</artifactId>
             <version>${project.version}</version>
         </dependency>
-<!--         <dependency> -->
-<!--             <groupId>org.apache.maven.plugins</groupId> -->
-<!--             <artifactId>maven-dependency-plugin</artifactId> -->
-<!--             <version>3.0.0</version> -->
-<!--         </dependency> -->
-    
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
@@ -68,7 +62,6 @@
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-artifact-transfer</artifactId>
             <version>0.9.0</version>
-<!--             <scope>provided</scope> -->
         </dependency>
     </dependencies>
 
@@ -88,7 +81,7 @@
                             <goal>descriptor</goal>
                         </goals>
                     </execution>
-                    <!-- 
+                    <!--
                     <execution>
                         <id>help-goal</id>
                         <goals>
