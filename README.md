@@ -53,9 +53,10 @@ this:
 
 ## Example
 
-The [POM file](integrationtest/pom.xml) in _integrationtest_ shows a more complete example. It adds module
-descriptors for [Undertow Core](http://undertow.io/) and its dependencies, i.e.
-it allows to run the Undertow web server based on Java 9 modules.
+The [POM file](integrationtest/pom.xml) in _integrationtest_ shows a more
+complete example. It adds module descriptors for [Undertow Core](http://undertow.io/)
+and its dependencies, i.e. it allows to run the Undertow web server based on
+Java 9 modules.
 
 Run
 
@@ -88,6 +89,17 @@ very basic proof-of-concept of this point. Not all features of _module-info.java
 files are supported yet and it generally has lots of rough edges. Use it at your
 own risk.
 
+## Further Planned Features
+
+Adding module descriptors to existing JARs is the first functionality
+implemente in ModiTect. Potential future developments include:
+
+* Facilitate creation of module descriptors via jdeps based on POM dependencies
+* Update existing module descriptors (e.g. to remove/replace a requires clause)
+* Install/Deploy updated (modularized) JARs with a new name/classifier etc.
+* Facilitate creation of jlink image directories
+* YOUR ideas :)
+
 ## Related Work
 
 [ModuleTools](https://github.com/forax/moduletools/) by Remi Forax shows how to
@@ -96,4 +108,5 @@ assemble module descriptors using ASM.
 ## License
 
 ModiTect is licensed under the Apache License version 2.0. ASM is licensed
-under the 3 clause BSD license (see the license.txt file in the _asm_ directory).
+under the 3 clause BSD license (see the license.txt file in the _asm_
+directory).
