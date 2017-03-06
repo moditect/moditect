@@ -14,42 +14,44 @@ plug-in (the core implementation is a separate module, though, so that plug-ins
 for other build systems such as Gradle could be written, too) which is used like
 this:
 
-    ...
-    <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <executions>
-            <execution>
-                <id>add-module-infos</id>
-                <phase>generate-resources</phase>
-                <configuration>
-                    <outputDirectory>${project.build.directory}/modules</outputDirectory>
-                    <modules>
-                        <module>
-                            <artifact>
-                                <groupId>com.example</groupId>
-                                <artifactId>example-core</artifactId>
-                                <version>1.0.0.Final</version>
-                            </artifact>
-                            <moduleInfoSource>
-                                module com.example.core {
-                                    requires java.logging;
-                                    exports com.example.api;
-                                    provides com.example.api.SomeService
-                                        with com.example.internal.SomeServiceImpl;
-                                }
-                            </moduleInfoSource>
-                        </module>
-                        <module>
-                            ...
-                        </module>
-                    </modules>
-                </configuration>
-            </execution>
-        </executions>
-    </plugin>
-    ...
+```xml
+...
+<plugin>
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-maven-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>add-module-infos</id>
+            <phase>generate-resources</phase>
+            <configuration>
+                <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                <modules>
+                    <module>
+                        <artifact>
+                            <groupId>com.example</groupId>
+                            <artifactId>example-core</artifactId>
+                            <version>1.0.0.Final</version>
+                        </artifact>
+                        <moduleInfoSource>
+                            module com.example.core {
+                                requires java.logging;
+                                exports com.example.api;
+                                provides com.example.api.SomeService
+                                    with com.example.internal.SomeServiceImpl;
+                            }
+                        </moduleInfoSource>
+                    </module>
+                    <module>
+                        ...
+                    </module>
+                </modules>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+```
 
 ## Example
 
