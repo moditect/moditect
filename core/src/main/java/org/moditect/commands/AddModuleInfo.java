@@ -18,36 +18,18 @@
  */
 package org.moditect.commands;
 
-import static org.objectweb.asm.Opcodes.ACC_MANDATED;
-import static org.objectweb.asm.Opcodes.ACC_MODULE;
-import static org.objectweb.asm.Opcodes.ACC_STATIC_PHASE;
-import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
-import static org.objectweb.asm.Opcodes.ACC_TRANSITIVE;
-import static org.objectweb.asm.Opcodes.V1_9;
-
 import java.io.IOException;
-import java.lang.module.ModuleDescriptor;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ModuleVisitor;
+import org.moditect.compiler.ModuleInfoCompiler;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.modules.ModuleExportsStmt;
-import com.github.javaparser.ast.modules.ModuleProvidesStmt;
-import com.github.javaparser.ast.modules.ModuleRequiresStmt;
-import com.github.javaparser.ast.modules.ModuleUsesStmt;
-import com.github.javaparser.ast.type.Type;
 
 /**
  * Creates a copy of a given JAR file, adding a module-info.class descriptor.
@@ -86,77 +68,18 @@ public class AddModuleInfo {
             throw new RuntimeException( "Couldn't copy JAR file", e );
         }
 
-        CompilationUnit ast = JavaParser.parse( moduleInfoSource );
-        ModuleDeclaration module = ast.getModule().orElseThrow( () -> new IllegalArgumentException( "Not a module-info.java: " + moduleInfoSource ) );
-
-        ModuleDescriptor descriptor = ModuleDescriptor.newModule( module.getNameAsString() )
-                .build();
-
-        ClassWriter classWriter = new ClassWriter( 0 );
-        classWriter.visit( V1_9, ACC_MODULE, "module-info", null, null, null );
-
-        ModuleVisitor mv = classWriter.visitModule( descriptor.name(), ACC_SYNTHETIC, null );
-
-        if ( mainClass != null ) {
-            mv.visitMainClass( mainClass.replace( '.', '/' ) );
-        }
-
-        for ( ModuleRequiresStmt requires : module.getNodesByType( ModuleRequiresStmt.class ) ) {
-            mv.visitRequire(
-                requires.getName().asString(),
-                requiresModifiersAsInt( requires.getModifiers() ),
-                null
-            );
-        }
-
-        for ( ModuleExportsStmt export : module.getNodesByType( ModuleExportsStmt.class ) ) {
-            mv.visitExport( export.getName().asString().replace( '.', '/' ), 0 );
-        }
-
-        for ( ModuleProvidesStmt provides : module.getNodesByType( ModuleProvidesStmt.class ) ) {
-            mv.visitProvide(
-                provides.getType().toString().replace( '.', '/' ),
-                provides.getWithTypes()
-                    .stream()
-                    .map( Type::toString )
-                    .map( s -> s.replace( '.', '/' ) )
-                    .toArray( String[]::new )
-            );
-        }
-
-        for ( ModuleUsesStmt uses : module.getNodesByType( ModuleUsesStmt.class ) ) {
-            mv.visitUse( uses.getType().toString().replace( '.', '/' ) );
-        }
-
-        mv.visitRequire( "java.base", ACC_MANDATED, null );
-        mv.visitEnd();
-
-        classWriter.visitEnd();
+        ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo( moduleInfoSource );
+        byte[] clazz = ModuleInfoCompiler.compileModuleInfo( module, mainClass );
 
         Map<String, String> env = new HashMap<>();
         env.put( "create", "true" );
-        // locate file system by using the syntax
-        // defined in java.net.JarURLConnection
         URI uri = URI.create( "jar:" + outputJar.toUri().toString() );
 
        try (FileSystem zipfs = FileSystems.newFileSystem( uri, env ) ) {
-           Files.write( zipfs.getPath( "module-info.class" ), classWriter.toByteArray() );
+           Files.write( zipfs.getPath( "module-info.class" ), clazz );
         }
        catch(IOException e) {
             throw new RuntimeException( "Couldn't add module-info.class to JAR", e );
         }
-    }
-
-    private int requiresModifiersAsInt(EnumSet<Modifier> modifiers) {
-        int result = 0;
-
-        if ( modifiers.contains( Modifier.STATIC ) ) {
-            result |= ACC_STATIC_PHASE;
-        }
-        if ( modifiers.contains( Modifier.TRANSITIVE ) ) {
-            result |= ACC_TRANSITIVE;
-        }
-
-        return result;
     }
 }

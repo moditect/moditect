@@ -16,17 +16,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.moditect.mavenplugin;
+package org.moditect.mavenplugin.generate.model;
+
+import java.util.List;
+
+import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 
 /**
  * @author Gunnar Morling
- *
  */
 public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
-    private String moduleInfoSource;
-    private String mainClass;
+    private List<ArtifactConfiguration> additionalDependencies;
+    private String moduleName;
 
     public ArtifactConfiguration getArtifact() {
         return artifact;
@@ -36,24 +39,19 @@ public class ModuleConfiguration {
         this.artifact = artifact;
     }
 
-    public String getModuleInfoSource() {
-        return moduleInfoSource;
+    public List<ArtifactConfiguration> getAdditionalDependencies() {
+        return additionalDependencies;
     }
 
-    public void setModuleInfoSource(String moduleInfoSource) {
-        this.moduleInfoSource = moduleInfoSource;
+    public void setAdditionalDependencies(List<ArtifactConfiguration> additionalDependencies) {
+        this.additionalDependencies = additionalDependencies;
     }
 
-    public String getMainClass() {
-        return mainClass;
+    public String getModuleName() {
+        return moduleName;
     }
 
-    public void setMainClass(String mainClass) {
-        this.mainClass = mainClass;
-    }
-
-    @Override
-    public String toString() {
-        return "ModuleConfiguration [artifact=" + artifact + ", moduleInfoSource=" + moduleInfoSource + ", mainClass=" + mainClass + "]";
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
     }
 }
