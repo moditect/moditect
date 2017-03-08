@@ -16,7 +16,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.moditect.mavenplugin;
+package org.moditect.mavenplugin.add;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -39,6 +39,8 @@ import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
 import org.moditect.commands.AddModuleInfo;
+import org.moditect.mavenplugin.add.model.ModuleConfiguration;
+import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 
 /**
  * @author Gunnar Morling

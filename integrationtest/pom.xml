@@ -72,6 +72,32 @@
                 <artifactId>moditect-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>generate-hv-module-info</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-validator</artifactId>
+                                        <version>5.4.0.Final</version>
+                                    </artifact>
+                                    <additionalDependencies>
+                                        <dependency>
+                                            <groupId>org.jboss.logging</groupId>
+                                            <artifactId>jboss-logging-annotations</artifactId>
+                                            <version>2.0.1.Final</version>
+                                        </dependency>
+                                    </additionalDependencies>
+                                    <moduleName>org.hibernate.validator</moduleName>
+                                </module>
+                            </modules>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>add-module-info-to-dependencies</id>
                         <phase>generate-resources</phase>
                         <configuration>
