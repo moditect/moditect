@@ -23,12 +23,18 @@ import java.nio.file.Path;
 public class DependencyDescriptor {
 
     private final Path path;
+    private final boolean optional;
 
-    public DependencyDescriptor(Path path) {
+    public DependencyDescriptor(Path path, boolean optional) {
         this.path = path;
+        this.optional = optional;
     }
 
     public Path getPath() {
         return path;
+    }
+
+    public boolean isOptional() {
+        return optional;
     }
 }

@@ -118,7 +118,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
             for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
                 Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
-                dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath() ) );
+                dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false ) );
             }
 
             new GenerateModuleInfo(
@@ -156,7 +156,12 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
-            dependencies.add( new DependencyDescriptor( resolvedDependency.getFile().toPath() ) );
+            dependencies.add(
+                    new DependencyDescriptor(
+                            resolvedDependency.getFile().toPath(),
+                            dependency.getDependency().isOptional()
+                    )
+            );
         }
 
         return dependencies;

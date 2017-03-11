@@ -23,17 +23,19 @@ import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
-import java.lang.module.ModuleReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.moditect.commands.model.DependencyDescriptor;
 import org.moditect.compiler.ModuleInfoCompiler;
 
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
+import com.github.javaparser.ast.modules.ModuleRequiresStmt;
 
 public class GenerateModuleInfo {
 
@@ -66,18 +68,29 @@ public class GenerateModuleInfo {
 
         Path stagingDir = recreateDirectory( workingDirectory, "staging" );
 
-        runJdeps( stagingDir );
-
+        Map<String, Boolean> optionalityPerModule = runJdeps( stagingDir );
         ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo( stagingDir );
-
-        if ( moduleName != null ) {
-            moduleDeclaration.setName( moduleName );
-        }
+        updateModuleInfo( optionalityPerModule, moduleDeclaration );
 
         writeModuleInfo( moduleDeclaration );
     }
 
-    private void runJdeps(Path stagingDir) throws AssertionError {
+    private void updateModuleInfo(Map<String, Boolean> optionalityPerModule, ModuleDeclaration moduleDeclaration) {
+        List<ModuleRequiresStmt> requiresStatements = moduleDeclaration.getNodesByType( ModuleRequiresStmt.class );
+        for ( ModuleRequiresStmt moduleRequiresStmt : requiresStatements ) {
+            if ( Boolean.TRUE.equals( optionalityPerModule.get( moduleRequiresStmt.getNameAsString() ) ) ) {
+                moduleRequiresStmt.addModifier( Modifier.STATIC );
+            }
+        }
+
+        if ( moduleName != null ) {
+            moduleDeclaration.setName( moduleName );
+        }
+    }
+
+    private Map<String, Boolean> runJdeps(Path stagingDir) throws AssertionError {
+        Map<String, Boolean> optionalityPerModule = new HashMap<>();
+
         String javaHome = System.getProperty("java.home");
         String jdepsBin = javaHome +
                 File.separator + "bin" +
@@ -90,26 +103,33 @@ public class GenerateModuleInfo {
         command.add( stagingDir.toString() );
 
         if ( !dependencies.isEmpty() ) {
-            String modules = ModuleFinder.of(
-                 dependencies.stream()
-                     .map( DependencyDescriptor::getPath )
-                     .toArray( Path[]::new )
-                 )
-                .findAll()
-                .stream()
-                .map( ModuleReference::descriptor )
-                .map( ModuleDescriptor::name )
-                .collect( Collectors.joining( "," ) );
+            StringBuilder modules = new StringBuilder();
+            StringBuilder modulePath = new StringBuilder();
+            boolean isFirst = true;
 
-            String modulePath = dependencies.stream()
-                .map( DependencyDescriptor::getPath )
-                .map( Path::toString )
-                .collect( Collectors.joining( File.pathSeparator ) );
+            for ( DependencyDescriptor dependency : dependencies ) {
+                if ( isFirst ) {
+                    isFirst = false;
+                }
+                else {
+                    modules.append( "," );
+                    modulePath.append( File.pathSeparator );
+                }
+                ModuleDescriptor descriptor = ModuleFinder.of( dependency.getPath() )
+                        .findAll()
+                        .iterator()
+                        .next()
+                        .descriptor();
+
+                modules.append( descriptor.name() );
+                optionalityPerModule.put( descriptor.name(), dependency.isOptional() );
+                modulePath.append( dependency.getPath() );
+            }
 
             command.add( "--add-modules" );
-            command.add( modules );
+            command.add( modules.toString() );
             command.add( "--module-path" );
-            command.add( modulePath );
+            command.add( modulePath.toString() );
         }
 
         command.add( inputJar.toString() );
@@ -130,6 +150,8 @@ public class GenerateModuleInfo {
         if ( process.exitValue() != 0 ) {
             throw new RuntimeException( "Execution of jdeps failed" );
         }
+
+        return optionalityPerModule;
     }
 
     private ModuleDeclaration parseGeneratedModuleInfo(Path stagingDir) {
