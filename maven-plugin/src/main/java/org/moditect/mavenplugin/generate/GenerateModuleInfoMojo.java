@@ -19,8 +19,9 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
@@ -51,6 +52,7 @@ import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
 import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.commands.model.DependencyDescriptor;
+import org.moditect.log.Log;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
 
@@ -114,7 +116,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                 new DefaultArtifact( moduleConfiguration.getArtifact().toDependencyString() )
             );
 
-            List<DependencyDescriptor> dependencies = getDependencies( inputArtifact );
+            Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact );
 
             for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
                 Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
@@ -126,13 +128,14 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                     moduleConfiguration.getModuleName(),
                     dependencies,
                     workingDirectory.toPath(),
-                    outputDirectory.toPath()
+                    outputDirectory.toPath(),
+                    new MojoLog()
             )
             .run();
         }
     }
 
-    private List<DependencyDescriptor> getDependencies(Artifact inputArtifact) throws MojoExecutionException {
+    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact) throws MojoExecutionException {
         CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
         CollectResult collectResult = null;
 
@@ -152,7 +155,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
             throw new MojoExecutionException( "Couldn't collect dependencies", e );
         }
 
-        List<DependencyDescriptor> dependencies = new ArrayList<>();
+        Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
@@ -187,6 +190,25 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         }
         catch (ArtifactResolutionException e) {
             throw new MojoExecutionException( e.getMessage(), e );
+        }
+    }
+
+    private class MojoLog implements Log {
+
+        @Override
+        public void debug(CharSequence message) {
+            getLog().debug( message );
+        }
+
+        @Override
+        public void info(CharSequence message) {
+            getLog().info( message );
+
+        }
+
+        @Override
+        public void error(CharSequence message) {
+            getLog().error( message );
         }
     }
 }

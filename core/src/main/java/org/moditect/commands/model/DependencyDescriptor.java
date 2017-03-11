@@ -37,4 +37,29 @@ public class DependencyDescriptor {
     public boolean isOptional() {
         return optional;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + path.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if ( this == obj )
+            return true;
+        if ( obj == null )
+            return false;
+        if ( getClass() != obj.getClass() )
+            return false;
+        DependencyDescriptor other = (DependencyDescriptor) obj;
+        return path.equals( other.path );
+    }
+
+    @Override
+    public String toString() {
+        return "DependencyDescriptor [path=" + path + ", optional=" + optional + "]";
+    }
 }

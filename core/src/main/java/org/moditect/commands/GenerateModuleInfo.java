@@ -18,9 +18,10 @@
  */
 package org.moditect.commands;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
+import java.io.InputStreamReader;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
 import java.nio.file.Files;
@@ -29,9 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.moditect.commands.model.DependencyDescriptor;
 import org.moditect.compiler.ModuleInfoCompiler;
+import org.moditect.log.Log;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -41,16 +44,18 @@ public class GenerateModuleInfo {
 
     private final Path inputJar;
     private final String moduleName;
-    private final List<DependencyDescriptor> dependencies;
+    private final Set<DependencyDescriptor> dependencies;
     private final Path workingDirectory;
     private final Path outputDirectory;
+    private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, List<DependencyDescriptor> dependencies, Path workingDirectory, Path outputDirectory) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, Path workingDirectory, Path outputDirectory, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
+        this.log = log;
     }
 
     public void run() {
@@ -134,13 +139,25 @@ public class GenerateModuleInfo {
 
         command.add( inputJar.toString() );
 
-        ProcessBuilder builder = new ProcessBuilder( command )
-            .redirectOutput( Redirect.INHERIT )
-            .redirectError( Redirect.INHERIT );
+        log.debug( "Running jdeps: " + String.join( " ", command ) );
+
+        ProcessBuilder builder = new ProcessBuilder( command );
 
         Process process;
         try {
             process = builder.start();
+
+            BufferedReader in = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
+            String line;
+            while ( ( line = in.readLine() ) != null ) {
+                log.info( line );
+            }
+
+            BufferedReader err = new BufferedReader( new InputStreamReader( process.getErrorStream() ) );
+            while ( ( line = err.readLine() ) != null ) {
+                log.error( line );
+            }
+
             process.waitFor();
         }
         catch (IOException | InterruptedException e) {
