@@ -23,18 +23,12 @@ import java.nio.file.Path;
 public class DependencyDescriptor {
 
     private final Path path;
-    private final String moduleName;
 
-    public DependencyDescriptor(Path path, String moduleName) {
+    public DependencyDescriptor(Path path) {
         this.path = path;
-        this.moduleName = moduleName;
     }
 
     public Path getPath() {
         return path;
-    }
-
-    public String getModuleName() {
-        return moduleName;
     }
 }

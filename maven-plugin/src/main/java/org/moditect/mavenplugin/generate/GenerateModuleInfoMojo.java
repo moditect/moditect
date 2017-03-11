@@ -78,7 +78,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
     private List<RemoteRepository> remoteRepos;
 
-    @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect-temp")
+    @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
     private File workingDirectory;
 
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-sources/modules")
@@ -118,12 +118,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
             for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
                 Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
-                dependencies.add(
-                    new DependencyDescriptor(
-                        furtherArtifact.getFile().toPath(),
-                        furtherArtifact.getArtifactId()
-                    )
-                );
+                dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath() ) );
             }
 
             new GenerateModuleInfo(
@@ -138,8 +133,6 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     }
 
     private List<DependencyDescriptor> getDependencies(Artifact inputArtifact) throws MojoExecutionException {
-        List<DependencyDescriptor> dependencies = new ArrayList<>();
-
         CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
         CollectResult collectResult = null;
 
@@ -159,15 +152,13 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
             throw new MojoExecutionException( "Couldn't collect dependencies", e );
         }
 
+        List<DependencyDescriptor> dependencies = new ArrayList<>();
+
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
-            dependencies.add(
-                new DependencyDescriptor(
-                    resolvedDependency.getFile().toPath(),
-                    resolvedDependency.getArtifactId().replaceAll( "\\-", "." )
-                )
-            );
+            dependencies.add( new DependencyDescriptor( resolvedDependency.getFile().toPath() ) );
         }
+
         return dependencies;
     }
 

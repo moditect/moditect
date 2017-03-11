@@ -28,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.moditect.commands.model.DependencyDescriptor;
@@ -65,16 +64,9 @@ public class GenerateModuleInfo {
             throw new IllegalArgumentException( "Output directory doesn't exist: "  + outputDirectory );
         }
 
-        Path dependenciesDir = recreateDirectory( workingDirectory, "dependencies" );
         Path stagingDir = recreateDirectory( workingDirectory, "staging" );
 
-        copyDependencies( dependenciesDir );
-
-        Set<String> moduleNames = dependencies.stream()
-                .map( DependencyDescriptor::getModuleName )
-                .collect( Collectors.toSet() );
-
-        runJdeps( dependenciesDir, stagingDir, moduleNames );
+        runJdeps( stagingDir );
 
         ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo( stagingDir );
 
@@ -85,20 +77,7 @@ public class GenerateModuleInfo {
         writeModuleInfo( moduleDeclaration );
     }
 
-    private void copyDependencies(Path dependenciesDir) {
-        for ( DependencyDescriptor dependency : dependencies ) {
-            Path outputJar = dependenciesDir.resolve( dependency.getPath().getFileName() );
-
-            try {
-                Files.copy( dependency.getPath(), outputJar );
-            }
-            catch(IOException e) {
-                throw new RuntimeException( "Couldn't copy JAR file: " + dependency, e );
-            }
-        }
-    }
-
-    private void runJdeps(Path dependenciesDir, Path stagingDir, Set<String> moduleNames) throws AssertionError {
+    private void runJdeps(Path stagingDir) throws AssertionError {
         String javaHome = System.getProperty("java.home");
         String jdepsBin = javaHome +
                 File.separator + "bin" +
@@ -110,18 +89,27 @@ public class GenerateModuleInfo {
         command.add( "--generate-module-info" );
         command.add( stagingDir.toString() );
 
-        if ( !moduleNames.isEmpty() ) {
-            String modules = ModuleFinder.of( dependenciesDir )
+        if ( !dependencies.isEmpty() ) {
+            String modules = ModuleFinder.of(
+                 dependencies.stream()
+                     .map( DependencyDescriptor::getPath )
+                     .toArray( Path[]::new )
+                 )
                 .findAll()
                 .stream()
                 .map( ModuleReference::descriptor )
                 .map( ModuleDescriptor::name )
                 .collect( Collectors.joining( "," ) );
 
+            String modulePath = dependencies.stream()
+                .map( DependencyDescriptor::getPath )
+                .map( Path::toString )
+                .collect( Collectors.joining( File.pathSeparator ) );
+
             command.add( "--add-modules" );
             command.add( modules );
             command.add( "--module-path" );
-            command.add( dependenciesDir.toString() );
+            command.add( modulePath );
         }
 
         command.add( inputJar.toString() );
