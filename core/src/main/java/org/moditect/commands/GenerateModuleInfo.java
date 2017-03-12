@@ -148,7 +148,7 @@ public class GenerateModuleInfo {
             BufferedReader in = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
             String line;
             while ( ( line = in.readLine() ) != null ) {
-                log.info( line );
+                log.debug( line );
             }
 
             BufferedReader err = new BufferedReader( new InputStreamReader( process.getErrorStream() ) );
@@ -189,6 +189,8 @@ public class GenerateModuleInfo {
 
         try {
             Files.write( outputModuleInfo, moduleDeclaration.toString().getBytes() );
+
+            log.info( "Created module descriptor at " + outputModuleInfo );
         }
         catch (IOException e) {
             throw new RuntimeException( "Couldn't write module-info.java", e );
