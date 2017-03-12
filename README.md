@@ -81,6 +81,15 @@ will be derived from the JAR name as per the naming rules for automatic modules
 * `exportExcludes`: Regular expressions allowing to filter the list of exported
 packages (optional)
 
+It is also possible to run this goal directly, specifying the different options
+as JVM parameters like this:
+
+```
+mvn moditect:generate-module-info \
+    -Dmoditect.artifact=com.example:example-core:1.0.0.Final \
+    -Dmoditect.moduleName=com.example.core \
+    -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final -Dmoditect.exportExcludes=com\.example\.core\.internal\..*
+```
 ## Adding module descriptors to existing JAR files
 
 To add a module descriptor for a given artifact, configure the

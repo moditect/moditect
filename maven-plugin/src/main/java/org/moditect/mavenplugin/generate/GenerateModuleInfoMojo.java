@@ -91,54 +91,76 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Parameter
     private List<ModuleConfiguration> modules;
 
-//    @Parameter(property = "moditect.artifact")
-//    private String artifactOverride;
+    @Parameter(property = "moditect.artifact")
+    private String artifactOverride;
 
-//    private String artifact = "io.undertow:undertow-core:1.4.11.Final";
-//    private String furtherArtifacts = "org.jboss.logging:jboss-logging-annotations:2.0.1.Final";
+    @Parameter(property = "moditect.additionalDependencies")
+    private String additionalDependenciesOverride;
+
+    @Parameter(property = "moditect.moduleName")
+    private String moduleNameOverride;
+
+    @Parameter(property = "moditect.exportExcludes")
+    private String exportExcludesOverride;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         createDirectories();
 
-//        String artifactCoordinates;
-
-//        if ( artifactOverride != null ) {
-//            artifactCoordinates = artifactOverride;
-//        }
-//        else if ( artifact != null ){
-//            artifactCoordinates = artifact.toDependencyString();
-//        }
-//        else {
-//            throw new MojoExecutionException( "An input artifact must be specified either via <artifact> in the plug-in configuration or using the property \"moditect.artifact\"" );
-//        }
-
-        for ( ModuleConfiguration moduleConfiguration : modules ) {
-            Artifact inputArtifact = resolveArtifact(
-                new DefaultArtifact( moduleConfiguration.getArtifact().toDependencyString() )
-            );
-
-            Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact );
-
-            for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
-                Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
-                dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false ) );
-            }
-
-            new GenerateModuleInfo(
-                    inputArtifact.getFile().toPath(),
-                    moduleConfiguration.getModuleName(),
-                    dependencies,
-                    moduleConfiguration.getExportExcludes()
-                        .stream()
-                        .map( e -> Pattern.compile( e ) )
-                        .collect( Collectors.toList() ),
-                    workingDirectory.toPath(),
-                    outputDirectory.toPath(),
-                    new MojoLog()
-            )
-            .run();
+        if ( artifactOverride != null ) {
+            processModule( getModuleConfigurationFromOverrides() );
         }
+        else {
+            for ( ModuleConfiguration moduleConfiguration : modules ) {
+                processModule( moduleConfiguration );
+            }
+        }
+    }
+
+    private ModuleConfiguration getModuleConfigurationFromOverrides() {
+        ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
+
+        moduleConfiguration.setArtifact( new ArtifactConfiguration( artifactOverride ) );
+        moduleConfiguration.setModuleName( moduleNameOverride );
+
+        if ( additionalDependenciesOverride != null ) {
+            for ( String additionalDependency : additionalDependenciesOverride.split( "\\," ) ) {
+                moduleConfiguration.getAdditionalDependencies().add( new ArtifactConfiguration( additionalDependency ) );
+            }
+        }
+
+        if ( exportExcludesOverride != null ) {
+            moduleConfiguration.getExportExcludes().add( exportExcludesOverride );
+        }
+
+        return moduleConfiguration;
+    }
+
+    private void processModule(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+        Artifact inputArtifact = resolveArtifact(
+            new DefaultArtifact( moduleConfiguration.getArtifact().toDependencyString() )
+        );
+
+        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact );
+
+        for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
+            Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
+            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false ) );
+        }
+
+        new GenerateModuleInfo(
+                inputArtifact.getFile().toPath(),
+                moduleConfiguration.getModuleName(),
+                dependencies,
+                moduleConfiguration.getExportExcludes()
+                    .stream()
+                    .map( e -> Pattern.compile( e ) )
+                    .collect( Collectors.toList() ),
+                workingDirectory.toPath(),
+                outputDirectory.toPath(),
+                new MojoLog()
+        )
+        .run();
     }
 
     private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact) throws MojoExecutionException {

@@ -28,6 +28,14 @@ public class ArtifactConfiguration {
     private String version;
     private String classifier;
     private String type;
+    private String dependencyString;
+
+    public ArtifactConfiguration() {
+    }
+
+    public ArtifactConfiguration(String dependencyString) {
+        this.dependencyString = dependencyString;
+    }
 
     public String getGroupId() {
         return groupId;
@@ -74,7 +82,15 @@ public class ArtifactConfiguration {
         return "ArtifactConfiguration [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + ", type=" + type + "]";
     }
 
+    public void setDependencyString(String dependencyString) {
+        this.dependencyString = dependencyString;
+    }
+
     public String toDependencyString() {
+        if ( this.dependencyString != null ) {
+            return dependencyString;
+        }
+
         String dependencyString = groupId + ":" + artifactId + ":" + version;
 
         if ( classifier != null ) {
