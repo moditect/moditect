@@ -1,18 +1,90 @@
 # ModiTect - Tooling for the Java 9 Module System
 
 The ModiTect project aims at providing productivity tools for working with
-the Java 9 module system ("Jigsaw"). Currently it allows to add module
-descriptors to existing JAR files. In future versions functionality may be added
-to work with tools like jlink, jdeps or jmod under Maven and other dependency
-management tools in a comfortable manner.
+the Java 9 module system ("Jigsaw"). Currently it supports the following two
+tasks:
+
+* Generating module-info.java descriptors for given artifacts
+* Adding module descriptors to existing JAR files
+
+In future versions functionality may be added to work with tools like jlink,
+jmod etc. under Maven and other dependency management tools in a comfortable
+manner.
 
 ## Usage
 
-The only functionality available at this time is the addition of Java 9 module
-descriptors to existing JAR files. This functionality is exposed through a Maven
-plug-in (the core implementation is a separate module, though, so that plug-ins
-for other build systems such as Gradle could be written, too) which is used like
-this:
+ModiTect's functionality is currently exclusively exposed through a Maven
+plug-in. The core implementation is a separate module, though, so that plug-ins
+for other build systems such as Gradle could be written, too.
+
+## Generating module-info.java descriptors
+
+To create a module-info.java descriptor for a given artifact, configure the
+_generate-module-info_ goal as follows:
+
+```xml
+...
+<plugin>
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-maven-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>generate-module-info</id>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>generate-module-info</goal>
+            </goals>
+            <configuration>
+                <modules>
+                    <module>
+                        <artifact>
+                            <groupId>com.example</groupId>
+                            <artifactId>example-core</artifactId>
+                            <version>1.0.0.Final</version>
+                        </artifact>
+                        <additionalDependencies>
+                            <dependency>
+                                <groupId>com.example</groupId>
+                                <artifactId>example-extended</artifactId>
+                                <version>1.0.0.Final</version>
+                            </dependency>
+                        </additionalDependencies>
+                        <moduleName>com.example.core</moduleName>
+                        <exportExcludes>
+                            <exportExclude>com\.example\.core\.internal\..*</exportExclude>
+                        </exportExcludes>
+                    </module>
+                    <module>
+                        ...
+                    </module>
+                </modules>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+```
+
+This will generate a module descriptor at _target/generated-sources/com.example.core/module-info.java_.
+
+For each module to be processed, the following configuration options exist:
+
+* `artifact`: The GAV coordinates of the artifact for which a descriptor should
+be generated (required)
+* `additionalDependencies`: Additional artifacts to be processed; useful if the
+main artifact depends on code from another artifact but doesn't declare a
+dependency to that one (optional)
+* `moduleName`: Name to be used within the descriptor; if not given the name
+will be derived from the JAR name as per the naming rules for automatic modules
+(optional)
+* `exportExcludes`: Regular expressions allowing to filter the list of exported
+packages (optional)
+
+## Adding module descriptors to existing JAR files
+
+To add a module descriptor for a given artifact, configure the
+_generate-module-info_ goal as follows:
 
 ```xml
 ...
@@ -96,7 +168,6 @@ own risk.
 Adding module descriptors to existing JARs is the first functionality
 implemente in ModiTect. Potential future developments include:
 
-* Facilitate creation of module descriptors via jdeps based on POM dependencies
 * Update existing module descriptors (e.g. to remove/replace a requires clause)
 * Install/Deploy updated (modularized) JARs with a new name/classifier etc.
 * Facilitate creation of jlink image directories
