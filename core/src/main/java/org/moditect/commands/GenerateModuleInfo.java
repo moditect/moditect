@@ -71,10 +71,8 @@ public class GenerateModuleInfo {
             throw new IllegalArgumentException( "Output directory doesn't exist: "  + outputDirectory );
         }
 
-        Path stagingDir = recreateDirectory( workingDirectory, "staging" );
-
-        Map<String, Boolean> optionalityPerModule = runJdeps( stagingDir );
-        ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo( stagingDir );
+        Map<String, Boolean> optionalityPerModule = runJdeps();
+        ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo();
         updateModuleInfo( optionalityPerModule, moduleDeclaration );
 
         writeModuleInfo( moduleDeclaration );
@@ -93,7 +91,7 @@ public class GenerateModuleInfo {
         }
     }
 
-    private Map<String, Boolean> runJdeps(Path stagingDir) throws AssertionError {
+    private Map<String, Boolean> runJdeps() throws AssertionError {
         Map<String, Boolean> optionalityPerModule = new HashMap<>();
 
         String javaHome = System.getProperty("java.home");
@@ -105,7 +103,7 @@ public class GenerateModuleInfo {
         command.add( jdepsBin );
 
         command.add( "--generate-module-info" );
-        command.add( stagingDir.toString() );
+        command.add( workingDirectory.toString() );
 
         if ( !dependencies.isEmpty() ) {
             StringBuilder modules = new StringBuilder();
@@ -171,27 +169,18 @@ public class GenerateModuleInfo {
         return optionalityPerModule;
     }
 
-    private ModuleDeclaration parseGeneratedModuleInfo(Path stagingDir) {
-        String generatedModuleName = getGeneratedModuleName( stagingDir );
+    private ModuleDeclaration parseGeneratedModuleInfo() {
+        String generatedModuleName = ModuleFinder.of( inputJar )
+                .findAll()
+                .iterator()
+                .next()
+                .descriptor()
+                .name();
 
-        Path moduleDir = stagingDir.resolve( generatedModuleName );
+        Path moduleDir = workingDirectory.resolve( generatedModuleName );
         Path moduleInfo = moduleDir.resolve( "module-info.java" );
 
         return ModuleInfoCompiler.parseModuleInfo( moduleInfo );
-    }
-
-    private String getGeneratedModuleName(Path stagingDir) {
-        try {
-            return Files.find( stagingDir, 2, (p, a) -> p.getFileName().endsWith( "module-info.java" ) )
-                    .findFirst()
-                    .get()
-                    .getParent()
-                    .getFileName()
-                    .toString();
-        }
-        catch(IOException e) {
-            throw new RuntimeException( e );
-        }
     }
 
     private void writeModuleInfo(ModuleDeclaration moduleDeclaration) {

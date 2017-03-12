@@ -94,6 +94,14 @@
                                     </additionalDependencies>
                                     <moduleName>org.hibernate.validator</moduleName>
                                 </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging</artifactId>
+                                        <version>3.3.0.Final</version>
+                                    </artifact>
+                                    <moduleName>org.jboss.logging</moduleName>
+                                </module>
                             </modules>
                         </configuration>
                     </execution>

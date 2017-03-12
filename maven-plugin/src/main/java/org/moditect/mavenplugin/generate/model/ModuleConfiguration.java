@@ -18,6 +18,7 @@
  */
 package org.moditect.mavenplugin.generate.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
@@ -28,7 +29,7 @@ import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
-    private List<ArtifactConfiguration> additionalDependencies;
+    private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
     private String moduleName;
 
     public ArtifactConfiguration getArtifact() {
