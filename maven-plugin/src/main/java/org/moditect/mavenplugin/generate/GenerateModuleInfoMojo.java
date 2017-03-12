@@ -51,10 +51,10 @@ import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
 import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
 import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
-import org.moditect.commands.model.DependencyDescriptor;
-import org.moditect.log.Log;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
+import org.moditect.model.DependencyDescriptor;
+import org.moditect.spi.log.Log;
 
 /**
  * @author Gunnar Morling

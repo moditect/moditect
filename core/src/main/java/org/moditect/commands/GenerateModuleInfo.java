@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.moditect.commands.model.DependencyDescriptor;
-import org.moditect.compiler.ModuleInfoCompiler;
-import org.moditect.log.Log;
+import org.moditect.internal.compiler.ModuleInfoCompiler;
+import org.moditect.model.DependencyDescriptor;
+import org.moditect.spi.log.Log;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;

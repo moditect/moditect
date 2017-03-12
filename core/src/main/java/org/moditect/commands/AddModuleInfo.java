@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.moditect.compiler.ModuleInfoCompiler;
+import org.moditect.internal.compiler.ModuleInfoCompiler;
 
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 

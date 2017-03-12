@@ -20,4 +20,9 @@ module org.moditect.core {
     requires javaparser.core;
     requires jcommander;
     requires org.objectweb.asm;
+
+    exports org.moditect;
+    exports org.moditect.commands;
+    exports org.moditect.model;
+    exports org.moditect.spi.log;
 }
