@@ -30,6 +30,7 @@ public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
+    private List<String> exportExcludes = new ArrayList<>();
     private String moduleName;
 
     public ArtifactConfiguration getArtifact() {
@@ -54,5 +55,13 @@ public class ModuleConfiguration {
 
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
+    }
+
+    public List<String> getExportExcludes() {
+        return exportExcludes;
+    }
+
+    public void setExportExcludes(List<String> exportExcludes) {
+        this.exportExcludes = exportExcludes;
     }
 }

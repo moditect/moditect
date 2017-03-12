@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencyDescriptor;
@@ -38,6 +39,7 @@ import org.moditect.spi.log.Log;
 
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
+import com.github.javaparser.ast.modules.ModuleExportsStmt;
 import com.github.javaparser.ast.modules.ModuleRequiresStmt;
 
 public class GenerateModuleInfo {
@@ -45,14 +47,16 @@ public class GenerateModuleInfo {
     private final Path inputJar;
     private final String moduleName;
     private final Set<DependencyDescriptor> dependencies;
+    private List<Pattern> exportExcludes;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, Path workingDirectory, Path outputDirectory, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, Path workingDirectory, Path outputDirectory, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
+        this.exportExcludes = exportExcludes;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         this.log = log;
@@ -86,9 +90,21 @@ public class GenerateModuleInfo {
             }
         }
 
+        List<ModuleExportsStmt> exportStatements = moduleDeclaration.getNodesByType( ModuleExportsStmt.class );
+        for ( ModuleExportsStmt moduleExportsStmt : exportStatements ) {
+            if ( isExcluded( moduleExportsStmt ) ) {
+                moduleDeclaration.remove( moduleExportsStmt );
+            }
+        }
+
         if ( moduleName != null ) {
             moduleDeclaration.setName( moduleName );
         }
+    }
+
+    private boolean isExcluded(ModuleExportsStmt moduleExportsStmt) {
+        return exportExcludes.stream()
+            .anyMatch( exclude -> exclude.matcher( moduleExportsStmt.getNameAsString() ).matches() );
     }
 
     private Map<String, Boolean> runJdeps() throws AssertionError {

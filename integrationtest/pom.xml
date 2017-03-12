@@ -93,6 +93,9 @@
                                         </dependency>
                                     </additionalDependencies>
                                     <moduleName>org.hibernate.validator</moduleName>
+                                    <exportExcludes>
+                                        <exportExclude>org\.hibernate\.validator\.internal\..*</exportExclude>
+                                    </exportExcludes>
                                 </module>
                                 <module>
                                     <artifact>

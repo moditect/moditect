@@ -22,6 +22,8 @@ import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
@@ -127,6 +129,10 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                     inputArtifact.getFile().toPath(),
                     moduleConfiguration.getModuleName(),
                     dependencies,
+                    moduleConfiguration.getExportExcludes()
+                        .stream()
+                        .map( e -> Pattern.compile( e ) )
+                        .collect( Collectors.toList() ),
                     workingDirectory.toPath(),
                     outputDirectory.toPath(),
                     new MojoLog()
