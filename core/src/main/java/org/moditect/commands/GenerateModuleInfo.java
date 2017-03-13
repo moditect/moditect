@@ -24,8 +24,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -215,8 +218,24 @@ public class GenerateModuleInfo {
 
     private Path recreateDirectory(Path parent, String directoryName) {
         Path dir = parent.resolve( directoryName );
+
         try {
-            Files.deleteIfExists( dir );
+            if ( Files.exists( dir ) ) {
+                Files.walkFileTree( dir, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete( file );
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete( dir );
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
+
             Files.createDirectory( dir );
         }
         catch (IOException e) {
