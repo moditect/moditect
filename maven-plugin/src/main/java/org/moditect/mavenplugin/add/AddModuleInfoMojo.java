@@ -19,6 +19,8 @@
 package org.moditect.mavenplugin.add;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -72,14 +74,44 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
 
         for ( ModuleConfiguration moduleConfiguration : modules ) {
+            String moduleInfoSource = getModuleInfoSource( moduleConfiguration );
+
             AddModuleInfo addModuleInfo = new AddModuleInfo(
-                moduleConfiguration.getModuleInfoSource(),
+                moduleInfoSource,
                 moduleConfiguration.getMainClass(),
                 getArtifact( moduleConfiguration.getArtifact() ).getFile().toPath(),
                 outputPath
             );
 
             addModuleInfo.run();
+        }
+    }
+
+    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+        if ( moduleConfiguration.getModuleInfoSource() != null ) {
+            if ( moduleConfiguration.getModuleInfoFile() != null ) {
+                throw new MojoExecutionException( "Only one of 'moduleInfoFile' and 'moduleInfoSource' may be specified, but both are given for "
+                        + moduleConfiguration.getArtifact().toDependencyString() );
+            }
+            else {
+                return moduleConfiguration.getModuleInfoSource();
+            }
+        }
+        else if ( moduleConfiguration.getModuleInfoFile() != null ) {
+            return getLines( moduleConfiguration.getModuleInfoFile().toPath() );
+        }
+        else {
+            throw new MojoExecutionException(
+                    "One of 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + moduleConfiguration.getArtifact().toDependencyString() );
+        }
+    }
+
+    private String getLines(Path file) throws MojoExecutionException {
+        try {
+            return new String(Files.readAllBytes( file ) );
+        }
+        catch (IOException e) {
+            throw new MojoExecutionException( "Couldn't read file " + file );
         }
     }
 

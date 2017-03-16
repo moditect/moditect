@@ -150,19 +150,9 @@
                                         <artifactId>validation-api</artifactId>
                                         <version>1.1.0.Final</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                    module javax.validation.api {
-                                        exports javax.validation;
-                                        exports javax.validation.bootstrap;
-                                        exports javax.validation.constraints;
-                                        exports javax.validation.constraintvalidation;
-                                        exports javax.validation.executable;
-                                        exports javax.validation.groups;
-                                        exports javax.validation.metadata;
-                                        exports javax.validation.spi;
-                                        uses javax.validation.spi.ValidationProvider;
-                                    }
-                                    </moduleInfoSource>
+                                    <moduleInfoFile>
+                                        ${project.build.directory}/generated-sources/modules/javax.validation.api/module-info.java
+                                    </moduleInfoFile>
                                 </module>
                                 <module>
                                     <artifact>
@@ -170,17 +160,9 @@
                                         <artifactId>javax.el</artifactId>
                                         <version>3.0.1-b08</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                    module javax.el {
-                                        requires transitive java.desktop;
-                                        exports com.sun.el;
-                                        exports com.sun.el.lang;
-                                        exports com.sun.el.parser;
-                                        exports com.sun.el.stream;
-                                        exports com.sun.el.util;
-                                        exports javax.el;
-                                    }
-                                    </moduleInfoSource>
+                                    <moduleInfoFile>
+                                        ${project.build.directory}/generated-sources/modules/javax.el/module-info.java
+                                    </moduleInfoFile>
                                 </module>
                                 <module>
                                     <artifact>
@@ -188,14 +170,9 @@
                                         <artifactId>classmate</artifactId>
                                         <version>1.3.1</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                    module com.fasterxml.classmate {
-                                        exports com.fasterxml.classmate;
-                                        exports com.fasterxml.classmate.members;
-                                        exports com.fasterxml.classmate.types;
-                                        exports com.fasterxml.classmate.util;
-                                    }
-                                    </moduleInfoSource>
+                                    <moduleInfoFile>
+                                        ${project.build.directory}/generated-sources/modules/com.fasterxml.classmate/module-info.java
+                                    </moduleInfoFile>
                                 </module>
                                 <module>
                                     <artifact>
@@ -263,19 +240,6 @@
                                             requires static log4j.api;
                                             requires static slf4j.api;
                                             exports org.jboss.logging;
-                                        }
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.jboss.logging</groupId>
-                                        <artifactId>jboss-logging-annotations</artifactId>
-                                        <version>1.2.0.Final</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.logging.annotations {
-                                            requires transitive org.jboss.logging;
-                                            exports org.jboss.logging.annotations;
                                         }
                                     </moduleInfoSource>
                                 </module>

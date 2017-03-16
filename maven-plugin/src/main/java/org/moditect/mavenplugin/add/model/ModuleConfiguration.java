@@ -18,6 +18,8 @@
  */
 package org.moditect.mavenplugin.add.model;
 
+import java.io.File;
+
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 
 /**
@@ -27,6 +29,7 @@ import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
+    private File moduleInfoFile;
     private String moduleInfoSource;
     private String mainClass;
 
@@ -36,6 +39,14 @@ public class ModuleConfiguration {
 
     public void setArtifact(ArtifactConfiguration artifact) {
         this.artifact = artifact;
+    }
+
+    public File getModuleInfoFile() {
+        return moduleInfoFile;
+    }
+
+    public void setModuleInfoFile(File moduleInfoFile) {
+        this.moduleInfoFile = moduleInfoFile;
     }
 
     public String getModuleInfoSource() {
@@ -56,6 +67,7 @@ public class ModuleConfiguration {
 
     @Override
     public String toString() {
-        return "ModuleConfiguration [artifact=" + artifact + ", moduleInfoSource=" + moduleInfoSource + ", mainClass=" + mainClass + "]";
+        return "ModuleConfiguration [artifact=" + artifact + ", moduleInfoFile=" + moduleInfoFile + ", moduleInfoSource=" + moduleInfoSource + ", mainClass="
+                + mainClass + "]";
     }
 }
