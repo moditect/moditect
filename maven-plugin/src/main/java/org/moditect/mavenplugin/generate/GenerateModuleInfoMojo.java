@@ -103,6 +103,9 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Parameter(property = "moditect.exportExcludes")
     private String exportExcludesOverride;
 
+    @Parameter(property = "moditect.addServiceUses", defaultValue = "false")
+    private boolean addServiceUsesOverride;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         createDirectories();
@@ -133,6 +136,8 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
             moduleConfiguration.getExportExcludes().add( exportExcludesOverride );
         }
 
+        moduleConfiguration.setAddServiceUses( addServiceUsesOverride );
+
         return moduleConfiguration;
     }
 
@@ -158,6 +163,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                     .collect( Collectors.toList() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
+                moduleConfiguration.isAddServiceUses(),
                 new MojoLog()
         )
         .run();

@@ -36,5 +36,6 @@
 
     <modules>
         <module>undertow</module>
+        <module>hibernate-validator</module>
     </modules>
 </project>

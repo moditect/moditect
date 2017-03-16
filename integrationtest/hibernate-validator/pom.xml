@@ -1,0 +1,319 @@
+<!--
+
+     Copyright 2017 Gunnar Morling (http://www.gunnarmorling.de/)
+     and/or other contributors as indicated by the @authors tag. See the
+     copyright.txt file in the distribution for a full listing of all
+     contributors.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-integrationtest-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>moditect-integrationtest-hibernate-validator</artifactId>
+    <packaging>jar</packaging>
+    <name>ModiTect Integration Test - Hibernate Validator</name>
+
+    <properties>
+        <hibernate.validator.version>5.4.1-SNAPSHOT</hibernate.validator.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>${hibernate.validator.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>9</release>
+                        <compilerArgs>
+                            <compilerArg>--module-path</compilerArg>
+                            <compilerArg>${project.build.directory}/modules</compilerArg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <header>${basedir}/../../etc/license.txt</header>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-hv-module-info</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-validator</artifactId>
+                                        <version>${hibernate.validator.version}</version>
+                                    </artifact>
+                                    <moduleName>org.hibernate.validator</moduleName>
+                                    <exportExcludes>
+                                        <exportExclude>org\.hibernate\.validator\.internal\..*</exportExclude>
+                                    </exportExcludes>
+                                    <addServiceUses>true</addServiceUses>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>javax.validation</groupId>
+                                        <artifactId>validation-api</artifactId>
+                                        <version>1.1.0.Final</version>
+                                    </artifact>
+                                    <moduleName>javax.validation.api</moduleName>
+                                    <addServiceUses>true</addServiceUses>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.glassfish</groupId>
+                                        <artifactId>javax.el</artifactId>
+                                        <version>3.0.1-b08</version>
+                                    </artifact>
+                                    <moduleName>javax.el</moduleName>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.fasterxml</groupId>
+                                        <artifactId>classmate</artifactId>
+                                        <version>1.3.1</version>
+                                    </artifact>
+                                    <moduleName>com.fasterxml.classmate</moduleName>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging</artifactId>
+                                        <version>3.3.0.Final</version>
+                                    </artifact>
+                                    <moduleName>org.jboss.logging</moduleName>
+                                </module>
+                            </modules>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-module-info-to-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>javax.validation</groupId>
+                                        <artifactId>validation-api</artifactId>
+                                        <version>1.1.0.Final</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                    module javax.validation.api {
+                                        exports javax.validation;
+                                        exports javax.validation.bootstrap;
+                                        exports javax.validation.constraints;
+                                        exports javax.validation.constraintvalidation;
+                                        exports javax.validation.executable;
+                                        exports javax.validation.groups;
+                                        exports javax.validation.metadata;
+                                        exports javax.validation.spi;
+                                        uses javax.validation.spi.ValidationProvider;
+                                    }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.glassfish</groupId>
+                                        <artifactId>javax.el</artifactId>
+                                        <version>3.0.1-b08</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                    module javax.el {
+                                        requires transitive java.desktop;
+                                        exports com.sun.el;
+                                        exports com.sun.el.lang;
+                                        exports com.sun.el.parser;
+                                        exports com.sun.el.stream;
+                                        exports com.sun.el.util;
+                                        exports javax.el;
+                                    }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.fasterxml</groupId>
+                                        <artifactId>classmate</artifactId>
+                                        <version>1.3.1</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                    module com.fasterxml.classmate {
+                                        exports com.fasterxml.classmate;
+                                        exports com.fasterxml.classmate.members;
+                                        exports com.fasterxml.classmate.types;
+                                        exports com.fasterxml.classmate.util;
+                                    }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.hibernate</groupId>
+                                        <artifactId>hibernate-validator</artifactId>
+                                        <version>${hibernate.validator.version}</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                    module org.hibernate.validator {
+                                        requires com.fasterxml.classmate;
+                                        requires static hibernate.jpa;
+                                        requires java.desktop;
+                                        requires java.scripting;
+                                        requires java.xml;
+                                        requires java.xml.bind;
+                                        requires javafx.base;
+                                        requires javax.el;
+                                        requires org.jboss.logging;
+                                        requires static jboss.logging.annotations;
+                                        requires static joda.time;
+                                        requires static jsoup;
+                                        requires static money.api;
+                                        requires static paranamer;
+                                        requires transitive javax.validation.api;
+                                        exports org.hibernate.validator;
+                                        exports org.hibernate.validator.cfg;
+                                        exports org.hibernate.validator.cfg.context;
+                                        exports org.hibernate.validator.cfg.defs;
+                                        exports org.hibernate.validator.cfg.defs.br;
+                                        exports org.hibernate.validator.cfg.defs.pl;
+                                        exports org.hibernate.validator.constraints;
+                                        exports org.hibernate.validator.constraints.br;
+                                        exports org.hibernate.validator.constraints.pl;
+                                        exports org.hibernate.validator.constraintvalidation;
+                                        exports org.hibernate.validator.constraintvalidators;
+                                        exports org.hibernate.validator.engine;
+                                        exports org.hibernate.validator.group;
+                                        exports org.hibernate.validator.messageinterpolation;
+                                        exports org.hibernate.validator.parameternameprovider;
+                                        exports org.hibernate.validator.path;
+                                        exports org.hibernate.validator.resourceloading;
+                                        exports org.hibernate.validator.spi.cfg;
+                                        exports org.hibernate.validator.spi.group;
+                                        exports org.hibernate.validator.spi.resourceloading;
+                                        exports org.hibernate.validator.spi.time;
+                                        exports org.hibernate.validator.spi.valuehandling;
+                                        exports org.hibernate.validator.valuehandling;
+                                        exports org.hibernate.validator.internal.util.logging to org.jboss.logging;
+                                        provides javax.validation.spi.ValidationProvider with org.hibernate.validator.HibernateValidator;
+                                        uses javax.validation.ConstraintValidator;
+                                    }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging</artifactId>
+                                        <version>3.3.0.Final</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.jboss.logging {
+                                            requires java.logging;
+                                            requires static jboss.logmanager;
+                                            requires static log4j;
+                                            requires static log4j.api;
+                                            requires static slf4j.api;
+                                            exports org.jboss.logging;
+                                        }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jboss.logging</groupId>
+                                        <artifactId>jboss-logging-annotations</artifactId>
+                                        <version>1.2.0.Final</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.jboss.logging.annotations {
+                                            requires transitive org.jboss.logging;
+                                            exports org.jboss.logging.annotations;
+                                        }
+                                    </moduleInfoSource>
+                                </module>
+                            </modules>
+                        </configuration>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>add-module-info-to-test</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>moditect-integrationtest</artifactId>
+                                        <version>${project.version}</version>
+                                    </artifact>
+                                    <mainClass>com.example.ValidationTest</mainClass>
+                                    <moduleInfoSource>
+                                        module com.example {
+                                            requires org.hibernate.validator;
+                                            exports com.example;
+                                            opens com.example to org.hibernate.validator;
+                                        }
+                                    </moduleInfoSource>
+                                </module>
+                            </modules>
+                        </configuration>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

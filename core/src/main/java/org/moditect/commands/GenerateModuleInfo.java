@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.spi.log.Log;
@@ -44,6 +45,8 @@ import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsStmt;
 import com.github.javaparser.ast.modules.ModuleRequiresStmt;
+import com.github.javaparser.ast.modules.ModuleUsesStmt;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 public class GenerateModuleInfo {
 
@@ -53,15 +56,17 @@ public class GenerateModuleInfo {
     private List<Pattern> exportExcludes;
     private final Path workingDirectory;
     private final Path outputDirectory;
+    private final boolean addServiceUses;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, Path workingDirectory, Path outputDirectory, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
         this.exportExcludes = exportExcludes;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
+        this.addServiceUses = addServiceUses;
         this.log = log;
     }
 
@@ -103,6 +108,35 @@ public class GenerateModuleInfo {
         if ( moduleName != null ) {
             moduleDeclaration.setName( moduleName );
         }
+
+        if ( addServiceUses ) {
+            Set<String> usedServices = ServiceLoaderUseScanner.getUsedServices( inputJar );
+            for ( String usedService : usedServices ) {
+                moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
+            }
+        }
+    }
+
+    private ClassOrInterfaceType getType(String fqn) {
+        String[] parts = fqn.split( "\\." );
+
+        ClassOrInterfaceType scope = null;
+        String name = null;
+
+        if ( parts.length == 1 ) {
+            scope = null;
+            name = parts[0];
+        }
+        else {
+            ClassOrInterfaceType parentScope = null;
+            for( int i = 0; i < parts.length - 1; i++ ) {
+                scope = new ClassOrInterfaceType( parentScope, parts[i] );
+                parentScope = scope;
+            }
+            name = parts[parts.length - 1];
+        }
+
+        return new ClassOrInterfaceType( scope, name );
     }
 
     private boolean isExcluded(ModuleExportsStmt moduleExportsStmt) {
