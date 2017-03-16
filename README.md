@@ -54,6 +54,7 @@ _generate-module-info_ goal as follows:
                         <exportExcludes>
                             <exportExclude>com\.example\.core\.internal\..*</exportExclude>
                         </exportExcludes>
+                        <addServiceUses>true</addServiceUses>
                     </module>
                     <module>
                         ...
@@ -80,6 +81,11 @@ will be derived from the JAR name as per the naming rules for automatic modules
 (optional)
 * `exportExcludes`: Regular expressions allowing to filter the list of exported
 packages (optional)
+* `addServiceUses`: If `true`, the given artifact will be scanned for usages of
+`ServiceLoader#load()` and if usages passing a class-literal are found
+(`load( MyService.class )`), an equivalent `uses()` clause will be added to the
+generated descriptor; usages of `load()` where a non-literal class object is
+passed, are ignored (optional, defaults to `false`)
 
 It is also possible to run this goal directly, specifying the different options
 as JVM parameters like this:
@@ -88,7 +94,8 @@ as JVM parameters like this:
 mvn moditect:generate-module-info \
     -Dmoditect.artifact=com.example:example-core:1.0.0.Final \
     -Dmoditect.moduleName=com.example.core \
-    -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final -Dmoditect.exportExcludes=com\.example\.core\.internal\..*
+    -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final \ -Dmoditect.exportExcludes=com\.example\.core\.internal\..* \
+    -Dmoditect.addServiceUses=true
 ```
 ## Adding module descriptors to existing JAR files
 
@@ -134,12 +141,23 @@ _generate-module-info_ goal as follows:
 ...
 ```
 
+For each module to be processed, the following configuration options exist:
+
+* `artifact`: The GAV coordinates of the artifact for which a descriptor should
+be generated (required)
+* `moduleInfoSource`: Inline representation of a module-info.java descriptor
+(optional; either this or `moduleInfoFile` must be given)
+* `moduleInfoFile`: Path to a module-info.java descriptor
+(optional; either this or `moduleInfoSource` must be given)
+* `mainClass`: The fully-qualified name of the main class to be added to the
+module descriptor (optional)
+
 ## Example
 
-The [POM file](integrationtest/pom.xml) in _integrationtest_ shows a more
-complete example. It adds module descriptors for [Undertow Core](http://undertow.io/)
-and its dependencies, i.e. it allows to run the Undertow web server based on
-Java 9 modules.
+The [POM file](integrationtest/undertow/pom.xml) in _integrationtest/undertow_
+shows a more complete example. It adds module descriptors for
+[Undertow Core](http://undertow.io/) and its dependencies, i.e. it allows to run
+the Undertow web server based on Java 9 modules.
 
 Run
 
