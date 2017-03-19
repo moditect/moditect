@@ -1,13 +1,13 @@
 # ModiTect - Tooling for the Java 9 Module System
 
 The ModiTect project aims at providing productivity tools for working with
-the Java 9 module system ("Jigsaw"). Currently it supports the following two
-tasks:
+the Java 9 module system ("Jigsaw"). Currently it supports the following tasks:
 
 * Generating module-info.java descriptors for given artifacts
 * Adding module descriptors to existing JAR files
+* Creating module runtime images
 
-In future versions functionality may be added to work with tools like jlink,
+In future versions functionality may be added to work with other tools like
 jmod etc. under Maven and other dependency management tools in a comfortable
 manner.
 
@@ -17,7 +17,7 @@ ModiTect's functionality is currently exclusively exposed through a Maven
 plug-in. The core implementation is a separate module, though, so that plug-ins
 for other build systems such as Gradle could be written, too.
 
-## Generating module-info.java descriptors
+### Generating module-info.java descriptors
 
 To create a module-info.java descriptor for a given artifact, configure the
 _generate-module-info_ goal as follows:
@@ -97,7 +97,7 @@ mvn moditect:generate-module-info \
     -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final \ -Dmoditect.exportExcludes=com\.example\.core\.internal\..* \
     -Dmoditect.addServiceUses=true
 ```
-## Adding module descriptors to existing JAR files
+### Adding module descriptors to existing JAR files
 
 To add a module descriptor for a given artifact, configure the
 _generate-module-info_ goal as follows:
@@ -155,6 +155,69 @@ be generated (required)
 * `mainClass`: The fully-qualified name of the main class to be added to the
 module descriptor (optional)
 
+### Creating module runtime images
+
+To create a modular runtime image (see
+[JEP 220](http://openjdk.java.net/jeps/220)), configure the
+_create-runtime-image_ goal as follows:
+
+```xml
+...
+<plugin>
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-maven-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>create-runtime-image</id>
+            <phase>package</phase>
+            <goals>
+                <goal>create-runtime-image</goal>
+            </goals>
+            <configuration>
+                <modulePath>
+                    <path>${project.build.directory}/modules</path>
+                </modulePath>
+                <modules>
+                    <module>com.example.module1</module>
+                    <module>com.example.module2</module>
+                </modules>
+                <launcher>
+                    <name>helloWorld</name>
+                    <module>com.example</module>
+                </launcher>
+                <outputDirectory>
+                    ${project.build.directory}/jlink-image
+                </outputDirectory>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+```
+The following configuration options exist:
+
+* `modulePath`: One or more directories with modules to be considered for
+creating the image (required); the `jmods` directory of the current JVM will be
+added implicitly, so it doesn't have to be given here
+* `modules`: The module(s) to be used as the root for resolving the modules to
+be added to the image (required)
+* `outputDirectory`: Directory in which the runtime image should be created
+(required)
+* `launcher`: file name and main module for creating a launcher file (optional)
+
+Once the image has been created, it can be executed by running:
+
+```
+./<outputDirectory>/bin/java --module com.example
+```
+
+Or, if a launcher has been configured:
+
+```
+./<outputDirectory>/bin/<launcherName>
+```
+
 ## Example
 
 The [POM file](integrationtest/undertow/pom.xml) in _integrationtest/undertow_
@@ -164,11 +227,16 @@ the Undertow web server based on Java 9 modules.
 
 Run
 
-    mvn clean install -pl integrationtest
+    cd integrationtest/undertow
+    mvn clean install
 
 to build the example. You then can start Undertow by executing
 
-    java --module-path integrationtest/target/modules --module com.example
+    java --module-path target/modules --module com.example
+
+Alternatively, you can run the modular runtime image created by the example:
+
+    ./target/jlink-image/bin/helloWorld
 
 Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
 in your browser for the canonical "Hello World" example.
