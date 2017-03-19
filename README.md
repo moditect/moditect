@@ -112,6 +112,9 @@ _generate-module-info_ goal as follows:
         <execution>
             <id>add-module-infos</id>
             <phase>generate-resources</phase>
+            <goals>
+                <goal>add-module-info</goal>
+            </goals>
             <configuration>
                 <outputDirectory>${project.build.directory}/modules</outputDirectory>
                 <modules>
