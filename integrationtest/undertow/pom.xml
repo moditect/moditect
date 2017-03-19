@@ -344,7 +344,7 @@
                     </execution>
                     <execution>
                         <id>add-module-info-to-test</id>
-                        <phase>pre-integration-test</phase>
+                        <phase>package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
@@ -366,6 +366,27 @@
                         <goals>
                             <goal>add-module-info</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-runtime-image</goal>
+                        </goals>
+                        <configuration>
+                            <modulePath>
+                                <path>${project.build.directory}/modules</path>
+                            </modulePath>
+                            <modules>
+                                <module>com.example</module>
+                                <module>org.jboss.xnio.nio</module>
+                            </modules>
+                            <launcher>
+                                <name>helloWorld</name>
+                                <module>com.example</module>
+                            </launcher>
+                            <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

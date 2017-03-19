@@ -55,8 +55,8 @@ import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
+import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.DependencyDescriptor;
-import org.moditect.spi.log.Log;
 
 /**
  * @author Gunnar Morling
@@ -164,7 +164,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
                 moduleConfiguration.isAddServiceUses(),
-                new MojoLog()
+                new MojoLog( getLog() )
         )
         .run();
     }
@@ -224,25 +224,6 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         }
         catch (ArtifactResolutionException e) {
             throw new MojoExecutionException( e.getMessage(), e );
-        }
-    }
-
-    private class MojoLog implements Log {
-
-        @Override
-        public void debug(CharSequence message) {
-            getLog().debug( message );
-        }
-
-        @Override
-        public void info(CharSequence message) {
-            getLog().info( message );
-
-        }
-
-        @Override
-        public void error(CharSequence message) {
-            getLog().error( message );
         }
     }
 }
