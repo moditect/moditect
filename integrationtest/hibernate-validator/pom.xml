@@ -35,7 +35,7 @@
     <name>ModiTect Integration Test - Hibernate Validator</name>
 
     <properties>
-        <hibernate.validator.version>5.4.1-SNAPSHOT</hibernate.validator.version>
+        <hibernate.validator.version>5.4.1.Final</hibernate.validator.version>
     </properties>
 
     <dependencies>
