@@ -3,6 +3,16 @@
 The ModiTect project aims at providing productivity tools for working with
 the Java 9 module system ("Jigsaw").
 
+Currently the following tasks are supported:
+
+* Generating module-info.java descriptors for given artifacts
+* Adding module descriptors to existing JAR files
+* Creating module runtime images
+
+In future versions functionality may be added to work with other tools like
+jmod etc. under Maven and other dependency management tools in a comfortable
+manner.
+
 * [Usage](#usage)
    * [Generating module-info.java descriptors](#generating-module-infojava-descriptors)
    * [Adding module descriptors to existing JAR files](#adding-module-descriptors-to-existing-jar-files)
@@ -13,16 +23,6 @@ the Java 9 module system ("Jigsaw").
 * [Further Planned Features](#further-planned-features)
 * [Related Work](#related-work)
 * [License](#license)
-
-Currently the following tasks are supported:
-
-* Generating module-info.java descriptors for given artifacts
-* Adding module descriptors to existing JAR files
-* Creating module runtime images
-
-In future versions functionality may be added to work with other tools like
-jmod etc. under Maven and other dependency management tools in a comfortable
-manner.
 
 ## Usage
 
