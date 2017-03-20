@@ -18,10 +18,8 @@
  */
 package org.moditect.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
 import java.nio.file.FileVisitResult;
@@ -37,6 +35,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
+import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.spi.log.Log;
@@ -192,32 +191,7 @@ public class GenerateModuleInfo {
 
         log.debug( "Running jdeps: " + String.join( " ", command ) );
 
-        ProcessBuilder builder = new ProcessBuilder( command );
-
-        Process process;
-        try {
-            process = builder.start();
-
-            BufferedReader in = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
-            String line;
-            while ( ( line = in.readLine() ) != null ) {
-                log.debug( line );
-            }
-
-            BufferedReader err = new BufferedReader( new InputStreamReader( process.getErrorStream() ) );
-            while ( ( line = err.readLine() ) != null ) {
-                log.error( line );
-            }
-
-            process.waitFor();
-        }
-        catch (IOException | InterruptedException e) {
-            throw new RuntimeException( "Couldn't run jdeps", e );
-        }
-
-        if ( process.exitValue() != 0 ) {
-            throw new RuntimeException( "Execution of jdeps failed" );
-        }
+        ProcessExecutor.run( "jdeps", command, log );
 
         return optionalityPerModule;
     }

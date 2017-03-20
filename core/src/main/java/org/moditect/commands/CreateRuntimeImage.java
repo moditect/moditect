@@ -18,16 +18,14 @@
  */
 package org.moditect.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.spi.log.Log;
 
 /**
@@ -81,37 +79,6 @@ public class CreateRuntimeImage {
         }
         log.debug( "Running jlink: " + String.join( " ", command ) );
 
-        ProcessBuilder builder = new ProcessBuilder( command );
-
-        Process process;
-        List<String> outputLines = new ArrayList<>();
-        try {
-            process = builder.start();
-
-            BufferedReader in = new BufferedReader( new InputStreamReader( process.getInputStream() ) );
-            String line;
-            while ( ( line = in.readLine() ) != null ) {
-                outputLines.add( line );
-                log.debug( line );
-            }
-
-            BufferedReader err = new BufferedReader( new InputStreamReader( process.getErrorStream() ) );
-            while ( ( line = err.readLine() ) != null ) {
-                log.error( line );
-            }
-
-            process.waitFor();
-        }
-        catch (IOException | InterruptedException e) {
-            throw new RuntimeException( "Couldn't run jlink", e );
-        }
-
-        if ( process.exitValue() != 0 ) {
-            for ( String line : outputLines ) {
-                log.error( line );
-            }
-
-            throw new RuntimeException( "Execution of jlink failed" );
-        }
+        ProcessExecutor.run( "jlink", command, log );
     }
 }
