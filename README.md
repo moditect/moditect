@@ -197,7 +197,7 @@ _create-runtime-image_ goal as follows:
                 </modules>
                 <launcher>
                     <name>helloWorld</name>
-                    <module>com.example</module>
+                    <module>com.example.module1</module>
                 </launcher>
                 <outputDirectory>
                     ${project.build.directory}/jlink-image
