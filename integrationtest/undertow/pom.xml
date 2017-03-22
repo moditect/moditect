@@ -385,6 +385,7 @@
                                 <name>helloWorld</name>
                                 <module>com.example</module>
                             </launcher>
+                            <compression>2</compression>
                             <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
                         </configuration>
                     </execution>

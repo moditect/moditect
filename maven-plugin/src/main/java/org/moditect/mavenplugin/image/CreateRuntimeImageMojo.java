@@ -75,6 +75,8 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter
     private Launcher launcher;
 
+    @Parameter
+    private Integer compression;
 
 //    @Parameter(property = "moditect.artifact")
 //    private String artifactOverride;
@@ -98,6 +100,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 launcher != null ? launcher.getName() : null,
                 launcher != null ? launcher.getModule() : null,
                 outputDirectory.toPath(),
+                compression,
                 new MojoLog( getLog() )
         )
         .run();
