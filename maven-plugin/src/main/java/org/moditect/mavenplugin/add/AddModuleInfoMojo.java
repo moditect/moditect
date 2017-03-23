@@ -62,6 +62,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/modules")
     private File outputDirectory;
 
+    @Parameter(property = "overwriteExistingFiles", defaultValue = "false")
+    private boolean overwriteExistingFiles;
+
     @Parameter
     private List<ModuleConfiguration> modules;
 
@@ -74,24 +77,47 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
 
         for ( ModuleConfiguration moduleConfiguration : modules ) {
+            Path inputFile = getInputFile( moduleConfiguration );
             String moduleInfoSource = getModuleInfoSource( moduleConfiguration );
 
             AddModuleInfo addModuleInfo = new AddModuleInfo(
                 moduleInfoSource,
                 moduleConfiguration.getMainClass(),
-                getArtifact( moduleConfiguration.getArtifact() ).getFile().toPath(),
-                outputPath
+                inputFile,
+                outputPath,
+                overwriteExistingFiles
             );
 
             addModuleInfo.run();
         }
     }
 
+    private Path getInputFile(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+        if ( moduleConfiguration.getFile() != null ) {
+            if ( moduleConfiguration.getArtifact() != null ) {
+                throw new MojoExecutionException( "Only one of 'file' and 'artifact' may be specified, but both are given for"
+                        + moduleConfiguration.getArtifact().toDependencyString() );
+            }
+            else {
+                return moduleConfiguration.getFile().toPath();
+            }
+        }
+        else if ( moduleConfiguration.getArtifact() != null ) {
+            return getArtifact( moduleConfiguration.getArtifact() ).getFile().toPath();
+        }
+        else {
+            throw new MojoExecutionException( "One of 'file' and 'artifact' must be specified" );
+        }
+    }
+
     private String getModuleInfoSource(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+        String fileForLogging = moduleConfiguration.getFile() != null ? moduleConfiguration.getFile().getPath()
+                : moduleConfiguration.getArtifact().toDependencyString();
+
         if ( moduleConfiguration.getModuleInfoSource() != null ) {
             if ( moduleConfiguration.getModuleInfoFile() != null ) {
                 throw new MojoExecutionException( "Only one of 'moduleInfoFile' and 'moduleInfoSource' may be specified, but both are given for "
-                        + moduleConfiguration.getArtifact().toDependencyString() );
+                        + fileForLogging );
             }
             else {
                 return moduleConfiguration.getModuleInfoSource();
@@ -102,7 +128,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
         else {
             throw new MojoExecutionException(
-                    "One of 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + moduleConfiguration.getArtifact().toDependencyString() );
+                    "One of 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + fileForLogging );
         }
     }
 

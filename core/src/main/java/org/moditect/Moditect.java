@@ -34,7 +34,7 @@ public class Moditect {
         CliArgs cliArgs = new CliArgs();
         new JCommander( cliArgs, args );
 
-        new AddModuleInfo( null, null, null, cliArgs.outputDirecory ).run();
+        new AddModuleInfo( null, null, null, cliArgs.outputDirecory, cliArgs.overwriteExistingFiles ).run();
     }
 
     @Parameters(separators = "=")
@@ -53,8 +53,15 @@ public class Moditect {
                 required = true,
                 description = "Path to a directory for storing the modularized JAR",
                 converter = PathConverter.class
-            )
+        )
         private Path outputDirecory;
+
+        @Parameter(
+                names = "--overwrite-existing-files",
+                required = false,
+                description = "Whether to overwrite existing files or not"
+        )
+        private boolean overwriteExistingFiles;
     }
 
     private static class PathConverter implements IStringConverter<Path> {

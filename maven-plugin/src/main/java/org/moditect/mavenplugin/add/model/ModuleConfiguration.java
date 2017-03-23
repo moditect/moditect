@@ -28,10 +28,19 @@ import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
  */
 public class ModuleConfiguration {
 
+    private File file;
     private ArtifactConfiguration artifact;
     private File moduleInfoFile;
     private String moduleInfoSource;
     private String mainClass;
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
 
     public ArtifactConfiguration getArtifact() {
         return artifact;

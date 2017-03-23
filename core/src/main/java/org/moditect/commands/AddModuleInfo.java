@@ -42,12 +42,14 @@ public class AddModuleInfo {
     private final String mainClass;
     private final Path inputJar;
     private final Path outputDirectory;
+    private final boolean overwriteExistingFiles;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, Path inputJar, Path outputDirectory) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, Path inputJar, Path outputDirectory, boolean overwriteExistingFiles) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
         this.inputJar = inputJar;
         this.outputDirectory = outputDirectory;
+        this.overwriteExistingFiles = overwriteExistingFiles;
     }
 
     public void run() {
@@ -60,6 +62,11 @@ public class AddModuleInfo {
         }
 
         Path outputJar = outputDirectory.resolve( inputJar.getFileName() );
+
+        if ( Files.exists( outputJar ) && !overwriteExistingFiles ) {
+            throw new RuntimeException(
+                    "File " + outputJar + " already exists; either set 'overwriteExistingFiles' to true or specify another output directory" );
+        }
 
         try {
             Files.copy( inputJar, outputJar );

@@ -83,10 +83,10 @@ public class AddModuleInfoTest {
             "module com.example {}",
             "com.example.HelloWorld",
             Paths.get( "target", "generated-test-resources", "example.jar" ),
-            Paths.get( "target", "generated-test-modules" )
+            Paths.get( "target", "generated-test-modules" ),
+            false
         )
         .run();
-
 
         builder = new ProcessBuilder(
                 javaBin, "--module-path", GENERATED_TEST_MODULES + File.separator + "example.jar", "--module", "com.example" );
