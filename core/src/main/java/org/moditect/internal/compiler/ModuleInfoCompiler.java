@@ -20,6 +20,7 @@ package org.moditect.internal.compiler;
 
 import static org.objectweb.asm.Opcodes.ACC_MANDATED;
 import static org.objectweb.asm.Opcodes.ACC_MODULE;
+import static org.objectweb.asm.Opcodes.ACC_OPEN;
 import static org.objectweb.asm.Opcodes.ACC_STATIC_PHASE;
 import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 import static org.objectweb.asm.Opcodes.ACC_TRANSITIVE;
@@ -69,7 +70,8 @@ public class ModuleInfoCompiler {
         ClassWriter classWriter = new ClassWriter( 0 );
         classWriter.visit( V1_9, ACC_MODULE, "module-info", null, null, null );
 
-        ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), ACC_SYNTHETIC, null );
+        int moduleAccess = module.isOpen() ? ACC_SYNTHETIC | ACC_OPEN : ACC_SYNTHETIC;
+        ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), moduleAccess, null );
 
         if ( mainClass != null ) {
             mv.visitMainClass( mainClass.replace( '.', '/' ) );

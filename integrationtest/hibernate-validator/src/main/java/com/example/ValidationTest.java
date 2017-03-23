@@ -41,8 +41,6 @@ public class ValidationTest {
 	public static class Customer {
 
 		@NotNull
-		public String getName() {
-			return null;
-		}
+		private String name = null;
 	}
 }

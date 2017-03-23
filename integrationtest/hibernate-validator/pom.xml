@@ -60,13 +60,6 @@
                         </compilerArgs>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <outputDirectory>${project.build.directory}/modules</outputDirectory>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -256,17 +249,12 @@
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
                                 <module>
-                                    <artifact>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>moditect-integrationtest</artifactId>
-                                        <version>${project.version}</version>
-                                    </artifact>
+                                    <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
                                     <mainClass>com.example.ValidationTest</mainClass>
                                     <moduleInfoSource>
-                                        module com.example {
+                                        open module com.example {
                                             requires org.hibernate.validator;
                                             exports com.example;
-                                            opens com.example to org.hibernate.validator;
                                         }
                                     </moduleInfoSource>
                                 </module>
