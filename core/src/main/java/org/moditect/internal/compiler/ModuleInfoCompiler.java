@@ -36,8 +36,10 @@ import org.objectweb.asm.ModuleVisitor;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsStmt;
+import com.github.javaparser.ast.modules.ModuleOpensStmt;
 import com.github.javaparser.ast.modules.ModuleProvidesStmt;
 import com.github.javaparser.ast.modules.ModuleRequiresStmt;
 import com.github.javaparser.ast.modules.ModuleUsesStmt;
@@ -102,6 +104,17 @@ public class ModuleInfoCompiler {
 
         for ( ModuleUsesStmt uses : module.getNodesByType( ModuleUsesStmt.class ) ) {
             mv.visitUse( uses.getType().toString().replace( '.', '/' ) );
+        }
+
+        for ( ModuleOpensStmt opens : module.getNodesByType( ModuleOpensStmt.class ) ) {
+            mv.visitOpen(
+                    opens.getNameAsString().replace( '.', '/' ),
+                    0,
+                    opens.getModuleNames()
+                        .stream()
+                        .map( Name::toString )
+                        .toArray( String[]::new )
+            );
         }
 
         mv.visitRequire( "java.base", ACC_MANDATED, null );
