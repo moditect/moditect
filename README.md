@@ -113,7 +113,7 @@ mvn moditect:generate-module-info \
 ### Adding module descriptors to existing JAR files
 
 To add a module descriptor for a given artifact, configure the
-_generate-module-info_ goal as follows:
+_add-module-info_ goal as follows:
 
 ```xml
 ...
@@ -160,7 +160,9 @@ _generate-module-info_ goal as follows:
 For each module to be processed, the following configuration options exist:
 
 * `artifact`: The GAV coordinates of the artifact for which a descriptor should
-be generated (required)
+be generated (either this or `file` must be given)
+* `file`: Path to the file for which a descriptor should be generated (either
+  this or `artifact` must be given)
 * `moduleInfoSource`: Inline representation of a module-info.java descriptor
 (optional; either this or `moduleInfoFile` must be given)
 * `moduleInfoFile`: Path to a module-info.java descriptor
@@ -168,7 +170,44 @@ be generated (required)
 * `mainClass`: The fully-qualified name of the main class to be added to the
 module descriptor (optional)
 
-### Creating module runtime images
+To add a module descriptor for the artifact built by the current project itself,
+configure the plug-in like so:
+
+```xml
+...
+<plugin>
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-maven-plugin</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <executions>
+        <execution>
+            <id>add-module-infos</id>
+            <phase>package</phase>
+            <goals>
+                <goal>add-module-info</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${project.build.directory}</outputDirectory>
+                <overwriteExistingFiles>true</overwriteExistingFiles>
+                <modules>
+                    <module>
+                        <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                        <moduleInfoSource>
+                            ...
+                        </moduleInfoSource>
+                    </module>
+                </modules>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+```
+
+Note that as input and output file are the same in this case,
+`overwriteExistingFiles` must be set to `true`.
+
+### Creating modular runtime images
 
 To create a modular runtime image (see
 [JEP 220](http://openjdk.java.net/jeps/220)), configure the
