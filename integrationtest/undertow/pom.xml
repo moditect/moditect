@@ -349,11 +349,7 @@
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
                                 <module>
-                                    <artifact>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>moditect-integrationtest</artifactId>
-                                        <version>${project.version}</version>
-                                    </artifact>
+                                    <file>${project.build.directory}/modules/${project.artifactId}-${project.version}.jar</file>
                                     <mainClass>com.example.HelloWorldServer</mainClass>
                                     <moduleInfoSource>
                                         module com.example {
