@@ -24,6 +24,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,7 +70,7 @@ public class AddModuleInfo {
         }
 
         try {
-            Files.copy( inputJar, outputJar );
+            Files.copy(inputJar, outputJar, StandardCopyOption.REPLACE_EXISTING);
         }
         catch(IOException e) {
             throw new RuntimeException( "Couldn't copy JAR file", e );
