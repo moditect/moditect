@@ -347,6 +347,7 @@
                         <phase>package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
                             <modules>
                                 <module>
                                     <file>${project.build.directory}/modules/${project.artifactId}-${project.version}.jar</file>
