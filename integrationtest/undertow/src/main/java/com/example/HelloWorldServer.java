@@ -28,7 +28,7 @@ public class HelloWorldServer {
 
     public static void main(final String[] args) {
         Undertow server = Undertow.builder()
-            .addHttpListener( 8080, "localhost" )
+            .addHttpListener( 8080, "0.0.0.0" )
             .setHandler( exchange -> {
                 String name = exchange.getQueryParameters()
                     .getOrDefault( "name", new ArrayDeque<>( Collections.singleton( "nameless stranger" ) ) )
