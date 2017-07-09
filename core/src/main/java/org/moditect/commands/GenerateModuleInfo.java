@@ -146,7 +146,7 @@ public class GenerateModuleInfo {
     private Map<String, Boolean> runJdeps() throws AssertionError {
         Map<String, Boolean> optionalityPerModule = new HashMap<>();
 
-        String javaHome = System.getProperty("java.home");
+        String javaHome = System.getProperty( "java.home" );
         String jdepsBin = javaHome +
                 File.separator + "bin" +
                 File.separator + "jdeps";

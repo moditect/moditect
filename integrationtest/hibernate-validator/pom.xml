@@ -35,7 +35,11 @@
     <name>ModiTect Integration Test - Hibernate Validator</name>
 
     <properties>
-        <hibernate.validator.version>5.4.1.Final</hibernate.validator.version>
+        <hibernate.validator.version>6.0.0.Beta2</hibernate.validator.version>
+        <bean.validation.version>2.0.0.Beta2</bean.validation.version>
+        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
+        <classmate.version>1.3.1</classmate.version>
+        <javax.el.version>3.0.1-b08</javax.el.version>
     </properties>
 
     <dependencies>
@@ -85,7 +89,7 @@
                             <modules>
                                 <module>
                                     <artifact>
-                                        <groupId>org.hibernate</groupId>
+                                        <groupId>org.hibernate.validator</groupId>
                                         <artifactId>hibernate-validator</artifactId>
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
@@ -99,7 +103,7 @@
                                     <artifact>
                                         <groupId>javax.validation</groupId>
                                         <artifactId>validation-api</artifactId>
-                                        <version>1.1.0.Final</version>
+                                        <version>${bean.validation.version}</version>
                                     </artifact>
                                     <moduleName>javax.validation.api</moduleName>
                                     <addServiceUses>true</addServiceUses>
@@ -108,7 +112,7 @@
                                     <artifact>
                                         <groupId>org.glassfish</groupId>
                                         <artifactId>javax.el</artifactId>
-                                        <version>3.0.1-b08</version>
+                                        <version>${javax.el.version}</version>
                                     </artifact>
                                     <moduleName>javax.el</moduleName>
                                 </module>
@@ -116,7 +120,7 @@
                                     <artifact>
                                         <groupId>com.fasterxml</groupId>
                                         <artifactId>classmate</artifactId>
-                                        <version>1.3.1</version>
+                                        <version>${classmate.version}</version>
                                     </artifact>
                                     <moduleName>com.fasterxml.classmate</moduleName>
                                 </module>
@@ -124,7 +128,7 @@
                                     <artifact>
                                         <groupId>org.jboss.logging</groupId>
                                         <artifactId>jboss-logging</artifactId>
-                                        <version>3.3.0.Final</version>
+                                        <version>${jboss.logging.version}</version>
                                     </artifact>
                                     <moduleName>org.jboss.logging</moduleName>
                                 </module>
@@ -141,7 +145,7 @@
                                     <artifact>
                                         <groupId>javax.validation</groupId>
                                         <artifactId>validation-api</artifactId>
-                                        <version>1.1.0.Final</version>
+                                        <version>${bean.validation.version}</version>
                                     </artifact>
                                     <moduleInfoFile>
                                         ${project.build.directory}/generated-sources/modules/javax.validation.api/module-info.java
@@ -151,7 +155,7 @@
                                     <artifact>
                                         <groupId>org.glassfish</groupId>
                                         <artifactId>javax.el</artifactId>
-                                        <version>3.0.1-b08</version>
+                                        <version>${javax.el.version}</version>
                                     </artifact>
                                     <moduleInfoFile>
                                         ${project.build.directory}/generated-sources/modules/javax.el/module-info.java
@@ -161,7 +165,7 @@
                                     <artifact>
                                         <groupId>com.fasterxml</groupId>
                                         <artifactId>classmate</artifactId>
-                                        <version>1.3.1</version>
+                                        <version>${classmate.version}</version>
                                     </artifact>
                                     <moduleInfoFile>
                                         ${project.build.directory}/generated-sources/modules/com.fasterxml.classmate/module-info.java
@@ -223,7 +227,7 @@
                                     <artifact>
                                         <groupId>org.jboss.logging</groupId>
                                         <artifactId>jboss-logging</artifactId>
-                                        <version>3.3.0.Final</version>
+                                        <version>${jboss.logging.version}</version>
                                     </artifact>
                                     <moduleInfoSource>
                                         module org.jboss.logging {
