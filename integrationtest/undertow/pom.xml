@@ -404,7 +404,7 @@
                             <images>
                                 <image>
                                     <alias>undertow-helloworld</alias>
-                                    <name>gunnarmorling/undertow-helloworld</name>
+                                    <name>moditect/undertow-helloworld</name>
                                     <build>
                                         <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
                                         <assembly>
