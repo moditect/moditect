@@ -19,8 +19,11 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -55,6 +58,7 @@ import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
+import org.moditect.mavenplugin.generate.model.StatementOverride;
 import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.DependencyDescriptor;
 
@@ -150,7 +154,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
             Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
-            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false ) );
+            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
         new GenerateModuleInfo(
@@ -160,6 +164,11 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                 moduleConfiguration.getExportExcludes()
                     .stream()
                     .map( e -> Pattern.compile( e ) )
+                    .collect( Collectors.toList() ),
+                moduleConfiguration.getOverrides()
+                    .stream()
+                    .map( StatementOverride::getName )
+                    .map( String::trim )
                     .collect( Collectors.toList() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
@@ -190,13 +199,29 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         }
 
         Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
+        Map<String, Artifact> resolvedModules = new HashMap<>();
+
+        for ( ModuleConfiguration configuredModule : modules ) {
+            resolvedModules.put(
+                configuredModule.getModuleName(),
+                resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) )
+            );
+        }
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
+            String assignedModuleName = null;
+            for ( Entry<String, Artifact> resolvedModule : resolvedModules.entrySet() ) {
+                if ( resolvedModule.getValue().getFile().toPath().equals( resolvedDependency.getFile().toPath() ) ) {
+                    assignedModuleName = resolvedModule.getKey();
+                }
+            }
+
             dependencies.add(
                     new DependencyDescriptor(
                             resolvedDependency.getFile().toPath(),
-                            dependency.getDependency().isOptional()
+                            dependency.getDependency().isOptional(),
+                            assignedModuleName
                     )
             );
         }

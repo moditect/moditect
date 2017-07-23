@@ -18,6 +18,7 @@
  */
 package org.moditect.model;
 
+import java.lang.module.ModuleFinder;
 import java.nio.file.Path;
 
 public class DependencyDescriptor {
@@ -25,9 +26,26 @@ public class DependencyDescriptor {
     private final Path path;
     private final boolean optional;
 
-    public DependencyDescriptor(Path path, boolean optional) {
+    /**
+     * The original (automatic) module name of that dependency.
+     */
+    private final String originalModuleName;
+
+    /**
+     * The module name of that dependency as assigned during the current modularization build.
+     */
+    private final String assignedModuleName;
+
+    public DependencyDescriptor(Path path, boolean optional, String assignedModuleName) {
         this.path = path;
         this.optional = optional;
+        this.originalModuleName = ModuleFinder.of( path )
+                .findAll()
+                .iterator()
+                .next()
+                .descriptor()
+                .name();
+        this.assignedModuleName = assignedModuleName;
     }
 
     public Path getPath() {
@@ -36,6 +54,14 @@ public class DependencyDescriptor {
 
     public boolean isOptional() {
         return optional;
+    }
+
+    public String getOriginalModuleName() {
+        return originalModuleName;
+    }
+
+    public String getAssignedModuleName() {
+        return assignedModuleName;
     }
 
     @Override
@@ -60,6 +86,6 @@ public class DependencyDescriptor {
 
     @Override
     public String toString() {
-        return "DependencyDescriptor [path=" + path + ", optional=" + optional + "]";
+        return "DependencyDescriptor [path=" + path + ", optional=" + optional + ", originalModuleName=" + originalModuleName + ", assignedModuleName=" + assignedModuleName + "]";
     }
 }

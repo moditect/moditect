@@ -30,6 +30,7 @@ public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
+    private List<StatementOverride> overrides = new ArrayList<>();
     private List<String> exportExcludes = new ArrayList<>();
     private String moduleName;
     private boolean addServiceUses;
@@ -56,6 +57,14 @@ public class ModuleConfiguration {
 
     public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
+    }
+
+    public List<StatementOverride> getOverrides() {
+        return overrides;
+    }
+
+    public void setOverrides(List<StatementOverride> overrides) {
+        this.overrides = overrides;
     }
 
     public List<String> getExportExcludes() {

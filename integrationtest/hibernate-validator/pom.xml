@@ -97,6 +97,10 @@
                                     <exportExcludes>
                                         <exportExclude>org\.hibernate\.validator\.internal.*</exportExclude>
                                     </exportExcludes>
+                                    <overrides>
+                                        <requires>static jboss.logging.annotations</requires>
+                                        <exports>org.hibernate.validator.internal.util.logging to org.jboss.logging</exports>
+                                    </overrides>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
                                 <module>
@@ -105,7 +109,7 @@
                                         <artifactId>validation-api</artifactId>
                                         <version>${bean.validation.version}</version>
                                     </artifact>
-                                    <moduleName>javax.validation.api</moduleName>
+                                    <moduleName>java.validation</moduleName>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
                                 <module>
@@ -148,7 +152,7 @@
                                         <version>${bean.validation.version}</version>
                                     </artifact>
                                     <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/javax.validation.api/module-info.java
+                                        ${project.build.directory}/generated-sources/modules/java.validation/module-info.java
                                     </moduleInfoFile>
                                 </module>
                                 <module>
@@ -177,51 +181,9 @@
                                         <artifactId>hibernate-validator</artifactId>
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                    module org.hibernate.validator {
-                                        requires com.fasterxml.classmate;
-                                        requires static hibernate.jpa;
-                                        requires java.desktop;
-                                        requires java.scripting;
-                                        requires java.xml;
-                                        requires java.xml.bind;
-                                        requires javafx.base;
-                                        requires javax.el;
-                                        requires org.jboss.logging;
-                                        requires static jboss.logging.annotations;
-                                        requires static joda.time;
-                                        requires static jsoup;
-                                        requires static money.api;
-                                        requires static paranamer;
-                                        requires transitive javax.validation.api;
-                                        exports org.hibernate.validator;
-                                        exports org.hibernate.validator.cfg;
-                                        exports org.hibernate.validator.cfg.context;
-                                        exports org.hibernate.validator.cfg.defs;
-                                        exports org.hibernate.validator.cfg.defs.br;
-                                        exports org.hibernate.validator.cfg.defs.pl;
-                                        exports org.hibernate.validator.constraints;
-                                        exports org.hibernate.validator.constraints.br;
-                                        exports org.hibernate.validator.constraints.pl;
-                                        exports org.hibernate.validator.constraintvalidation;
-                                        exports org.hibernate.validator.constraintvalidators;
-                                        exports org.hibernate.validator.engine;
-                                        exports org.hibernate.validator.group;
-                                        exports org.hibernate.validator.messageinterpolation;
-                                        exports org.hibernate.validator.parameternameprovider;
-                                        exports org.hibernate.validator.path;
-                                        exports org.hibernate.validator.resourceloading;
-                                        exports org.hibernate.validator.spi.cfg;
-                                        exports org.hibernate.validator.spi.group;
-                                        exports org.hibernate.validator.spi.resourceloading;
-                                        exports org.hibernate.validator.spi.time;
-                                        exports org.hibernate.validator.spi.valuehandling;
-                                        exports org.hibernate.validator.valuehandling;
-                                        exports org.hibernate.validator.internal.util.logging to org.jboss.logging;
-                                        provides javax.validation.spi.ValidationProvider with org.hibernate.validator.HibernateValidator;
-                                        uses javax.validation.ConstraintValidator;
-                                    }
-                                    </moduleInfoSource>
+                                    <moduleInfoFile>
+                                        ${project.build.directory}/generated-sources/modules/org.hibernate.validator/module-info.java
+                                    </moduleInfoFile>
                                 </module>
                                 <module>
                                     <artifact>

@@ -52,21 +52,44 @@ public class GenerateModuleInfo {
     private final Path inputJar;
     private final String moduleName;
     private final Set<DependencyDescriptor> dependencies;
-    private List<Pattern> exportExcludes;
+    private final List<Pattern> exportExcludes;
+    private final List<ModuleRequiresStmt> requiresOverrides;
+    private final List<ModuleExportsStmt> exportOverrides;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, List<String> overrides, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
         this.exportExcludes = exportExcludes;
+        ModuleDeclaration tempModule = getOverrides( overrides );
+        this.requiresOverrides = tempModule.getNodesByType( ModuleRequiresStmt.class );
+        this.exportOverrides = tempModule.getNodesByType( ModuleExportsStmt.class );
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         this.addServiceUses = addServiceUses;
         this.log = log;
+    }
+
+    /**
+     * Returns a dummy module with any configured statement overrides, e.g. requires
+     * clauses with adjusted modifiers or additional exports.
+     */
+    private static ModuleDeclaration getOverrides(List<String> overrides) {
+        StringBuilder tempModule = new StringBuilder();
+
+        tempModule.append( "module temp {" );
+
+        for (String override : overrides) {
+            tempModule.append( override ).append( ";" );
+        }
+
+        tempModule.append( "}" );
+
+        return ModuleInfoCompiler.parseModuleInfo( tempModule.toString() );
     }
 
     public void run() {
@@ -91,9 +114,25 @@ public class GenerateModuleInfo {
 
     private void updateModuleInfo(Map<String, Boolean> optionalityPerModule, ModuleDeclaration moduleDeclaration) {
         List<ModuleRequiresStmt> requiresStatements = moduleDeclaration.getNodesByType( ModuleRequiresStmt.class );
+
         for ( ModuleRequiresStmt moduleRequiresStmt : requiresStatements ) {
             if ( Boolean.TRUE.equals( optionalityPerModule.get( moduleRequiresStmt.getNameAsString() ) ) ) {
                 moduleRequiresStmt.addModifier( Modifier.STATIC );
+            }
+
+            // update any requires clauses to modules modularized with us to use the assigned module
+            // name instead of the automatic module name
+            for ( DependencyDescriptor dependency : dependencies ) {
+                if ( dependency.getOriginalModuleName().equals( moduleRequiresStmt.getNameAsString() ) && dependency.getAssignedModuleName() != null ) {
+                    moduleRequiresStmt.setName( dependency.getAssignedModuleName() );
+                }
+            }
+
+            for (ModuleRequiresStmt override : requiresOverrides) {
+                if ( moduleRequiresStmt.getNameAsString().equals( override.getNameAsString() ) ) {
+                    moduleRequiresStmt.getModifiers().clear();
+                    moduleRequiresStmt.getModifiers().addAll( override.getModifiers() );
+                }
             }
         }
 
@@ -102,6 +141,10 @@ public class GenerateModuleInfo {
             if ( isExcluded( moduleExportsStmt ) ) {
                 moduleDeclaration.remove( moduleExportsStmt );
             }
+        }
+
+        for (ModuleExportsStmt additionalExport : exportOverrides) {
+            moduleDeclaration.getModuleStmts().add( additionalExport );
         }
 
         if ( moduleName != null ) {
