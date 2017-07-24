@@ -95,7 +95,7 @@
                                     </artifact>
                                     <moduleName>org.hibernate.validator</moduleName>
                                     <exportExcludes>
-                                        <exportExclude>org\.hibernate\.validator\.internal\..*</exportExclude>
+                                        <exportExclude>org\.hibernate\.validator\.internal.*</exportExclude>
                                     </exportExcludes>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
