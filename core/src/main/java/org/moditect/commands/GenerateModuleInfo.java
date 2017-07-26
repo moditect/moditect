@@ -32,14 +32,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencyDescriptor;
+import org.moditect.model.PackageNamePattern;
+import org.moditect.model.PackageNamePattern.Kind;
 import org.moditect.spi.log.Log;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsStmt;
@@ -52,22 +54,20 @@ public class GenerateModuleInfo {
     private final Path inputJar;
     private final String moduleName;
     private final Set<DependencyDescriptor> dependencies;
-    private final List<Pattern> exportExcludes;
+    private final List<PackageNamePattern> exportPatterns;
     private final List<ModuleRequiresStmt> requiresOverrides;
-    private final List<ModuleExportsStmt> exportOverrides;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<Pattern> exportExcludes, List<String> overrides, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<String> overrides, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
-        this.exportExcludes = exportExcludes;
+        this.exportPatterns = exportPatterns;
         ModuleDeclaration tempModule = getOverrides( overrides );
         this.requiresOverrides = tempModule.getNodesByType( ModuleRequiresStmt.class );
-        this.exportOverrides = tempModule.getNodesByType( ModuleExportsStmt.class );
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         this.addServiceUses = addServiceUses;
@@ -138,13 +138,7 @@ public class GenerateModuleInfo {
 
         List<ModuleExportsStmt> exportStatements = moduleDeclaration.getNodesByType( ModuleExportsStmt.class );
         for ( ModuleExportsStmt moduleExportsStmt : exportStatements ) {
-            if ( isExcluded( moduleExportsStmt ) ) {
-                moduleDeclaration.remove( moduleExportsStmt );
-            }
-        }
-
-        for (ModuleExportsStmt additionalExport : exportOverrides) {
-            moduleDeclaration.getModuleStmts().add( additionalExport );
+            applyExportPatterns( moduleDeclaration, moduleExportsStmt );
         }
 
         if ( moduleName != null ) {
@@ -157,6 +151,27 @@ public class GenerateModuleInfo {
                 moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
             }
         }
+    }
+
+    private ModuleDeclaration applyExportPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
+        for (PackageNamePattern pattern : exportPatterns ) {
+            if ( pattern.matches( moduleExportsStmt.getNameAsString() ) ) {
+                if ( pattern.getKind() == Kind.INCLUSIVE ) {
+                    if ( !pattern.getTargetModules().isEmpty() ) {
+                        for (String module : pattern.getTargetModules() ) {
+                            moduleExportsStmt.getModuleNames().add( JavaParser.parseName( module ) );
+                        }
+                    }
+                }
+                else {
+                    moduleDeclaration.remove( moduleExportsStmt );
+                }
+
+                break;
+            }
+        }
+
+        return moduleDeclaration;
     }
 
     private ClassOrInterfaceType getType(String fqn) {
@@ -179,11 +194,6 @@ public class GenerateModuleInfo {
         }
 
         return new ClassOrInterfaceType( scope, name );
-    }
-
-    private boolean isExcluded(ModuleExportsStmt moduleExportsStmt) {
-        return exportExcludes.stream()
-            .anyMatch( exclude -> exclude.matcher( moduleExportsStmt.getNameAsString() ).matches() );
     }
 
     private Map<String, Boolean> runJdeps() throws AssertionError {

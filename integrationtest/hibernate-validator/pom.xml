@@ -94,13 +94,14 @@
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
                                     <moduleName>org.hibernate.validator</moduleName>
-                                    <exportExcludes>
-                                        <exportExclude>org\.hibernate\.validator\.internal.*</exportExclude>
-                                    </exportExcludes>
-                                    <overrides>
-                                        <requires>static jboss.logging.annotations</requires>
-                                        <exports>org.hibernate.validator.internal.util.logging to org.jboss.logging</exports>
-                                    </overrides>
+                                    <requireOverrides>
+                                        static jboss.logging.annotations;
+                                    </requireOverrides>
+                                    <exports>
+                                        org.hibernate.validator.internal.util.logging to org.jboss.logging;
+                                        !org.hibernate.validator.internal*;
+                                        *;
+                                    </exports>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
                                 <module>
