@@ -38,7 +38,6 @@
         <license.skip>true</license.skip>
     </properties>
     <modules>
-        <module>asm</module>
         <module>parent</module>
         <module>core</module>
         <module>maven-plugin</module>

@@ -23,3 +23,5 @@ test-output
 
 # Misc.
 .DS_Store
+/**/dependency-reduced-pom.xml
+
