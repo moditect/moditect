@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.moditect.spi.log.Log;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -34,7 +35,13 @@ import org.objectweb.asm.Type;
 
 public class ServiceLoaderUseScanner {
 
-    public static Set<String> getUsedServices(Path jar) {
+    private final Log log;
+
+    public ServiceLoaderUseScanner(Log log) {
+        this.log = log;
+    }
+
+    public Set<String> getUsedServices(Path jar) {
         Set<String> usedServices = new HashSet<>();
 
         try (JarFile jarFile = new JarFile( jar.toFile() ) ) {
@@ -49,7 +56,7 @@ public class ServiceLoaderUseScanner {
         return usedServices;
     }
 
-    private static Set<String> getUsedServices(JarFile jarFile, JarEntry je) {
+    private Set<String> getUsedServices(JarFile jarFile, JarEntry je) {
         Set<String> usedServices = new HashSet<>();
 
         try ( InputStream classFile = jarFile.getInputStream( je ) ) {
@@ -66,7 +73,13 @@ public class ServiceLoaderUseScanner {
                                 @Override
                                 public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                                     if ( owner.equals( "java/util/ServiceLoader" ) && name.equals( "load" ) ) {
-                                        usedServices.add( lastType.getClassName() );
+                                        if ( lastType == null ) {
+                                            // TODO Log class/method
+                                            log.warn( "Cannot derive uses clause from service loader invocation with non constant class literal" );
+                                        }
+                                        else {
+                                            usedServices.add( lastType.getClassName() );
+                                        }
                                     }
                                 }
 

@@ -41,7 +41,11 @@ public class MojoLog implements Log {
     @Override
     public void info(CharSequence message) {
         delegate.info( message );
+    }
 
+    @Override
+    public void warn(CharSequence message) {
+        delegate.warn( message );
     }
 
     @Override

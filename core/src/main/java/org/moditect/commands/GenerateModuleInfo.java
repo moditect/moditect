@@ -59,12 +59,14 @@ public class GenerateModuleInfo {
     private final Set<DependencyDescriptor> dependencies;
     private final List<PackageNamePattern> exportPatterns;
     private final List<DependencePattern> requiresPatterns;
+    private Set<String> uses;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
+    private final ServiceLoaderUseScanner serviceLoaderUseScanner;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
@@ -72,7 +74,9 @@ public class GenerateModuleInfo {
         this.requiresPatterns = requiresPatterns;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
+        this.uses = uses;
         this.addServiceUses = addServiceUses;
+        this.serviceLoaderUseScanner = new ServiceLoaderUseScanner( log );
         this.log = log;
     }
 
@@ -136,8 +140,12 @@ public class GenerateModuleInfo {
             moduleDeclaration.setName( moduleName );
         }
 
+        for (String usedService : uses) {
+            moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
+        }
+
         if ( addServiceUses ) {
-            Set<String> usedServices = ServiceLoaderUseScanner.getUsedServices( inputJar );
+            Set<String> usedServices = serviceLoaderUseScanner.getUsedServices( inputJar );
             for ( String usedService : usedServices ) {
                 moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
             }

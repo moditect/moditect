@@ -19,12 +19,15 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
@@ -156,6 +159,17 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
             dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
+        Set<String> uses;
+
+        if ( moduleConfiguration.getUses() != null ) {
+            uses = Arrays.stream( moduleConfiguration.getUses().split( ";" ) )
+                .map( String::trim )
+                .collect( Collectors.toSet() );
+        }
+        else {
+            uses = Collections.emptySet();
+        }
+
         new GenerateModuleInfo(
                 inputArtifact.getFile().toPath(),
                 moduleConfiguration.getName(),
@@ -164,6 +178,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                 DependencePattern.parsePatterns( moduleConfiguration.getRequires() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
+                uses,
                 moduleConfiguration.isAddServiceUses(),
                 new MojoLog( getLog() )
         )

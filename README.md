@@ -104,10 +104,13 @@ as package is matched by an exclusive pattern, this package will not be added to
 list of exported packages and no further patterns will be applied.
 (optional)
 * `addServiceUses`: If `true`, the given artifact will be scanned for usages of
-`ServiceLoader#load()` and if usages passing a class-literal are found
+`ServiceLoader#load()` and if usages passing a class literal are found
 (`load( MyService.class )`), an equivalent `uses()` clause will be added to the
 generated descriptor; usages of `load()` where a non-literal class object is
 passed, are ignored (optional, defaults to `false`)
+* `uses`: List of names of used services, separated by ";" only required if `addServiceUses`
+cannot be used due to dynamic invocations of `ServiceLoader#load()`, i.e. no class literal is
+passed (optional)
 
 It is also possible to run this goal directly, specifying the different options
 as JVM parameters like this:

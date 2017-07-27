@@ -35,8 +35,8 @@
     <name>ModiTect Integration Test - Hibernate Validator</name>
 
     <properties>
-        <hibernate.validator.version>6.0.0.Beta2</hibernate.validator.version>
-        <bean.validation.version>2.0.0.Beta2</bean.validation.version>
+        <hibernate.validator.version>6.0.0.CR3</hibernate.validator.version>
+        <bean.validation.version>2.0.0.CR3</bean.validation.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <classmate.version>1.3.1</classmate.version>
         <javax.el.version>3.0.1-b08</javax.el.version>
@@ -44,7 +44,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
         </dependency>
@@ -103,7 +103,10 @@
                                         !org.hibernate.validator.internal*;
                                         *;
                                     </exports>
-                                    <addServiceUses>true</addServiceUses>
+                                    <uses>
+                                        javax.validation.ConstraintValidator;
+                                        javax.validation.valueextraction.ValueExtractor;
+                                    </uses>
                                 </module>
                                 <module>
                                     <artifact>
@@ -111,7 +114,6 @@
                                         <artifactId>validation-api</artifactId>
                                         <version>${bean.validation.version}</version>
                                     </artifact>
-                                    <name>java.validation</name>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
                                 <module>
@@ -179,7 +181,7 @@
                                 </module>
                                 <module>
                                     <artifact>
-                                        <groupId>org.hibernate</groupId>
+                                        <groupId>org.hibernate.validator</groupId>
                                         <artifactId>hibernate-validator</artifactId>
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
