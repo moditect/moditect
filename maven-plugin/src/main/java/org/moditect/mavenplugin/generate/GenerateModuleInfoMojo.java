@@ -127,7 +127,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
 
         moduleConfiguration.setArtifact( new ArtifactConfiguration( artifactOverride ) );
-        moduleConfiguration.setModuleName( moduleNameOverride );
+        moduleConfiguration.setName( moduleNameOverride );
 
         if ( additionalDependenciesOverride != null ) {
             for ( String additionalDependency : additionalDependenciesOverride.split( "\\," ) ) {
@@ -158,7 +158,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         new GenerateModuleInfo(
                 inputArtifact.getFile().toPath(),
-                moduleConfiguration.getModuleName(),
+                moduleConfiguration.getName(),
                 dependencies,
                 PackageNamePattern.parsePatterns( moduleConfiguration.getExports() ),
                 DependencePattern.parsePatterns( moduleConfiguration.getRequires() ),
@@ -195,7 +195,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         for ( ModuleConfiguration configuredModule : modules ) {
             resolvedModules.put(
-                configuredModule.getModuleName(),
+                configuredModule.getName(),
                 resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) )
             );
         }

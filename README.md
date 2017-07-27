@@ -63,10 +63,12 @@ _generate-module-info_ goal as follows:
                                 <version>1.0.0.Final</version>
                             </dependency>
                         </additionalDependencies>
-                        <moduleName>com.example.core</moduleName>
-                        <exportExcludes>
-                            <exportExclude>com\.example\.core\.internal\..*</exportExclude>
-                        </exportExcludes>
+                        <name>com.example.core</name>
+                        <exports>
+                            com.example.core.spi* to com.example.integrators;
+                            !com.example.core.internal*;
+                            *;
+                        </exports>
                         <addServiceUses>true</addServiceUses>
                     </module>
                     <module>
@@ -89,11 +91,18 @@ be generated (required)
 * `additionalDependencies`: Additional artifacts to be processed; useful if the
 main artifact depends on code from another artifact but doesn't declare a
 dependency to that one (optional)
-* `moduleName`: Name to be used within the descriptor; if not given the name
+* `name`: Module name to be used within the descriptor; if not given the name
 will be derived from the JAR name as per the naming rules for automatic modules
 (optional)
-* `exportExcludes`: Regular expressions allowing to filter the list of exported
-packages (optional)
+* `exports`: List of name patterns for describing the exported packages of the module,
+separated by ";".Patterns can be inclusive or exclusive (starting with "!") and may
+contain the "*" as a wildcard. Inclusive patterns may be qualified exports ("to xyz").
+For each package from the module, the given patterns are processed in the order they
+are given. As soon a package is matched by an inclusive pattern, the package will be
+added to the list of exported packages and no further patterns will be applied. As soon
+as package is matched by an exclusive pattern, this package will not be added to the
+list of exported packages and no further patterns will be applied.
+(optional)
 * `addServiceUses`: If `true`, the given artifact will be scanned for usages of
 `ServiceLoader#load()` and if usages passing a class-literal are found
 (`load( MyService.class )`), an equivalent `uses()` clause will be added to the

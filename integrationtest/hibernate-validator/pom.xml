@@ -93,7 +93,7 @@
                                         <artifactId>hibernate-validator</artifactId>
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
-                                    <moduleName>org.hibernate.validator</moduleName>
+                                    <name>org.hibernate.validator</name>
                                     <requires>
                                         static jboss.logging.annotations;
                                         *;
@@ -111,7 +111,7 @@
                                         <artifactId>validation-api</artifactId>
                                         <version>${bean.validation.version}</version>
                                     </artifact>
-                                    <moduleName>java.validation</moduleName>
+                                    <name>java.validation</name>
                                     <addServiceUses>true</addServiceUses>
                                 </module>
                                 <module>
@@ -120,7 +120,7 @@
                                         <artifactId>javax.el</artifactId>
                                         <version>${javax.el.version}</version>
                                     </artifact>
-                                    <moduleName>javax.el</moduleName>
+                                    <name>javax.el</name>
                                 </module>
                                 <module>
                                     <artifact>
@@ -128,7 +128,7 @@
                                         <artifactId>classmate</artifactId>
                                         <version>${classmate.version}</version>
                                     </artifact>
-                                    <moduleName>com.fasterxml.classmate</moduleName>
+                                    <name>com.fasterxml.classmate</name>
                                 </module>
                                 <module>
                                     <artifact>
@@ -136,7 +136,7 @@
                                         <artifactId>jboss-logging</artifactId>
                                         <version>${jboss.logging.version}</version>
                                     </artifact>
-                                    <moduleName>org.jboss.logging</moduleName>
+                                    <name>org.jboss.logging</name>
                                 </module>
                             </modules>
                         </configuration>

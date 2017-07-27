@@ -32,7 +32,7 @@ public class ModuleConfiguration {
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
     private String requires = "*;";
     private String exports = "*;";
-    private String moduleName;
+    private String name;
     private boolean addServiceUses;
 
     public ArtifactConfiguration getArtifact() {
@@ -51,12 +51,12 @@ public class ModuleConfiguration {
         this.additionalDependencies = additionalDependencies;
     }
 
-    public String getModuleName() {
-        return moduleName;
+    public String getName() {
+        return name;
     }
 
-    public void setModuleName(String moduleName) {
-        this.moduleName = moduleName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getRequires() {
