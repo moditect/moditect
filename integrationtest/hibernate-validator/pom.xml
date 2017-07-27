@@ -94,9 +94,10 @@
                                         <version>${hibernate.validator.version}</version>
                                     </artifact>
                                     <moduleName>org.hibernate.validator</moduleName>
-                                    <requireOverrides>
+                                    <requires>
                                         static jboss.logging.annotations;
-                                    </requireOverrides>
+                                        *;
+                                    </requires>
                                     <exports>
                                         org.hibernate.validator.internal.util.logging to org.jboss.logging;
                                         !org.hibernate.validator.internal*;

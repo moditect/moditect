@@ -30,12 +30,15 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
+import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.model.PackageNamePattern;
 import org.moditect.model.PackageNamePattern.Kind;
@@ -55,41 +58,22 @@ public class GenerateModuleInfo {
     private final String moduleName;
     private final Set<DependencyDescriptor> dependencies;
     private final List<PackageNamePattern> exportPatterns;
-    private final List<ModuleRequiresStmt> requiresOverrides;
+    private final List<DependencePattern> requiresPatterns;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<String> overrides, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
         this.exportPatterns = exportPatterns;
-        ModuleDeclaration tempModule = getOverrides( overrides );
-        this.requiresOverrides = tempModule.getNodesByType( ModuleRequiresStmt.class );
+        this.requiresPatterns = requiresPatterns;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         this.addServiceUses = addServiceUses;
         this.log = log;
-    }
-
-    /**
-     * Returns a dummy module with any configured statement overrides, e.g. requires
-     * clauses with adjusted modifiers or additional exports.
-     */
-    private static ModuleDeclaration getOverrides(List<String> overrides) {
-        StringBuilder tempModule = new StringBuilder();
-
-        tempModule.append( "module temp {" );
-
-        for (String override : overrides) {
-            tempModule.append( override ).append( ";" );
-        }
-
-        tempModule.append( "}" );
-
-        return ModuleInfoCompiler.parseModuleInfo( tempModule.toString() );
     }
 
     public void run() {
@@ -128,10 +112,17 @@ public class GenerateModuleInfo {
                 }
             }
 
-            for (ModuleRequiresStmt override : requiresOverrides) {
-                if ( moduleRequiresStmt.getNameAsString().equals( override.getNameAsString() ) ) {
+            for ( DependencePattern dependence : requiresPatterns ) {
+                if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) && !dependence.getModifiers().isEmpty() ) {
                     moduleRequiresStmt.getModifiers().clear();
-                    moduleRequiresStmt.getModifiers().addAll( override.getModifiers() );
+                    moduleRequiresStmt.getModifiers()
+                        .addAll( dependence.getModifiers()
+                            .stream()
+                            .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
+                            .collect( Collectors.toSet() )
+                         );
+
+                    break;
                 }
             }
         }

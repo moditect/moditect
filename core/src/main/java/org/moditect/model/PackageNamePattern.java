@@ -105,6 +105,6 @@ public class PackageNamePattern {
 
     @Override
     public String toString() {
-        return "PackageNamePattern[kind=" + kind + ", pattern=" + pattern + "targetModules=" + targetModules + "]";
+        return "PackageNamePattern[kind=" + kind + ", pattern=" + pattern + ", targetModules=" + targetModules + "]";
     }
 }

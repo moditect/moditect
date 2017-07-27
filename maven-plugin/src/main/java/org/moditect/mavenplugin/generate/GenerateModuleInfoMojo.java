@@ -19,15 +19,12 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.execution.MavenSession;
@@ -60,6 +57,7 @@ import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
 import org.moditect.mavenplugin.util.MojoLog;
+import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.model.PackageNamePattern;
 
@@ -158,24 +156,12 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
             dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
-        List<String> requireOverrides;
-
-        if ( moduleConfiguration.getRequireOverrides() != null ) {
-            requireOverrides = Arrays.stream( moduleConfiguration.getRequireOverrides().trim().split(";") )
-                .map( String::trim )
-                .map( r -> "requires " + r )
-                .collect( Collectors.toList() );
-        }
-        else {
-            requireOverrides = Collections.emptyList();
-        }
-
         new GenerateModuleInfo(
                 inputArtifact.getFile().toPath(),
                 moduleConfiguration.getModuleName(),
                 dependencies,
                 PackageNamePattern.parsePatterns( moduleConfiguration.getExports() ),
-                requireOverrides,
+                DependencePattern.parsePatterns( moduleConfiguration.getRequires() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
                 moduleConfiguration.isAddServiceUses(),

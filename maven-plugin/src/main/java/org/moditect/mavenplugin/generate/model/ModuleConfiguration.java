@@ -30,8 +30,8 @@ public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
-    private String requireOverrides;
-    private String exports;
+    private String requires = "*;";
+    private String exports = "*;";
     private String moduleName;
     private boolean addServiceUses;
 
@@ -59,12 +59,12 @@ public class ModuleConfiguration {
         this.moduleName = moduleName;
     }
 
-    public String getRequireOverrides() {
-        return requireOverrides;
+    public String getRequires() {
+        return requires;
     }
 
-    public void setRequireOverrides(String requireOverrides) {
-        this.requireOverrides = requireOverrides;
+    public void setRequires(String requires) {
+        this.requires = requires;
     }
 
     public String getExports() {
