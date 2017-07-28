@@ -127,7 +127,7 @@
                                         <version>${javax.el.version}</version>
                                     </artifact>
                                     <moduleInfo>
-                                        <name>javax.el</name>
+                                        <name>java.el</name>
                                     </moduleInfo>
                                 </module>
                                 <module>
@@ -176,7 +176,7 @@
                                         <version>${javax.el.version}</version>
                                     </artifact>
                                     <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/javax.el/module-info.java
+                                        ${project.build.directory}/generated-sources/modules/java.el/module-info.java
                                     </moduleInfoFile>
                                 </module>
                                 <module>

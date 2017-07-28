@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,6 +58,7 @@ import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
+import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
 import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.DependencePattern;
@@ -117,14 +117,29 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         createDirectories();
 
+        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule();
+
         if ( artifactOverride != null ) {
-            processModule( getModuleConfigurationFromOverrides() );
+            processModule( getModuleConfigurationFromOverrides(), assignedNamesByModule );
         }
         else {
             for ( ModuleConfiguration moduleConfiguration : modules ) {
-                processModule( moduleConfiguration );
+                processModule( moduleConfiguration, assignedNamesByModule );
             }
         }
+    }
+
+    private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule() throws MojoExecutionException {
+        Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
+
+        for ( ModuleConfiguration configuredModule : modules ) {
+            assignedNamesByModule.put(
+                new ArtifactIdentifier( resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) ) ),
+                configuredModule.getModuleInfo().getName()
+            );
+        }
+
+        return assignedNamesByModule;
     }
 
     private ModuleConfiguration getModuleConfigurationFromOverrides() {
@@ -149,12 +164,12 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         return moduleConfiguration;
     }
 
-    private void processModule(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+    private void processModule(ModuleConfiguration moduleConfiguration, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
         Artifact inputArtifact = resolveArtifact(
             new DefaultArtifact( moduleConfiguration.getArtifact().toDependencyString() )
         );
 
-        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact );
+        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule );
 
         for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
             Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
@@ -187,7 +202,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         .run();
     }
 
-    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact) throws MojoExecutionException {
+    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
         CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
         CollectResult collectResult = null;
 
@@ -208,23 +223,10 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         }
 
         Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
-        Map<String, Artifact> resolvedModules = new HashMap<>();
-
-        for ( ModuleConfiguration configuredModule : modules ) {
-            resolvedModules.put(
-                configuredModule.getModuleInfo().getName(),
-                resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) )
-            );
-        }
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
-            String assignedModuleName = null;
-            for ( Entry<String, Artifact> resolvedModule : resolvedModules.entrySet() ) {
-                if ( resolvedModule.getValue().getFile().toPath().equals( resolvedDependency.getFile().toPath() ) ) {
-                    assignedModuleName = resolvedModule.getKey();
-                }
-            }
+            String assignedModuleName = assignedNamesByModule.get( new ArtifactIdentifier( resolvedDependency ) );
 
             dependencies.add(
                     new DependencyDescriptor(

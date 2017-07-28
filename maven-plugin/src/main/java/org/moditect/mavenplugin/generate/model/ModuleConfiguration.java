@@ -31,7 +31,7 @@ public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
-    private ModuleInfoConfiguration moduleInfo;
+    private ModuleInfoConfiguration moduleInfo = new ModuleInfoConfiguration();
 
     public ArtifactConfiguration getArtifact() {
         return artifact;
