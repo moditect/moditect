@@ -58,6 +58,7 @@ import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
 import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
+import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
 import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.DependencePattern;
@@ -130,7 +131,8 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
 
         moduleConfiguration.setArtifact( new ArtifactConfiguration( artifactOverride ) );
-        moduleConfiguration.setName( moduleNameOverride );
+        moduleConfiguration.setModuleInfo( new ModuleInfoConfiguration() );
+        moduleConfiguration.getModuleInfo().setName( moduleNameOverride );
 
         if ( additionalDependenciesOverride != null ) {
             for ( String additionalDependency : additionalDependenciesOverride.split( "\\," ) ) {
@@ -139,10 +141,10 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         }
 
         if ( exportExcludesOverride != null ) {
-            moduleConfiguration.setExports( exportExcludesOverride );
+            moduleConfiguration.getModuleInfo().setExports( exportExcludesOverride );
         }
 
-        moduleConfiguration.setAddServiceUses( addServiceUsesOverride );
+        moduleConfiguration.getModuleInfo().setAddServiceUses( addServiceUsesOverride );
 
         return moduleConfiguration;
     }
@@ -161,8 +163,8 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         Set<String> uses;
 
-        if ( moduleConfiguration.getUses() != null ) {
-            uses = Arrays.stream( moduleConfiguration.getUses().split( ";" ) )
+        if ( moduleConfiguration.getModuleInfo().getUses() != null ) {
+            uses = Arrays.stream( moduleConfiguration.getModuleInfo().getUses().split( ";" ) )
                 .map( String::trim )
                 .collect( Collectors.toSet() );
         }
@@ -172,14 +174,14 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         new GenerateModuleInfo(
                 inputArtifact.getFile().toPath(),
-                moduleConfiguration.getName(),
+                moduleConfiguration.getModuleInfo().getName(),
                 dependencies,
-                PackageNamePattern.parsePatterns( moduleConfiguration.getExports() ),
-                DependencePattern.parsePatterns( moduleConfiguration.getRequires() ),
+                PackageNamePattern.parsePatterns( moduleConfiguration.getModuleInfo().getExports() ),
+                DependencePattern.parsePatterns( moduleConfiguration.getModuleInfo().getRequires() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
                 uses,
-                moduleConfiguration.isAddServiceUses(),
+                moduleConfiguration.getModuleInfo().isAddServiceUses(),
                 new MojoLog( getLog() )
         )
         .run();
@@ -210,7 +212,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         for ( ModuleConfiguration configuredModule : modules ) {
             resolvedModules.put(
-                configuredModule.getName(),
+                configuredModule.getModuleInfo().getName(),
                 resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) )
             );
         }

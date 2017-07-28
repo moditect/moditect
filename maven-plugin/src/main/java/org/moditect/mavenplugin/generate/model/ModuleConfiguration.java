@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
+import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
 
 /**
  * @author Gunnar Morling
@@ -30,11 +31,7 @@ public class ModuleConfiguration {
 
     private ArtifactConfiguration artifact;
     private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
-    private String requires = "*;";
-    private String exports = "*;";
-    private String uses;
-    private String name;
-    private boolean addServiceUses;
+    private ModuleInfoConfiguration moduleInfo;
 
     public ArtifactConfiguration getArtifact() {
         return artifact;
@@ -52,43 +49,11 @@ public class ModuleConfiguration {
         this.additionalDependencies = additionalDependencies;
     }
 
-    public String getName() {
-        return name;
+    public ModuleInfoConfiguration getModuleInfo() {
+        return moduleInfo;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRequires() {
-        return requires;
-    }
-
-    public void setRequires(String requires) {
-        this.requires = requires;
-    }
-
-    public String getExports() {
-        return exports;
-    }
-
-    public void setExports(String exports) {
-        this.exports = exports;
-    }
-
-    public String getUses() {
-        return uses;
-    }
-
-    public void setUses(String uses) {
-        this.uses = uses;
-    }
-
-    public void setAddServiceUses(boolean addServiceUses) {
-        this.addServiceUses = addServiceUses;
-    }
-
-    public boolean isAddServiceUses() {
-        return addServiceUses;
+    public void setModuleInfo(ModuleInfoConfiguration moduleInfo) {
+        this.moduleInfo = moduleInfo;
     }
 }
