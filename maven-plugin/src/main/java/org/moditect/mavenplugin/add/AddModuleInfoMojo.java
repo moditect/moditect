@@ -22,7 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -36,7 +39,10 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.moditect.commands.AddModuleInfo;
 import org.moditect.mavenplugin.add.model.ModuleConfiguration;
+import org.moditect.mavenplugin.generate.ModuleInfoGenerator;
+import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
 import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
+import org.moditect.model.GeneratedModuleInfo;
 
 /**
  * @author Gunnar Morling
@@ -53,6 +59,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
     private List<RemoteRepository> remoteRepos;
 
+    @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
+    private File workingDirectory;
+
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/modules")
     private File outputDirectory;
 
@@ -66,15 +75,19 @@ public class AddModuleInfoMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path outputPath = outputDirectory.toPath();
 
-        if ( !outputDirectory.exists() ) {
-            outputDirectory.mkdirs();
-        }
+        createDirectories();
 
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
 
+        ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
+            repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, new File(workingDirectory, "generated-sources" )
+        );
+
+        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
+
         for ( ModuleConfiguration moduleConfiguration : modules ) {
             Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
-            String moduleInfoSource = getModuleInfoSource( moduleConfiguration );
+            String moduleInfoSource = getModuleInfoSource( moduleConfiguration, moduleInfoGenerator, assignedNamesByModule );
 
             AddModuleInfo addModuleInfo = new AddModuleInfo(
                 moduleInfoSource,
@@ -106,25 +119,28 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
     }
 
-    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
         String fileForLogging = moduleConfiguration.getFile() != null ? moduleConfiguration.getFile().getPath()
                 : moduleConfiguration.getArtifact().toDependencyString();
 
-        if ( moduleConfiguration.getModuleInfoSource() != null ) {
-            if ( moduleConfiguration.getModuleInfoFile() != null ) {
-                throw new MojoExecutionException( "Only one of 'moduleInfoFile' and 'moduleInfoSource' may be specified, but both are given for "
-                        + fileForLogging );
-            }
-            else {
-                return moduleConfiguration.getModuleInfoSource();
-            }
+        if ( moduleConfiguration.getModuleInfo() != null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() == null ) {
+            GeneratedModuleInfo generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
+                    moduleConfiguration.getArtifact(),
+                    Collections.emptyList(),
+                    moduleConfiguration.getModuleInfo(),
+                    assignedNamesByModule
+            );
+
+            return getLines( generatedModuleInfo.getPath() );
         }
-        else if ( moduleConfiguration.getModuleInfoFile() != null ) {
+        else if ( moduleConfiguration.getModuleInfo() == null && moduleConfiguration.getModuleInfoSource() != null && moduleConfiguration.getModuleInfoFile() == null ) {
+            return moduleConfiguration.getModuleInfoSource();
+        }
+        else if ( moduleConfiguration.getModuleInfo() == null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() != null ) {
             return getLines( moduleConfiguration.getModuleInfoFile().toPath() );
         }
         else {
-            throw new MojoExecutionException(
-                    "One of 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + fileForLogging );
+            throw new MojoExecutionException( "Either 'moduleInfo' or 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + fileForLogging);
         }
     }
 
@@ -135,5 +151,41 @@ public class AddModuleInfoMojo extends AbstractMojo {
         catch (IOException e) {
             throw new MojoExecutionException( "Couldn't read file " + file );
         }
+    }
+
+    private void createDirectories() {
+        if ( !workingDirectory.exists() ) {
+            workingDirectory.mkdirs();
+        }
+
+        File internalGeneratedSourcesDir = new File(workingDirectory, "generated-sources" );
+        if ( !internalGeneratedSourcesDir.exists() ) {
+            internalGeneratedSourcesDir.mkdirs();
+        }
+
+        if ( !outputDirectory.exists() ) {
+            outputDirectory.mkdirs();
+        }
+    }
+
+    private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule(ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
+        Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
+
+        for ( ModuleConfiguration configuredModule : modules ) {
+            if ( configuredModule.getModuleInfo() != null ) {
+                assignedNamesByModule.put(
+                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
+                        configuredModule.getModuleInfo().getName()
+                );
+            }
+            else if ( configuredModule.getModuleInfoFile() != null ) {
+                // TODO
+            }
+            else if ( configuredModule.getModuleInfoSource() != null ) {
+                // TODO
+            }
+        }
+
+        return assignedNamesByModule;
     }
 }

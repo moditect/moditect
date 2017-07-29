@@ -40,6 +40,7 @@ import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
+import org.moditect.model.GeneratedModuleInfo;
 import org.moditect.model.PackageNamePattern;
 import org.moditect.model.PackageNamePattern.Kind;
 import org.moditect.spi.log.Log;
@@ -80,7 +81,7 @@ public class GenerateModuleInfo {
         this.log = log;
     }
 
-    public void run() {
+    public GeneratedModuleInfo run() {
         if ( Files.isDirectory( inputJar ) ) {
             throw new IllegalArgumentException( "Input JAR must not be a directory" );
         }
@@ -97,7 +98,7 @@ public class GenerateModuleInfo {
         ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo();
         updateModuleInfo( optionalityPerModule, moduleDeclaration );
 
-        writeModuleInfo( moduleDeclaration );
+        return writeModuleInfo( moduleDeclaration );
     }
 
     private void updateModuleInfo(Map<String, Boolean> optionalityPerModule, ModuleDeclaration moduleDeclaration) {
@@ -262,7 +263,7 @@ public class GenerateModuleInfo {
         return ModuleInfoCompiler.parseModuleInfo( moduleInfo );
     }
 
-    private void writeModuleInfo(ModuleDeclaration moduleDeclaration) {
+    private GeneratedModuleInfo writeModuleInfo(ModuleDeclaration moduleDeclaration) {
         Path outputModuleInfo = recreateDirectory( outputDirectory, moduleDeclaration.getNameAsString() )
                 .resolve( "module-info.java" );
 
@@ -274,6 +275,8 @@ public class GenerateModuleInfo {
         catch (IOException e) {
             throw new RuntimeException( "Couldn't write module-info.java", e );
         }
+
+        return new GeneratedModuleInfo( moduleDeclaration.getNameAsString(), outputModuleInfo );
     }
 
     private Path recreateDirectory(Path parent, String directoryName) {

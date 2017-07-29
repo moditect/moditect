@@ -80,36 +80,11 @@
                 <artifactId>moditect-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>generate-hv-module-info</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-module-info</goal>
-                        </goals>
+                        <id>add-module-info-to-dependencies</id>
+                        <phase>generate-resources</phase>
                         <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.hibernate.validator</groupId>
-                                        <artifactId>hibernate-validator</artifactId>
-                                        <version>${hibernate.validator.version}</version>
-                                    </artifact>
-                                    <moduleInfo>
-                                        <name>org.hibernate.validator</name>
-                                        <requires>
-                                            static jboss.logging.annotations;
-                                            *;
-                                        </requires>
-                                        <exports>
-                                            org.hibernate.validator.internal.util.logging to org.jboss.logging;
-                                            !org.hibernate.validator.internal*;
-                                            *;
-                                        </exports>
-                                        <uses>
-                                            javax.validation.ConstraintValidator;
-                                            javax.validation.valueextraction.ValueExtractor;
-                                        </uses>
-                                    </moduleInfo>
-                                </module>
                                 <module>
                                     <artifact>
                                         <groupId>javax.validation</groupId>
@@ -142,79 +117,43 @@
                                 </module>
                                 <module>
                                     <artifact>
+                                        <groupId>org.hibernate.validator</groupId>
+                                        <artifactId>hibernate-validator</artifactId>
+                                        <version>${hibernate.validator.version}</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.hibernate.validator</name>
+                                        <requires>
+                                            static jboss.logging.annotations;
+                                            *;
+                                        </requires>
+                                        <exports>
+                                            org.hibernate.validator.internal.util.logging to org.jboss.logging;
+                                            !org.hibernate.validator.internal*;
+                                            *;
+                                        </exports>
+                                        <uses>
+                                            javax.validation.ConstraintValidator;
+                                            javax.validation.valueextraction.ValueExtractor;
+                                        </uses>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
                                         <groupId>org.jboss.logging</groupId>
                                         <artifactId>jboss-logging</artifactId>
                                         <version>${jboss.logging.version}</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.jboss.logging</name>
+                                        <requires>
+                                            static jboss.logmanager;
+                                            static log4j;
+                                            static log4j.api;
+                                            static slf4j.api;
+                                            *;
+                                        </requires>
                                     </moduleInfo>
-                                </module>
-                            </modules>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>add-module-info-to-dependencies</id>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
-                            <modules>
-                                <module>
-                                    <artifact>
-                                        <groupId>javax.validation</groupId>
-                                        <artifactId>validation-api</artifactId>
-                                        <version>${bean.validation.version}</version>
-                                    </artifact>
-                                    <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/java.validation/module-info.java
-                                    </moduleInfoFile>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.glassfish</groupId>
-                                        <artifactId>javax.el</artifactId>
-                                        <version>${javax.el.version}</version>
-                                    </artifact>
-                                    <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/java.el/module-info.java
-                                    </moduleInfoFile>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>com.fasterxml</groupId>
-                                        <artifactId>classmate</artifactId>
-                                        <version>${classmate.version}</version>
-                                    </artifact>
-                                    <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/com.fasterxml.classmate/module-info.java
-                                    </moduleInfoFile>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.hibernate.validator</groupId>
-                                        <artifactId>hibernate-validator</artifactId>
-                                        <version>${hibernate.validator.version}</version>
-                                    </artifact>
-                                    <moduleInfoFile>
-                                        ${project.build.directory}/generated-sources/modules/org.hibernate.validator/module-info.java
-                                    </moduleInfoFile>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.jboss.logging</groupId>
-                                        <artifactId>jboss-logging</artifactId>
-                                        <version>${jboss.logging.version}</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.logging {
-                                            requires java.logging;
-                                            requires static jboss.logmanager;
-                                            requires static log4j;
-                                            requires static log4j.api;
-                                            requires static slf4j.api;
-                                            exports org.jboss.logging;
-                                        }
-                                    </moduleInfoSource>
                                 </module>
                             </modules>
                         </configuration>
