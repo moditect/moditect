@@ -24,10 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -35,14 +31,12 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
-import org.apache.maven.project.ProjectBuildingRequest;
-import org.apache.maven.shared.artifact.DefaultArtifactCoordinate;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.moditect.commands.AddModuleInfo;
 import org.moditect.mavenplugin.add.model.ModuleConfiguration;
-import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
+import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
 
 /**
  * @author Gunnar Morling
@@ -51,13 +45,13 @@ import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 public class AddModuleInfoMojo extends AbstractMojo {
 
     @Component
-    private ArtifactResolver artifactResolver;
+    private RepositorySystem repoSystem;
 
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
+    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
+    private RepositorySystemSession repoSession;
 
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
-    private MavenSession session;
+    @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
+    private List<RemoteRepository> remoteRepos;
 
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/modules")
     private File outputDirectory;
@@ -76,8 +70,10 @@ public class AddModuleInfoMojo extends AbstractMojo {
             outputDirectory.mkdirs();
         }
 
+        ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
+
         for ( ModuleConfiguration moduleConfiguration : modules ) {
-            Path inputFile = getInputFile( moduleConfiguration );
+            Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
             String moduleInfoSource = getModuleInfoSource( moduleConfiguration );
 
             AddModuleInfo addModuleInfo = new AddModuleInfo(
@@ -92,7 +88,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
     }
 
-    private Path getInputFile(ModuleConfiguration moduleConfiguration) throws MojoExecutionException {
+    private Path getInputFile(ModuleConfiguration moduleConfiguration, ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
         if ( moduleConfiguration.getFile() != null ) {
             if ( moduleConfiguration.getArtifact() != null ) {
                 throw new MojoExecutionException( "Only one of 'file' and 'artifact' may be specified, but both are given for"
@@ -103,7 +99,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
             }
         }
         else if ( moduleConfiguration.getArtifact() != null ) {
-            return getArtifact( moduleConfiguration.getArtifact() ).getFile().toPath();
+            return artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ).getFile().toPath();
         }
         else {
             throw new MojoExecutionException( "One of 'file' and 'artifact' must be specified" );
@@ -138,47 +134,6 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
         catch (IOException e) {
             throw new MojoExecutionException( "Couldn't read file " + file );
-        }
-    }
-
-    private Artifact getArtifact(ArtifactConfiguration artifactConfiguration) throws MojoExecutionException {
-        ProjectBuildingRequest buildingRequest = new DefaultProjectBuildingRequest(
-                session.getProjectBuildingRequest()
-        );
-
-        DefaultArtifactCoordinate coordinate = new DefaultArtifactCoordinate();
-        coordinate.setGroupId( artifactConfiguration.getGroupId() );
-        coordinate.setArtifactId( artifactConfiguration.getArtifactId() );
-        coordinate.setVersion( artifactConfiguration.getVersion() );
-        coordinate.setClassifier( artifactConfiguration.getClassifier() );
-        coordinate.setExtension( getExtension( artifactConfiguration ) );
-
-        try {
-            Artifact artifact = artifactResolver.resolveArtifact( buildingRequest, coordinate ).getArtifact();
-
-            if ( artifact == null ) {
-                throw new MojoExecutionException( "Couldn't resolve dependency " + artifactConfiguration.toDependencyString() );
-            }
-
-            return artifact;
-        }
-        catch (ArtifactResolverException e) {
-            throw new MojoExecutionException( "Couldn't resolve dependency " + artifactConfiguration.toDependencyString(), e );
-        }
-    }
-
-    private String getExtension(ArtifactConfiguration artifactConfiguration) {
-        if ( artifactConfiguration.getType() == null ) {
-            return null;
-        }
-
-        ArtifactHandler artifactHandler = artifactHandlerManager.getArtifactHandler( artifactConfiguration.getType() );
-
-        if ( artifactHandler != null ) {
-            return artifactHandler.getExtension();
-        }
-        else {
-            return artifactConfiguration.getType();
         }
     }
 }

@@ -42,15 +42,12 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactRequest;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.util.graph.selector.AndDependencySelector;
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
 import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
@@ -60,6 +57,7 @@ import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
 import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
 import org.moditect.mavenplugin.generate.model.ModuleConfiguration;
+import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
 import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
@@ -117,24 +115,25 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         createDirectories();
 
-        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule();
+        ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
+        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
 
         if ( artifactOverride != null ) {
-            processModule( getModuleConfigurationFromOverrides(), assignedNamesByModule );
+            processModule( getModuleConfigurationFromOverrides(), assignedNamesByModule, artifactResolutionHelper );
         }
         else {
             for ( ModuleConfiguration moduleConfiguration : modules ) {
-                processModule( moduleConfiguration, assignedNamesByModule );
+                processModule( moduleConfiguration, assignedNamesByModule, artifactResolutionHelper );
             }
         }
     }
 
-    private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule() throws MojoExecutionException {
+    private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule(ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
         Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
 
         for ( ModuleConfiguration configuredModule : modules ) {
             assignedNamesByModule.put(
-                new ArtifactIdentifier( resolveArtifact( new DefaultArtifact( configuredModule.getArtifact().toDependencyString() ) ) ),
+                new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
                 configuredModule.getModuleInfo().getName()
             );
         }
@@ -164,15 +163,13 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         return moduleConfiguration;
     }
 
-    private void processModule(ModuleConfiguration moduleConfiguration, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
-        Artifact inputArtifact = resolveArtifact(
-            new DefaultArtifact( moduleConfiguration.getArtifact().toDependencyString() )
-        );
+    private void processModule(ModuleConfiguration moduleConfiguration, Map<ArtifactIdentifier, String> assignedNamesByModule, ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
+        Artifact inputArtifact = artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() );
 
-        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule );
+        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule, artifactResolutionHelper );
 
         for( ArtifactConfiguration further : moduleConfiguration.getAdditionalDependencies() ) {
-            Artifact furtherArtifact = resolveArtifact( new DefaultArtifact( further.toDependencyString() ) );
+            Artifact furtherArtifact = artifactResolutionHelper.resolveArtifact( further );
             dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
@@ -202,7 +199,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         .run();
     }
 
-    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
+    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule, ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
         CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
         CollectResult collectResult = null;
 
@@ -225,7 +222,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
         Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
-            Artifact resolvedDependency = resolveArtifact( dependency.getDependency().getArtifact() );
+            Artifact resolvedDependency = artifactResolutionHelper.resolveArtifact( dependency.getDependency().getArtifact() );
             String assignedModuleName = assignedNamesByModule.get( new ArtifactIdentifier( resolvedDependency ) );
 
             dependencies.add(
@@ -247,19 +244,6 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         if ( !outputDirectory.exists() ) {
             outputDirectory.mkdirs();
-        }
-    }
-
-    private Artifact resolveArtifact(Artifact inputArtifact) throws MojoExecutionException {
-        ArtifactRequest request = new ArtifactRequest();
-        request.setArtifact( inputArtifact );
-        request.setRepositories( remoteRepos );
-
-        try {
-            return repoSystem.resolveArtifact( repoSession, request ).getArtifact();
-        }
-        catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException( e.getMessage(), e );
         }
     }
 }
