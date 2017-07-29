@@ -22,19 +22,12 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.repository.RemoteRepository;
 import org.moditect.commands.CreateRuntimeImage;
 import org.moditect.mavenplugin.image.model.Launcher;
 import org.moditect.mavenplugin.util.MojoLog;
@@ -44,24 +37,6 @@ import org.moditect.mavenplugin.util.MojoLog;
  */
 @Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateRuntimeImageMojo extends AbstractMojo {
-
-    @Component
-    private ArtifactResolver artifactResolver;
-
-    @Component
-    private ArtifactHandlerManager artifactHandlerManager;
-
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
-    private MavenSession session;
-
-    @Component
-    private RepositorySystem repoSystem;
-
-    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
-    private RepositorySystemSession repoSession;
-
-    @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
-    private List<RemoteRepository> remoteRepos;
 
     @Parameter
     private List<File> modulePath;

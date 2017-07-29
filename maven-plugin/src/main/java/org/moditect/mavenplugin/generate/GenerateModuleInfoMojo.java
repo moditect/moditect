@@ -32,7 +32,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -47,9 +46,6 @@ import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
  */
 @Mojo(name = "generate-module-info", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class GenerateModuleInfoMojo extends AbstractMojo {
-
-    @Component
-    private ArtifactResolver artifactResolver;
 
     @Component
     private ArtifactHandlerManager artifactHandlerManager;
