@@ -63,12 +63,20 @@ _generate-module-info_ goal as follows:
                                 <version>1.0.0.Final</version>
                             </dependency>
                         </additionalDependencies>
-                        <name>com.example.core</name>
+                        <moduleInfo>
+                            <name>com.example.core</name>
+                        </moduleInfo>
                         <exports>
-                            com.example.core.spi* to com.example.integrators;
                             !com.example.core.internal*;
                             *;
                         </exports>
+                        <requires>
+                            static com.some.optional.dependency;
+                            *;
+                        </requires>
+                        <uses>
+                             com.example.SomeService;
+                        </uses>
                         <addServiceUses>true</addServiceUses>
                     </module>
                     <module>
@@ -91,11 +99,13 @@ be generated (required)
 * `additionalDependencies`: Additional artifacts to be processed; useful if the
 main artifact depends on code from another artifact but doesn't declare a
 dependency to that one (optional)
-* `name`: Module name to be used within the descriptor; if not given the name
+* `moduleInfo`: Allows fine-grained configuration of the generated module
+descriptor (optional); has the following sub-elements:
+  - `name`: Name to be used within the descriptor; if not given the name
 will be derived from the JAR name as per the naming rules for automatic modules
 (optional)
-* `exports`: List of name patterns for describing the exported packages of the module,
-separated by ";".Patterns can be inclusive or exclusive (starting with "!") and may
+  - `exports`: List of name patterns for describing the exported packages of the module,
+separated by ";". Patterns can be inclusive or exclusive (starting with "!") and may
 contain the "*" as a wildcard. Inclusive patterns may be qualified exports ("to xyz").
 For each package from the module, the given patterns are processed in the order they
 are given. As soon a package is matched by an inclusive pattern, the package will be
@@ -103,12 +113,21 @@ added to the list of exported packages and no further patterns will be applied. 
 as package is matched by an exclusive pattern, this package will not be added to the
 list of exported packages and no further patterns will be applied.
 (optional)
-* `addServiceUses`: If `true`, the given artifact will be scanned for usages of
+  - `requires`: List of name patterns for describing the dependences of the module,
+  based on the automatically determined dependences.
+Patterns are inclusive and may contain the "*" character as a wildcard. Patterns may
+contain the `static` and `transitive` modifiers, in which case those modifiers will
+override the modifiers of the automatically determined dependence. For each of the
+automatically determined dependences of the module, the given patterns are processed in the order they are given. As soon a dependence is matched by a pattern, the dependence will be
+added to the list of dependences and no further patterns will be applied. Usually,
+only a few dependences will be given explicitly in order to override their modifiers,
+followed by a `*;` pattern to add all remaining automatically determined dependences.
+  - `addServiceUses`: If `true`, the given artifact will be scanned for usages of
 `ServiceLoader#load()` and if usages passing a class literal are found
 (`load( MyService.class )`), an equivalent `uses()` clause will be added to the
 generated descriptor; usages of `load()` where a non-literal class object is
 passed, are ignored (optional, defaults to `false`)
-* `uses`: List of names of used services, separated by ";" only required if `addServiceUses`
+  - `uses`: List of names of used services, separated by ";" only required if `addServiceUses`
 cannot be used due to dynamic invocations of `ServiceLoader#load()`, i.e. no class literal is
 passed (optional)
 
