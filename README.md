@@ -65,19 +65,19 @@ _generate-module-info_ goal as follows:
                         </additionalDependencies>
                         <moduleInfo>
                             <name>com.example.core</name>
+                            <exports>
+                                !com.example.core.internal*;
+                                *;
+                            </exports>
+                            <requires>
+                                static com.some.optional.dependency;
+                                *;
+                            </requires>
+                            <uses>
+                                 com.example.SomeService;
+                            </uses>
+                            <addServiceUses>true</addServiceUses>
                         </moduleInfo>
-                        <exports>
-                            !com.example.core.internal*;
-                            *;
-                        </exports>
-                        <requires>
-                            static com.some.optional.dependency;
-                            *;
-                        </requires>
-                        <uses>
-                             com.example.SomeService;
-                        </uses>
-                        <addServiceUses>true</addServiceUses>
                     </module>
                     <module>
                         ...
@@ -195,11 +195,16 @@ be generated (either this or `file` must be given)
 * `file`: Path to the file for which a descriptor should be generated (either
   this or `artifact` must be given)
 * `moduleInfoSource`: Inline representation of a module-info.java descriptor
-(optional; either this or `moduleInfoFile` must be given)
+(optional; either this or `moduleInfoFile` or `moduleInfo` must be given)
 * `moduleInfoFile`: Path to a module-info.java descriptor
-(optional; either this or `moduleInfoSource` must be given)
+(optional; either this or `moduleInfoSource` or `moduleInfo` must be given)
+* `moduleInfo`: A `moduleInfo` configuration as used with the `generate-module-info`
+goal (optional; either this or `moduleInfoSource` or `moduleInfoFile` must be given)
 * `mainClass`: The fully-qualified name of the main class to be added to the
 module descriptor (optional)
+* `version`: The version to be added to the module descriptor; if not given and
+`artifact` is given, the artifact's version will be used; otherwise no version
+will be added (optional)
 
 To add a module descriptor for the artifact built by the current project itself,
 configure the plug-in like so:
@@ -223,9 +228,16 @@ configure the plug-in like so:
                 <modules>
                     <module>
                         <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
-                        <moduleInfoSource>
-                            ...
-                        </moduleInfoSource>
+                        <moduleInfo>
+                            <name>com.example.somemodule</name>
+                            <exports>
+                                !com.example.internal*;
+                                *;
+                            </exports>
+                            <addServiceUses>true</addServiceUses>
+                        </moduleInfo>
+                        <mainClass>com.example.Main</mainClass>
+                        <version>${project.version}</version>
                     </module>
                 </modules>
             </configuration>

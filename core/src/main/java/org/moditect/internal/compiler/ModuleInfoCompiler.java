@@ -68,12 +68,12 @@ public class ModuleInfoCompiler {
             .orElseThrow( () -> new IllegalArgumentException( "Not a module-info.java: " + moduleInfoSource ) );
     }
 
-    public static byte[] compileModuleInfo(ModuleDeclaration module, String mainClass) {
+    public static byte[] compileModuleInfo(ModuleDeclaration module, String mainClass, String version) {
         ClassWriter classWriter = new ClassWriter( 0 );
         classWriter.visit( V1_9, ACC_MODULE, "module-info", null, null, null );
 
         int moduleAccess = module.isOpen() ? ACC_SYNTHETIC | ACC_OPEN : ACC_SYNTHETIC;
-        ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), moduleAccess, null );
+        ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), moduleAccess, version );
 
         if ( mainClass != null ) {
             mv.visitMainClass( mainClass.replace( '.', '/' ) );

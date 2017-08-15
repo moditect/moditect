@@ -82,6 +82,7 @@ public class AddModuleInfoTest {
         new AddModuleInfo(
             "module com.example {}",
             "com.example.HelloWorld",
+            "1.42.3",
             Paths.get( "target", "generated-test-resources", "example.jar" ),
             Paths.get( "target", "generated-test-modules" ),
             false

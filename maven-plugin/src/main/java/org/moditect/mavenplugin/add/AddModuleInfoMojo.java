@@ -92,12 +92,25 @@ public class AddModuleInfoMojo extends AbstractMojo {
             AddModuleInfo addModuleInfo = new AddModuleInfo(
                 moduleInfoSource,
                 moduleConfiguration.getMainClass(),
+                getVersion( moduleConfiguration ),
                 inputFile,
                 outputPath,
                 overwriteExistingFiles
             );
 
             addModuleInfo.run();
+        }
+    }
+
+    private String getVersion(ModuleConfiguration moduleConfiguration) {
+        if ( moduleConfiguration.getVersion() != null ) {
+            return moduleConfiguration.getVersion();
+        }
+        else if ( moduleConfiguration.getArtifact() != null ) {
+            return moduleConfiguration.getArtifact().getVersion();
+        }
+        else {
+            return null;
         }
     }
 

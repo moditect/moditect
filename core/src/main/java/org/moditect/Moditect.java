@@ -34,7 +34,7 @@ public class Moditect {
         CliArgs cliArgs = new CliArgs();
         new JCommander( cliArgs, args );
 
-        new AddModuleInfo( null, null, null, cliArgs.outputDirecory, cliArgs.overwriteExistingFiles ).run();
+        new AddModuleInfo( null, null, null, null, cliArgs.outputDirecory, cliArgs.overwriteExistingFiles ).run();
     }
 
     @Parameters(separators = "=")

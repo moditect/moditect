@@ -37,6 +37,7 @@ public class ModuleConfiguration {
     private String moduleInfoSource;
 
     private String mainClass;
+    private String version;
 
     public File getFile() {
         return file;
@@ -86,9 +87,18 @@ public class ModuleConfiguration {
         this.mainClass = mainClass;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "ModuleConfiguration [artifact=" + artifact + ", moduleInfo=" + moduleInfo + ", moduleInfoFile="
-                + moduleInfoFile + ", moduleInfoSource=" + moduleInfoSource + ", mainClass=" + mainClass + "]";
+                + moduleInfoFile + ", moduleInfoSource=" + moduleInfoSource + ", mainClass=" + mainClass
+                + ", version=" + version + "]";
     }
 }

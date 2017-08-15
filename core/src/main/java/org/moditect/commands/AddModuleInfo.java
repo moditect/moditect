@@ -41,13 +41,15 @@ public class AddModuleInfo {
 
     private final String moduleInfoSource;
     private final String mainClass;
+    private final String version;
     private final Path inputJar;
     private final Path outputDirectory;
     private final boolean overwriteExistingFiles;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, Path inputJar, Path outputDirectory, boolean overwriteExistingFiles) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, boolean overwriteExistingFiles) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
+        this.version = version;
         this.inputJar = inputJar;
         this.outputDirectory = outputDirectory;
         this.overwriteExistingFiles = overwriteExistingFiles;
@@ -77,7 +79,7 @@ public class AddModuleInfo {
         }
 
         ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo( moduleInfoSource );
-        byte[] clazz = ModuleInfoCompiler.compileModuleInfo( module, mainClass );
+        byte[] clazz = ModuleInfoCompiler.compileModuleInfo( module, mainClass, version );
 
         Map<String, String> env = new HashMap<>();
         env.put( "create", "true" );

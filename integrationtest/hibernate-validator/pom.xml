@@ -170,6 +170,7 @@
                                 <module>
                                     <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
                                     <mainClass>com.example.ValidationTest</mainClass>
+                                    <version>${project.version}</version>
                                     <moduleInfoSource>
                                         open module com.example {
                                             requires org.hibernate.validator;
