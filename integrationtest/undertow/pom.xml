@@ -90,16 +90,15 @@
                                         <artifactId>jboss-logging</artifactId>
                                         <version>3.3.0.Final</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.logging {
-                                            requires java.logging;
-                                            requires static jboss.logmanager;
-                                            requires static log4j;
-                                            requires static log4j.api;
-                                            requires static slf4j.api;
-                                            exports org.jboss.logging;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>org.jboss.logging</name>
+                                         <requires>
+                                             static jboss.logmanager;
+                                             static log4j*;
+                                             static slf4j.api;
+                                             *;
+                                         </requires>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -107,12 +106,9 @@
                                         <artifactId>jboss-logging-annotations</artifactId>
                                         <version>1.2.0.Final</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.logging.annotations {
-                                            requires transitive org.jboss.logging;
-                                            exports org.jboss.logging.annotations;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>org.jboss.logging.annotations</name>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -120,24 +116,13 @@
                                         <artifactId>xnio-api</artifactId>
                                         <version>3.3.6.Final</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.xnio.api {
-                                            requires transitive java.logging;
-                                            requires java.management;
-                                            requires transitive java.security.sasl;
-                                            requires transitive org.jboss.logging;
-                                            exports org.xnio;
-                                            exports org.xnio._private;
-                                            exports org.xnio.channels;
-                                            exports org.xnio.conduits;
-                                            exports org.xnio.http;
-                                            exports org.xnio.management;
-                                            exports org.xnio.sasl;
-                                            exports org.xnio.ssl;
-                                            exports org.xnio.streams;
-                                            uses org.xnio.XnioProvider;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>org.jboss.xnio.api</name>
+                                        <addServiceUses>true</addServiceUses>
+                                        <exports>
+                                            !org.xnio._private;
+                                        </exports>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -145,16 +130,14 @@
                                         <artifactId>xnio-nio</artifactId>
                                         <version>3.3.6.Final</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module org.jboss.xnio.nio {
-                                            requires transitive org.jboss.logging;
-                                            requires static org.jboss.logging.annotations;
-                                            requires transitive org.jboss.xnio.api;
-                                            exports org.xnio.nio;
-                                            provides org.xnio.XnioProvider with
-                                                org.xnio.nio.NioXnioProvider;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>org.jboss.xnio.nio</name>
+                                        <requires>
+                                            static org.jboss.logging.annotations;
+                                            org.jboss.logging;
+                                            *;
+                                        </requires>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -162,11 +145,9 @@
                                         <artifactId>alpn-api</artifactId>
                                         <version>1.0.0</version>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module alpn.api {
-                                            exports org.eclipse.jetty.alpn;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>alpn.api</name>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -174,6 +155,9 @@
                                         <artifactId>undertow-core</artifactId>
                                         <version>1.4.11.Final</version>
                                     </artifact>
+<!--                                     <moduleInfo> -->
+<!--                                         <name>io.undertow.core</name> -->
+<!--                                     </moduleInfo> -->
                                     <moduleInfoSource>
                                         module io.undertow.core {
                                             requires alpn.api;

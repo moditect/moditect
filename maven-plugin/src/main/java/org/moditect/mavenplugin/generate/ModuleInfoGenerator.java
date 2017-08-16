@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,7 +136,7 @@ public class ModuleInfoGenerator {
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = artifactResolutionHelper.resolveArtifact( dependency.getDependency().getArtifact() );
-            String assignedModuleName = assignedNamesByModule.get( new ArtifactIdentifier( resolvedDependency ) );
+            String assignedModuleName = getAssignedModuleName( assignedNamesByModule, new ArtifactIdentifier( resolvedDependency ) );
 
             dependencies.add(
                     new DependencyDescriptor(
@@ -147,5 +148,20 @@ public class ModuleInfoGenerator {
         }
 
         return dependencies;
+    }
+
+    private String getAssignedModuleName(Map<ArtifactIdentifier, String> assignedNamesByModule, ArtifactIdentifier artifactIdentifier) {
+        for ( Entry<ArtifactIdentifier, String> assignedNameByModule : assignedNamesByModule.entrySet() ) {
+            // ignoring the version; the resolved artifact could have a different version then the one used
+            // in this modularization build
+            if ( assignedNameByModule.getKey().getGroupId().equals( artifactIdentifier.getGroupId() ) &&
+                    assignedNameByModule.getKey().getArtifactId().equals( artifactIdentifier.getArtifactId() ) &&
+                    assignedNameByModule.getKey().getClassifier().equals( artifactIdentifier.getClassifier() ) &&
+                    assignedNameByModule.getKey().getExtension().equals( artifactIdentifier.getExtension() ) ) {
+                return assignedNameByModule.getValue();
+            }
+        }
+
+        return null;
     }
 }

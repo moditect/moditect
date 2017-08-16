@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.command.ProcessExecutor;
@@ -118,14 +117,12 @@ public class GenerateModuleInfo {
             }
 
             for ( DependencePattern dependence : requiresPatterns ) {
-                if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) && !dependence.getModifiers().isEmpty() ) {
+                if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) ) {
                     moduleRequiresStmt.getModifiers().clear();
-                    moduleRequiresStmt.getModifiers()
-                        .addAll( dependence.getModifiers()
-                            .stream()
-                            .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
-                            .collect( Collectors.toSet() )
-                         );
+                    dependence.getModifiers()
+                        .stream()
+                        .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
+                        .forEach( m -> moduleRequiresStmt.getModifiers().add( m ) );
 
                     break;
                 }

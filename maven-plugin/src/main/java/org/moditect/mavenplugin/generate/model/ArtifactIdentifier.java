@@ -36,6 +36,26 @@ public class ArtifactIdentifier {
         classifier = artifact.getClassifier();
     }
 
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public String getClassifier() {
+        return classifier;
+    }
+
     @Override
     public String toString() {
         return "ArtifactIdentifier [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version
