@@ -38,6 +38,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.moditect.commands.AddModuleInfo;
+import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.mavenplugin.add.model.ModuleConfiguration;
 import org.moditect.mavenplugin.generate.ModuleInfoGenerator;
 import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
@@ -185,17 +186,24 @@ public class AddModuleInfoMojo extends AbstractMojo {
         Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
 
         for ( ModuleConfiguration configuredModule : modules ) {
+            String assignedName;
+
             if ( configuredModule.getModuleInfo() != null ) {
-                assignedNamesByModule.put(
-                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
-                        configuredModule.getModuleInfo().getName()
-                );
+                assignedName = configuredModule.getModuleInfo().getName();
             }
             else if ( configuredModule.getModuleInfoFile() != null ) {
-                // TODO
+                assignedName = ModuleInfoCompiler.parseModuleInfo( configuredModule.getModuleInfoFile().toPath() ).getNameAsString();
             }
-            else if ( configuredModule.getModuleInfoSource() != null ) {
-                // TODO
+            else {
+                assignedName = ModuleInfoCompiler.parseModuleInfo( configuredModule.getModuleInfoSource() ).getNameAsString();
+            }
+
+            // TODO handle file case; although file is unlikely to be used together with others
+            if ( configuredModule.getArtifact() != null ) {
+                assignedNamesByModule.put(
+                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
+                        assignedName
+                );
             }
         }
 
