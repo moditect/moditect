@@ -176,6 +176,7 @@
                                 <module>
                                     <file>${project.build.directory}/modules/${project.artifactId}-${project.version}.jar</file>
                                     <mainClass>com.example.HelloWorldServer</mainClass>
+                                    <version>${project.version}</version>
                                     <moduleInfoSource>
                                         module com.example {
                                             requires io.undertow.core;
