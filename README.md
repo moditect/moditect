@@ -110,9 +110,18 @@ contain the "*" as a wildcard. Inclusive patterns may be qualified exports ("to 
 For each package from the module, the given patterns are processed in the order they
 are given. As soon a package is matched by an inclusive pattern, the package will be
 added to the list of exported packages and no further patterns will be applied. As soon
-as package is matched by an exclusive pattern, this package will not be added to the
+as a package is matched by an exclusive pattern, this package will not be added to the
 list of exported packages and no further patterns will be applied.
-(optional)
+(optional; the default value is "*;", i.e. all packages will be exported)
+  - `opens`: List of name patterns for describing the open packages of the module,
+separated by ";". Patterns can be inclusive or exclusive (starting with "!") and may
+contain the "*" as a wildcard. Inclusive patterns may be qualified exports ("to xyz").
+For each package from the module, the given patterns are processed in the order they
+are given. As soon a package is matched by an inclusive pattern, the package will be
+added to the list of open packages and no further patterns will be applied. As soon
+as a package is matched by an exclusive pattern, this package will not be added to the
+list of open packages and no further patterns will be applied.
+(optional; the default value is "!*;", i.e. no packages will be opened)
   - `requires`: List of name patterns for describing the dependences of the module,
   based on the automatically determined dependences.
 Patterns are inclusive and may contain the "*" character as a wildcard. Patterns may

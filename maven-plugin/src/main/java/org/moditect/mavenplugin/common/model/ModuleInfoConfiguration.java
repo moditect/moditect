@@ -25,6 +25,7 @@ public class ModuleInfoConfiguration {
 
     private String requires = "*;";
     private String exports = "*;";
+    private String opens = "!*;";
     private String uses;
     private String name;
     private boolean addServiceUses;
@@ -51,6 +52,14 @@ public class ModuleInfoConfiguration {
 
     public void setExports(String exports) {
         this.exports = exports;
+    }
+
+    public String getOpens() {
+        return opens;
+    }
+
+    public void setOpens(String opens) {
+        this.opens = opens;
     }
 
     public String getUses() {

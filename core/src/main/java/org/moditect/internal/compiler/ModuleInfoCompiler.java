@@ -78,7 +78,7 @@ public class ModuleInfoCompiler {
         ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), moduleAccess, version );
 
         if ( mainClass != null ) {
-            mv.visitMainClass( mainClass.replace( '.', '/' ) );
+            mv.visitMainClass( getNameForBinary( mainClass ) );
         }
 
         for ( ModuleRequiresStmt requires : module.getNodesByType( ModuleRequiresStmt.class ) ) {
@@ -90,7 +90,14 @@ public class ModuleInfoCompiler {
         }
 
         for ( ModuleExportsStmt export : module.getNodesByType( ModuleExportsStmt.class ) ) {
-            mv.visitExport( export.getName().asString().replace( '.', '/' ), 0 );
+            mv.visitExport(
+                    getNameForBinary( export.getNameAsString() ),
+                    0,
+                    export.getModuleNames()
+                        .stream()
+                        .map( Name::toString )
+                        .toArray( String[]::new )
+            );
         }
 
         for ( ModuleProvidesStmt provides : module.getNodesByType( ModuleProvidesStmt.class ) ) {
@@ -113,7 +120,7 @@ public class ModuleInfoCompiler {
                     0,
                     opens.getModuleNames()
                         .stream()
-                        .map( ModuleInfoCompiler::getNameForBinary )
+                        .map( Name::toString )
                         .toArray( String[]::new )
             );
         }
@@ -124,10 +131,6 @@ public class ModuleInfoCompiler {
         classWriter.visitEnd();
 
         return classWriter.toByteArray();
-    }
-
-    private static String getNameForBinary(Name typeName) {
-        return getNameForBinary( typeName.toString() );
     }
 
     private static String getNameForBinary(Type type) {

@@ -102,6 +102,7 @@ public class ModuleInfoGenerator {
                 moduleInfo.getName(),
                 dependencies,
                 PackageNamePattern.parsePatterns( moduleInfo.getExports() ),
+                PackageNamePattern.parsePatterns( moduleInfo.getOpens() ),
                 DependencePattern.parsePatterns( moduleInfo.getRequires() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),

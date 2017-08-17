@@ -48,6 +48,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsStmt;
+import com.github.javaparser.ast.modules.ModuleOpensStmt;
 import com.github.javaparser.ast.modules.ModuleRequiresStmt;
 import com.github.javaparser.ast.modules.ModuleUsesStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -58,6 +59,7 @@ public class GenerateModuleInfo {
     private final String moduleName;
     private final Set<DependencyDescriptor> dependencies;
     private final List<PackageNamePattern> exportPatterns;
+    private final List<PackageNamePattern> opensPatterns;
     private final List<DependencePattern> requiresPatterns;
     private Set<String> uses;
     private final Path workingDirectory;
@@ -66,11 +68,12 @@ public class GenerateModuleInfo {
     private final ServiceLoaderUseScanner serviceLoaderUseScanner;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.dependencies = dependencies;
         this.exportPatterns = exportPatterns;
+        this.opensPatterns = opensPatterns;
         this.requiresPatterns = requiresPatterns;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
@@ -132,6 +135,7 @@ public class GenerateModuleInfo {
         List<ModuleExportsStmt> exportStatements = moduleDeclaration.getNodesByType( ModuleExportsStmt.class );
         for ( ModuleExportsStmt moduleExportsStmt : exportStatements ) {
             applyExportPatterns( moduleDeclaration, moduleExportsStmt );
+            applyOpensPatterns( moduleDeclaration, moduleExportsStmt );
         }
 
         if ( moduleName != null ) {
@@ -174,6 +178,29 @@ public class GenerateModuleInfo {
         // remove export if not matched by any pattern
         if ( !foundMatchingPattern ) {
             moduleDeclaration.remove( moduleExportsStmt );
+        }
+
+        return moduleDeclaration;
+    }
+
+    private ModuleDeclaration applyOpensPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
+        for (PackageNamePattern pattern : opensPatterns ) {
+            if ( pattern.matches( moduleExportsStmt.getNameAsString() ) ) {
+                if ( pattern.getKind() == Kind.INCLUSIVE ) {
+                    ModuleOpensStmt moduleOpensStmt = new ModuleOpensStmt();
+                    moduleOpensStmt.setName( moduleExportsStmt.getName() );
+
+                    if ( !pattern.getTargetModules().isEmpty() ) {
+                        for (String module : pattern.getTargetModules() ) {
+                            moduleOpensStmt.getModuleNames().add( JavaParser.parseName( module ) );
+                        }
+                    }
+
+                    moduleDeclaration.getModuleStmts().add( moduleOpensStmt );
+                }
+
+                break;
+            }
         }
 
         return moduleDeclaration;
