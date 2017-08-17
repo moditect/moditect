@@ -28,7 +28,9 @@ import static org.objectweb.asm.Opcodes.V1_9;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Iterator;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ModuleVisitor;
@@ -93,26 +95,25 @@ public class ModuleInfoCompiler {
 
         for ( ModuleProvidesStmt provides : module.getNodesByType( ModuleProvidesStmt.class ) ) {
             mv.visitProvide(
-                provides.getType().toString().replace( '.', '/' ),
+                getNameForBinary( provides.getType() ),
                 provides.getWithTypes()
                     .stream()
-                    .map( Type::toString )
-                    .map( s -> s.replace( '.', '/' ) )
+                    .map( ModuleInfoCompiler::getNameForBinary )
                     .toArray( String[]::new )
             );
         }
 
         for ( ModuleUsesStmt uses : module.getNodesByType( ModuleUsesStmt.class ) ) {
-            mv.visitUse( uses.getType().toString().replace( '.', '/' ) );
+            mv.visitUse( getNameForBinary( uses.getType() ) );
         }
 
         for ( ModuleOpensStmt opens : module.getNodesByType( ModuleOpensStmt.class ) ) {
             mv.visitOpen(
-                    opens.getNameAsString().replace( '.', '/' ),
+                    getNameForBinary( opens.getNameAsString() ),
                     0,
                     opens.getModuleNames()
                         .stream()
-                        .map( Name::toString )
+                        .map( ModuleInfoCompiler::getNameForBinary )
                         .toArray( String[]::new )
             );
         }
@@ -123,6 +124,37 @@ public class ModuleInfoCompiler {
         classWriter.visitEnd();
 
         return classWriter.toByteArray();
+    }
+
+    private static String getNameForBinary(Name typeName) {
+        return getNameForBinary( typeName.toString() );
+    }
+
+    private static String getNameForBinary(Type type) {
+        return getNameForBinary( type.toString() );
+    }
+
+    private static String getNameForBinary(String typeName) {
+        Iterator<String> parts = Arrays.asList( typeName.toString().split( "\\." ) ).iterator();
+        StringBuilder typeNameForBinary = new StringBuilder();
+
+        while ( parts.hasNext() ) {
+            String part = parts.next();
+            typeNameForBinary.append( part );
+
+            // if the current part is upper-case, we assume it's a class and the following part is a nested class
+            // that's as good as it gets without fully resolving all the type names against the module's classes
+            if ( parts.hasNext() ) {
+                if ( Character.isUpperCase( part.charAt(0) ) ) {
+                    typeNameForBinary.append( "$" );
+                }
+                else {
+                    typeNameForBinary.append( "/" );
+                }
+            }
+        }
+
+        return typeNameForBinary.toString();
     }
 
     private static int requiresModifiersAsInt(EnumSet<Modifier> modifiers) {

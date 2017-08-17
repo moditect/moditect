@@ -120,7 +120,8 @@
                                         <name>org.jboss.xnio.api</name>
                                         <addServiceUses>true</addServiceUses>
                                         <exports>
-                                            !org.xnio._private;
+                                            org.xnio._private to org.jboss.logging;
+                                            *;
                                         </exports>
                                     </moduleInfo>
                                 </module>
@@ -155,170 +156,9 @@
                                         <artifactId>undertow-core</artifactId>
                                         <version>1.4.11.Final</version>
                                     </artifact>
-<!--                                     <moduleInfo> -->
-<!--                                         <name>io.undertow.core</name> -->
-<!--                                     </moduleInfo> -->
-                                    <moduleInfoSource>
-                                        module io.undertow.core {
-                                            requires alpn.api;
-                                            requires java.naming;
-                                            requires transitive java.security.jgss;
-                                            requires transitive java.sql;
-                                            requires jdk.unsupported;
-                                            requires transitive org.jboss.logging;
-                                            requires transitive org.jboss.xnio.api;
-                                            exports io.undertow;
-                                            exports io.undertow.attribute;
-                                            exports io.undertow.channels;
-                                            exports io.undertow.client;
-                                            exports io.undertow.client.ajp;
-                                            exports io.undertow.client.http;
-                                            exports io.undertow.client.http2;
-                                            exports io.undertow.conduits;
-                                            exports io.undertow.connector;
-                                            exports io.undertow.io;
-                                            exports io.undertow.predicate;
-                                            exports io.undertow.protocols.ajp;
-                                            exports io.undertow.protocols.alpn;
-                                            exports io.undertow.protocols.http2;
-                                            exports io.undertow.protocols.ssl;
-                                            exports io.undertow.security.api;
-                                            exports io.undertow.security.handlers;
-                                            exports io.undertow.security.idm;
-                                            exports io.undertow.security.impl;
-                                            exports io.undertow.server;
-                                            exports io.undertow.server.handlers;
-                                            exports io.undertow.server.handlers.accesslog;
-                                            exports io.undertow.server.handlers.builder;
-                                            exports io.undertow.server.handlers.cache;
-                                            exports io.undertow.server.handlers.encoding;
-                                            exports io.undertow.server.handlers.error;
-                                            exports io.undertow.server.handlers.form;
-                                            exports io.undertow.server.handlers.proxy;
-                                            exports io.undertow.server.handlers.proxy.mod_cluster;
-                                            exports io.undertow.server.handlers.resource;
-                                            exports io.undertow.server.handlers.sse;
-                                            exports io.undertow.server.protocol;
-                                            exports io.undertow.server.protocol.ajp;
-                                            exports io.undertow.server.protocol.framed;
-                                            exports io.undertow.server.protocol.http;
-                                            exports io.undertow.server.protocol.http2;
-                                            exports io.undertow.server.session;
-                                            exports io.undertow.util;
-                                            exports io.undertow.websockets;
-                                            exports io.undertow.websockets.client;
-                                            exports io.undertow.websockets.core;
-                                            exports io.undertow.websockets.core.function;
-                                            exports io.undertow.websockets.core.protocol;
-                                            exports io.undertow.websockets.core.protocol.version07;
-                                            exports io.undertow.websockets.core.protocol.version08;
-                                            exports io.undertow.websockets.core.protocol.version13;
-                                            exports io.undertow.websockets.extensions;
-                                            exports io.undertow.websockets.spi;
-                                            provides io.undertow.attribute.ExchangeAttributeBuilder with
-                                                io.undertow.attribute.RelativePathAttribute$Builder,
-                                                io.undertow.attribute.RemoteIPAttribute$Builder,
-                                                io.undertow.attribute.LocalIPAttribute$Builder,
-                                                io.undertow.attribute.RequestProtocolAttribute$Builder,
-                                                io.undertow.attribute.LocalPortAttribute$Builder,
-                                                io.undertow.attribute.IdentUsernameAttribute$Builder,
-                                                io.undertow.attribute.RequestMethodAttribute$Builder,
-                                                io.undertow.attribute.QueryStringAttribute$Builder,
-                                                io.undertow.attribute.RequestLineAttribute$Builder,
-                                                io.undertow.attribute.BytesSentAttribute$Builder,
-                                                io.undertow.attribute.DateTimeAttribute$Builder,
-                                                io.undertow.attribute.RemoteUserAttribute$Builder,
-                                                io.undertow.attribute.RequestURLAttribute$Builder,
-                                                io.undertow.attribute.ThreadNameAttribute$Builder,
-                                                io.undertow.attribute.LocalServerNameAttribute$Builder,
-                                                io.undertow.attribute.RequestHeaderAttribute$Builder,
-                                                io.undertow.attribute.ResponseHeaderAttribute$Builder,
-                                                io.undertow.attribute.CookieAttribute$Builder,
-                                                io.undertow.attribute.ResponseCodeAttribute$Builder,
-                                                io.undertow.attribute.PredicateContextAttribute$Builder,
-                                                io.undertow.attribute.QueryParameterAttribute$Builder,
-                                                io.undertow.attribute.SslClientCertAttribute$Builder,
-                                                io.undertow.attribute.SslCipherAttribute$Builder,
-                                                io.undertow.attribute.SslSessionIdAttribute$Builder,
-                                                io.undertow.attribute.ResponseTimeAttribute$Builder,
-                                                io.undertow.attribute.PathParameterAttribute$Builder,
-                                                io.undertow.attribute.TransportProtocolAttribute$Builder,
-                                                io.undertow.attribute.RequestSchemeAttribute$Builder,
-                                                io.undertow.attribute.HostAndPortAttribute$Builder,
-                                                io.undertow.attribute.AuthenticationTypeExchangeAttribute$Builder,
-                                                io.undertow.attribute.SecureExchangeAttribute$Builder,
-                                                io.undertow.attribute.RemoteHostAttribute$Builder,
-                                                io.undertow.attribute.RequestPathAttribute$Builder,
-                                                io.undertow.attribute.ResolvedPathAttribute$Builder,
-                                                io.undertow.attribute.NullAttribute$Builder,
-                                                io.undertow.attribute.StoredResponse$Builder,
-                                                io.undertow.attribute.ResponseReasonPhraseAttribute$Builder;
-                                            provides io.undertow.client.ClientProvider with
-                                                io.undertow.client.http.HttpClientProvider,
-                                                io.undertow.client.ajp.AjpClientProvider,
-                                                io.undertow.client.http2.Http2ClientProvider,
-                                                io.undertow.client.http2.Http2ClearClientProvider,
-                                                io.undertow.client.http2.Http2PriorKnowledgeClientProvider;
-                                            provides io.undertow.predicate.PredicateBuilder with
-                                                io.undertow.predicate.PathMatchPredicate$Builder,
-                                                io.undertow.predicate.PathPrefixPredicate$Builder,
-                                                io.undertow.predicate.ContainsPredicate$Builder,
-                                                io.undertow.predicate.ExistsPredicate$Builder,
-                                                io.undertow.predicate.RegularExpressionPredicate$Builder,
-                                                io.undertow.predicate.PathSuffixPredicate$Builder,
-                                                io.undertow.predicate.EqualsPredicate$Builder,
-                                                io.undertow.predicate.PathTemplatePredicate$Builder,
-                                                io.undertow.predicate.MethodPredicate$Builder,
-                                                io.undertow.predicate.AuthenticationRequiredPredicate$Builder,
-                                                io.undertow.predicate.MaxContentSizePredicate$Builder,
-                                                io.undertow.predicate.MinContentSizePredicate$Builder,
-                                                io.undertow.predicate.SecurePredicate$Builder,
-                                                io.undertow.predicate.IdempotentPredicate$Builder;
-                                            provides io.undertow.protocols.alpn.ALPNProvider with
-                                                io.undertow.protocols.alpn.JDK8HackAlpnProvider,
-                                                io.undertow.protocols.alpn.JettyAlpnProvider,
-                                                io.undertow.protocols.alpn.JDK9AlpnProvider,
-                                                io.undertow.protocols.alpn.OpenSSLAlpnProvider;
-                                            provides io.undertow.server.handlers.builder.HandlerBuilder with
-                                                io.undertow.server.handlers.builder.RewriteHandlerBuilder,
-                                                io.undertow.server.handlers.SetAttributeHandler$Builder,
-                                                io.undertow.server.handlers.SetAttributeHandler$ClearBuilder,
-                                                io.undertow.server.handlers.builder.ResponseCodeHandlerBuilder,
-                                                io.undertow.server.handlers.DisableCacheHandler$Builder,
-                                                io.undertow.server.handlers.ProxyPeerAddressHandler$Builder,
-                                                io.undertow.server.handlers.proxy.ProxyHandler$Builder,
-                                                io.undertow.server.handlers.RedirectHandler$Builder,
-                                                io.undertow.server.handlers.accesslog.AccessLogHandler$Builder,
-                                                io.undertow.server.handlers.AllowedMethodsHandler$Builder,
-                                                io.undertow.server.handlers.BlockingHandler$Builder,
-                                                io.undertow.server.handlers.CanonicalPathHandler$Builder,
-                                                io.undertow.server.handlers.DisallowedMethodsHandler$Builder,
-                                                io.undertow.server.handlers.error.FileErrorPageHandler$Builder,
-                                                io.undertow.server.handlers.HttpTraceHandler$Builder,
-                                                io.undertow.server.JvmRouteHandler$Builder,
-                                                io.undertow.server.handlers.PeerNameResolvingHandler$Builder,
-                                                io.undertow.server.handlers.RequestDumpingHandler$Builder,
-                                                io.undertow.server.handlers.RequestLimitingHandler$Builder,
-                                                io.undertow.server.handlers.resource.ResourceHandler$Builder,
-                                                io.undertow.server.handlers.SSLHeaderHandler$Builder,
-                                                io.undertow.server.handlers.ResponseRateLimitingHandler$Builder,
-                                                io.undertow.server.handlers.URLDecodingHandler$Builder,
-                                                io.undertow.server.handlers.PathSeparatorHandler$Builder,
-                                                io.undertow.server.handlers.IPAddressAccessControlHandler$Builder,
-                                                io.undertow.server.handlers.ByteRangeHandler$Builder,
-                                                io.undertow.server.handlers.encoding.EncodingHandler$Builder,
-                                                io.undertow.server.handlers.LearningPushHandler$Builder,
-                                                io.undertow.server.handlers.SetHeaderHandler$Builder,
-                                                io.undertow.predicate.PredicatesHandler$DoneHandlerBuilder,
-                                                io.undertow.predicate.PredicatesHandler$RestartHandlerBuilder,
-                                                io.undertow.server.handlers.RequestBufferingHandler$Builder,
-                                                io.undertow.server.handlers.StuckThreadDetectionHandler$Builder,
-                                                io.undertow.server.handlers.AccessControlListHandler$Builder,
-                                                io.undertow.server.handlers.JDBCLogHandler$Builder,
-                                                io.undertow.server.handlers.LocalNameResolvingHandler$Builder,
-                                                io.undertow.server.handlers.StoredResponseHandler$Builder;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>io.undertow.core</name>
+                                    </moduleInfo>
                                 </module>
                             </modules>
                         </configuration>

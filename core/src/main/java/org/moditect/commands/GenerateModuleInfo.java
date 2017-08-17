@@ -151,6 +151,8 @@ public class GenerateModuleInfo {
     }
 
     private ModuleDeclaration applyExportPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
+        boolean foundMatchingPattern = false;
+
         for (PackageNamePattern pattern : exportPatterns ) {
             if ( pattern.matches( moduleExportsStmt.getNameAsString() ) ) {
                 if ( pattern.getKind() == Kind.INCLUSIVE ) {
@@ -164,8 +166,14 @@ public class GenerateModuleInfo {
                     moduleDeclaration.remove( moduleExportsStmt );
                 }
 
+                foundMatchingPattern = true;
                 break;
             }
+        }
+
+        // remove export if not matched by any pattern
+        if ( !foundMatchingPattern ) {
+            moduleDeclaration.remove( moduleExportsStmt );
         }
 
         return moduleDeclaration;
