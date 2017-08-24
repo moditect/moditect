@@ -36,6 +36,7 @@
 
     <properties>
         <license.skip>true</license.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
     <modules>
         <module>parent</module>

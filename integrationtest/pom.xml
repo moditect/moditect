@@ -31,6 +31,9 @@
     <packaging>pom</packaging>
     <name>ModiTect Integration Test - Parent</name>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
     <modules>
         <module>undertow</module>
         <module>hibernate-validator</module>
