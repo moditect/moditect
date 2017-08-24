@@ -1,9 +1,6 @@
 <!--
 
-     Copyright 2017 Gunnar Morling (http://www.gunnarmorling.de/)
-     and/or other contributors as indicated by the @authors tag. See the
-     copyright.txt file in the distribution for a full listing of all
-     contributors.
+     Copyright 2017 The ModiTect authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -103,6 +100,34 @@
                                     <shadedPattern>org.moditect.internal.shaded.asm</shadedPattern>
                                 </relocation>
                             </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-license</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>..</directory>
+                                    <include>LICENSE.txt</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>../etc</directory>
+                                    <include>LICENSE_ASM.txt</include>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>

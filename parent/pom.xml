@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-     Copyright 2017 Gunnar Morling (http://www.gunnarmorling.de/)
-     and/or other contributors as indicated by the @authors tag. See the
-     copyright.txt file in the distribution for a full listing of all
-     contributors.
+     Copyright 2017 The ModiTect authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -117,6 +114,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
@@ -139,25 +141,6 @@
                 <configuration>
                     <header>${basedir}/../etc/license.txt</header>
                     <strictCheck>true</strictCheck>
-<!--                     <excludes> -->
-<!--                         <exclude>.idea/**</exclude> -->
-<!--                         <exclude>**/build-config/checkstyle.xml</exclude> -->
-<!--                         <exclude>**/build-config/import-control.xml</exclude> -->
-<!--                         <exclude>copyright.txt</exclude> -->
-<!--                         <exclude>**/LICENSE.txt</exclude> -->
-<!--                         <exclude>**/mapstruct.xml</exclude> -->
-<!--                         <exclude>**/toolchains-*.xml</exclude> -->
-<!--                         <exclude>**/eclipse-formatter-config.xml</exclude> -->
-<!--                         <exclude>**/checkstyle-for-generated-sources.xml</exclude> -->
-<!--                         <exclude>**/nb-configuration.xml</exclude> -->
-<!--                         <exclude>maven-settings.xml</exclude> -->
-<!--                         <exclude>readme.md</exclude> -->
-<!--                         <exclude>CONTRIBUTING.md</exclude> -->
-<!--                         <exclude>.gitattributes</exclude> -->
-<!--                         <exclude>.gitignore</exclude> -->
-<!--                         <exclude>.factorypath</exclude> -->
-<!--                         <exclude>.checkstyle</exclude> -->
-<!--                     </excludes> -->
                 </configuration>
                 <executions>
                     <execution>

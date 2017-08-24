@@ -1,6 +1,5 @@
 ﻿Contributors
 ============
 
+Antoine Sabot-Durand
 Gunnar Morling
-
-See headers of files within moditect-asm for the contributors of ASM.

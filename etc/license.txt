@@ -1,7 +1,4 @@
- Copyright 2017 Gunnar Morling (http://www.gunnarmorling.de/)
- and/or other contributors as indicated by the @authors tag. See the
- copyright.txt file in the distribution for a full listing of all
- contributors.
+ Copyright 2017 The ModiTect authors
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
