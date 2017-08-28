@@ -82,6 +82,10 @@ public class DependencePattern {
         return modifiers;
     }
 
+    public boolean isMatchAll() {
+        return ".*".equals( pattern.pattern() );
+    }
+
     @Override
     public String toString() {
         return "DependencePattern[pattern=" + pattern + ",modifiers=" + modifiers + "]";

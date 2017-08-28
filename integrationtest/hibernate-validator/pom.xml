@@ -122,6 +122,7 @@
                                         <name>org.hibernate.validator</name>
                                         <requires>
                                             static jboss.logging.annotations;
+                                            transitive java.validation;
                                             *;
                                         </requires>
                                         <exports>

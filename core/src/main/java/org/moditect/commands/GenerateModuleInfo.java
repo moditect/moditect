@@ -118,11 +118,16 @@ public class GenerateModuleInfo {
 
             for ( DependencePattern dependence : requiresPatterns ) {
                 if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) ) {
-                    moduleRequiresStmt.getModifiers().clear();
-                    dependence.getModifiers()
-                        .stream()
-                        .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
-                        .forEach( m -> moduleRequiresStmt.getModifiers().add( m ) );
+                    if ( dependence.isMatchAll() && dependence.getModifiers().isEmpty() ) {
+                        moduleRequiresStmt.getModifiers().remove( Modifier.TRANSITIVE );
+                    }
+                    else {
+                        moduleRequiresStmt.getModifiers().clear();
+                        dependence.getModifiers()
+                            .stream()
+                            .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
+                            .forEach( m -> moduleRequiresStmt.getModifiers().add( m ) );
+                    }
 
                     break;
                 }
