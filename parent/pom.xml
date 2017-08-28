@@ -27,6 +27,8 @@
 
     <name>ModiTect Parent</name>
     <url>https://github.com/moditect/moditect</url>
+    <description>Module system tooling</description>
+    <inceptionYear>2017</inceptionYear>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
