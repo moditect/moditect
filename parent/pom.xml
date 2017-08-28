@@ -26,6 +26,7 @@
     <packaging>pom</packaging>
 
     <name>ModiTect Parent</name>
+    <url>https://github.com/moditect/moditect</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
