@@ -372,4 +372,5 @@ assemble module descriptors using ASM.
 ## License
 
 ModiTect is licensed under the Apache License version 2.0. ASM (which is contained within
-the ModiTect JAR) is licensed under the 3 clause BSD license (see _etc/LICENSE_ASM.txt_).
+the ModiTect JAR in the `org/moditect/internal/shaded/asm/` package) is licensed under the
+3 clause BSD license (see _etc/LICENSE_ASM.txt_).

@@ -36,7 +36,6 @@
             <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
-            <comments>ASF License v2.0 applies to this code base with the exception of ASM</comments>
         </license>
     </licenses>
 
