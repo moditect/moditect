@@ -311,6 +311,7 @@ be added to the image (required)
 * `outputDirectory`: Directory in which the runtime image should be created
 (required)
 * `launcher`: file name and main module for creating a launcher file (optional)
+* `stripDebug` whether to strip debug symbols or not (optional, defaults to `false`)
 
 Once the image has been created, it can be executed by running:
 

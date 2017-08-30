@@ -38,14 +38,16 @@ public class CreateRuntimeImage {
     private final String launcher;
     private final Log log;
     private final Integer compression;
+    private final boolean stripDebug;
 
-    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule, Path outputDirectory, Integer compression,
-            Log log) {
+    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
+            Path outputDirectory, Integer compression, boolean stripDebug, Log log) {
         this.modulePath = modulePath;
         this.modules = modules;
         this.outputDirectory = outputDirectory;
         this.launcher = launcherName + "=" + launcherModule;
         this.compression = compression;
+        this.stripDebug = stripDebug;
         this.log = log;
     }
 
@@ -81,6 +83,10 @@ public class CreateRuntimeImage {
         if ( compression != null ) {
             command.add( "--compress" );
             command.add( compression.toString() );
+        }
+
+        if ( stripDebug ) {
+            command.add( "--strip-debug" );
         }
 
         log.debug( "Running jlink: " + String.join( " ", command ) );

@@ -203,6 +203,7 @@
                                 <module>com.example</module>
                             </launcher>
                             <compression>2</compression>
+                            <stripDebug>true</stripDebug>
                             <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
                         </configuration>
                     </execution>
