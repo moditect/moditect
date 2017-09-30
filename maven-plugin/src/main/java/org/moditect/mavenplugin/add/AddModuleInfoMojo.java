@@ -82,10 +82,11 @@ public class AddModuleInfoMojo extends AbstractMojo {
         );
 
         Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
+        Map<ArtifactIdentifier, Path> modularizedJars = new HashMap<>();
 
         for ( ModuleConfiguration moduleConfiguration : modules ) {
             Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
-            String moduleInfoSource = getModuleInfoSource( moduleConfiguration, moduleInfoGenerator, assignedNamesByModule );
+            String moduleInfoSource = getModuleInfoSource( moduleConfiguration, moduleInfoGenerator, assignedNamesByModule, modularizedJars );
 
             AddModuleInfo addModuleInfo = new AddModuleInfo(
                 moduleInfoSource,
@@ -97,6 +98,13 @@ public class AddModuleInfoMojo extends AbstractMojo {
             );
 
             addModuleInfo.run();
+
+            if ( moduleConfiguration.getArtifact() != null ) {
+                modularizedJars.put(
+                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ) ),
+                        outputPath.resolve( inputFile.getFileName() )
+                );
+            }
         }
     }
 
@@ -130,7 +138,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
     }
 
-    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
+    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         String fileForLogging = moduleConfiguration.getFile() != null ? moduleConfiguration.getFile().getPath()
                 : moduleConfiguration.getArtifact().toDependencyString();
 
@@ -139,7 +147,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     moduleConfiguration.getArtifact(),
                     Collections.emptyList(),
                     moduleConfiguration.getModuleInfo(),
-                    assignedNamesByModule
+                    assignedNamesByModule,
+                    modularizedJars
             );
 
             return getLines( generatedModuleInfo.getPath() );

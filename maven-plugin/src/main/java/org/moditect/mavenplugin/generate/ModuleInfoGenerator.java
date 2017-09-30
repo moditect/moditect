@@ -16,6 +16,7 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -73,10 +74,10 @@ public class ModuleInfoGenerator {
         this.outputDirectory = outputDirectory;
     }
 
-    public GeneratedModuleInfo generateModuleInfo(ArtifactConfiguration artifact, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
+    public GeneratedModuleInfo generateModuleInfo(ArtifactConfiguration artifact, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         Artifact inputArtifact = artifactResolutionHelper.resolveArtifact(artifact);
 
-        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule );
+        Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule, modularizedJars );
 
         for( ArtifactConfiguration further : additionalDependencies ) {
             Artifact furtherArtifact = artifactResolutionHelper.resolveArtifact( further );
@@ -110,7 +111,7 @@ public class ModuleInfoGenerator {
         .run();
     }
 
-    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
+    private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
         CollectResult collectResult = null;
 
@@ -135,10 +136,11 @@ public class ModuleInfoGenerator {
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
             Artifact resolvedDependency = artifactResolutionHelper.resolveArtifact( dependency.getDependency().getArtifact() );
             String assignedModuleName = getAssignedModuleName( assignedNamesByModule, new ArtifactIdentifier( resolvedDependency ) );
+            Path modularized = getModularizedJar( modularizedJars, new ArtifactIdentifier( resolvedDependency ) );
 
             dependencies.add(
                     new DependencyDescriptor(
-                            resolvedDependency.getFile().toPath(),
+                            modularized != null ? modularized : resolvedDependency.getFile().toPath(),
                             dependency.getDependency().isOptional(),
                             assignedModuleName
                     )
@@ -150,6 +152,21 @@ public class ModuleInfoGenerator {
 
     private String getAssignedModuleName(Map<ArtifactIdentifier, String> assignedNamesByModule, ArtifactIdentifier artifactIdentifier) {
         for ( Entry<ArtifactIdentifier, String> assignedNameByModule : assignedNamesByModule.entrySet() ) {
+            // ignoring the version; the resolved artifact could have a different version then the one used
+            // in this modularization build
+            if ( assignedNameByModule.getKey().getGroupId().equals( artifactIdentifier.getGroupId() ) &&
+                    assignedNameByModule.getKey().getArtifactId().equals( artifactIdentifier.getArtifactId() ) &&
+                    assignedNameByModule.getKey().getClassifier().equals( artifactIdentifier.getClassifier() ) &&
+                    assignedNameByModule.getKey().getExtension().equals( artifactIdentifier.getExtension() ) ) {
+                return assignedNameByModule.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private Path getModularizedJar(Map<ArtifactIdentifier, Path> modularizedJars, ArtifactIdentifier artifactIdentifier) {
+        for ( Entry<ArtifactIdentifier, Path> assignedNameByModule : modularizedJars.entrySet() ) {
             // ignoring the version; the resolved artifact could have a different version then the one used
             // in this modularization build
             if ( assignedNameByModule.getKey().getGroupId().equals( artifactIdentifier.getGroupId() ) &&

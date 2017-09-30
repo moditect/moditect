@@ -16,6 +16,7 @@
 package org.moditect.mavenplugin.generate;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,8 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                     moduleConfiguration.getArtifact(),
                     moduleConfiguration.getAdditionalDependencies(),
                     moduleConfiguration.getModuleInfo(),
-                    assignedNamesByModule
+                    assignedNamesByModule,
+                    Collections.emptyMap()
             );
         }
         else {
@@ -109,7 +111,8 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
                         moduleConfiguration.getArtifact(),
                         moduleConfiguration.getAdditionalDependencies(),
                         moduleConfiguration.getModuleInfo(),
-                        assignedNamesByModule
+                        assignedNamesByModule,
+                        Collections.emptyMap()
                 );
             }
         }
