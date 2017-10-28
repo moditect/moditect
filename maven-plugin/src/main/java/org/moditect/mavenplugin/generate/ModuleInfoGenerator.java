@@ -167,7 +167,7 @@ public class ModuleInfoGenerator {
 
     private Path getModularizedJar(Map<ArtifactIdentifier, Path> modularizedJars, ArtifactIdentifier artifactIdentifier) {
         for ( Entry<ArtifactIdentifier, Path> assignedNameByModule : modularizedJars.entrySet() ) {
-            // ignoring the version; the resolved artifact could have a different version then the one used
+            // ignoring the version; the resolved artifact could have a different version than the one used
             // in this modularization build
             if ( assignedNameByModule.getKey().getGroupId().equals( artifactIdentifier.getGroupId() ) &&
                     assignedNameByModule.getKey().getArtifactId().equals( artifactIdentifier.getArtifactId() ) &&
