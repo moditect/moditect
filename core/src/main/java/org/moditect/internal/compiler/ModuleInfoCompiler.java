@@ -43,8 +43,13 @@ import com.github.javaparser.ast.modules.ModuleProvidesStmt;
 import com.github.javaparser.ast.modules.ModuleRequiresStmt;
 import com.github.javaparser.ast.modules.ModuleUsesStmt;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.validator.Java9Validator;
 
 public class ModuleInfoCompiler {
+
+    static {
+        JavaParser.getStaticConfiguration().setValidator( new Java9Validator() );
+    }
 
     public static ModuleDeclaration parseModuleInfo(Path moduleInfo) {
         CompilationUnit ast = null;
