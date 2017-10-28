@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,17 @@ public class ModuleInfoGenerator {
         this.outputDirectory = outputDirectory;
     }
 
+    public GeneratedModuleInfo generateModuleInfo(Path inputJar, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
+        Set<DependencyDescriptor> dependencies = new HashSet<>();
+
+        for( ArtifactConfiguration further : additionalDependencies ) {
+            Artifact furtherArtifact = artifactResolutionHelper.resolveArtifact( further );
+            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
+        }
+
+        return generateModuleInfo( inputJar, dependencies, moduleInfo, assignedNamesByModule, modularizedJars );
+    }
+
     public GeneratedModuleInfo generateModuleInfo(ArtifactConfiguration artifact, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         Artifact inputArtifact = artifactResolutionHelper.resolveArtifact(artifact);
 
@@ -84,6 +96,10 @@ public class ModuleInfoGenerator {
             dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
+        return generateModuleInfo( inputArtifact.getFile().toPath(), dependencies, moduleInfo, assignedNamesByModule, modularizedJars );
+    }
+
+    private GeneratedModuleInfo generateModuleInfo(Path inputJar, Set<DependencyDescriptor> dependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         Set<String> uses;
 
         if ( moduleInfo.getUses() != null ) {
@@ -96,7 +112,7 @@ public class ModuleInfoGenerator {
         }
 
         return new GenerateModuleInfo(
-                inputArtifact.getFile().toPath(),
+                inputJar,
                 moduleInfo.getName(),
                 dependencies,
                 PackageNamePattern.parsePatterns( moduleInfo.getExports() ),

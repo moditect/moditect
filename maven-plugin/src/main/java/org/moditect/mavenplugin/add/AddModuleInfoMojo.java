@@ -143,13 +143,26 @@ public class AddModuleInfoMojo extends AbstractMojo {
                 : moduleConfiguration.getArtifact().toDependencyString();
 
         if ( moduleConfiguration.getModuleInfo() != null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() == null ) {
-            GeneratedModuleInfo generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
-                    moduleConfiguration.getArtifact(),
-                    Collections.emptyList(),
-                    moduleConfiguration.getModuleInfo(),
-                    assignedNamesByModule,
-                    modularizedJars
-            );
+            GeneratedModuleInfo generatedModuleInfo;
+
+            if ( moduleConfiguration.getArtifact() != null ) {
+                generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
+                        moduleConfiguration.getArtifact(),
+                        Collections.emptyList(), // TODO additionalDependencies
+                        moduleConfiguration.getModuleInfo(),
+                        assignedNamesByModule,
+                        modularizedJars
+                );
+            }
+            else {
+                generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
+                        moduleConfiguration.getFile().toPath(),
+                        Collections.emptyList(), // TODO additionalDependencies
+                        moduleConfiguration.getModuleInfo(),
+                        assignedNamesByModule,
+                        modularizedJars
+                );
+            }
 
             return getLines( generatedModuleInfo.getPath() );
         }
