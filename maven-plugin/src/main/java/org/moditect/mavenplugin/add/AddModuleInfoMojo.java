@@ -23,7 +23,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -31,40 +35,59 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.moditect.commands.AddModuleInfo;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
+import org.moditect.mavenplugin.add.model.MainModuleConfiguration;
 import org.moditect.mavenplugin.add.model.ModuleConfiguration;
 import org.moditect.mavenplugin.generate.ModuleInfoGenerator;
 import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
 import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
+import org.moditect.model.DependencyDescriptor;
 import org.moditect.model.GeneratedModuleInfo;
 
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class AddModuleInfoMojo extends AbstractMojo {
 
     @Component
     private RepositorySystem repoSystem;
 
-    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
     private RepositorySystemSession repoSession;
 
-    @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
     private List<RemoteRepository> remoteRepos;
+
+    @Parameter(defaultValue = "${project}", readonly = true)
+    protected MavenProject project;
+
+    @Parameter(defaultValue = "${project.artifactId}", readonly = true, required = true)
+    private String artifactId;
+
+    @Parameter(defaultValue = "${project.version}", readonly = true, required = true)
+    private String version;
 
     @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
     private File workingDirectory;
+
+    @Parameter(readonly = true, defaultValue = "${project.build.directory}")
+    private File buildDirectory;
 
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/modules")
     private File outputDirectory;
 
     @Parameter(property = "overwriteExistingFiles", defaultValue = "false")
     private boolean overwriteExistingFiles;
+
+    @Parameter
+    private MainModuleConfiguration module;
 
     @Parameter
     private List<ModuleConfiguration> modules;
@@ -84,27 +107,47 @@ public class AddModuleInfoMojo extends AbstractMojo {
         Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
         Map<ArtifactIdentifier, Path> modularizedJars = new HashMap<>();
 
-        for ( ModuleConfiguration moduleConfiguration : modules ) {
-            Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
-            String moduleInfoSource = getModuleInfoSource( moduleConfiguration, moduleInfoGenerator, assignedNamesByModule, modularizedJars );
+        if ( modules != null ) {
+            for ( ModuleConfiguration moduleConfiguration : modules ) {
+                Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
+                String moduleInfoSource = getModuleInfoSource( inputFile, moduleConfiguration, moduleInfoGenerator, assignedNamesByModule, modularizedJars );
+
+                AddModuleInfo addModuleInfo = new AddModuleInfo(
+                    moduleInfoSource,
+                    moduleConfiguration.getMainClass(),
+                    getVersion( moduleConfiguration ),
+                    inputFile,
+                    outputPath,
+                    overwriteExistingFiles
+                );
+
+                addModuleInfo.run();
+
+                if ( moduleConfiguration.getArtifact() != null ) {
+                    modularizedJars.put(
+                            new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ) ),
+                            outputPath.resolve( inputFile.getFileName() )
+                    );
+                }
+            }
+        }
+
+        if ( module != null ) {
+            Path inputJar = buildDirectory.toPath().resolve( artifactId + "-" + version + ".jar" );
+            if ( !Files.exists( inputJar ) ) {
+                throw new MojoExecutionException( "Couldn't find file " + inputJar + ". Run this goal for the project's JAR only after the maven-jar-plugin." );
+            }
 
             AddModuleInfo addModuleInfo = new AddModuleInfo(
-                moduleInfoSource,
-                moduleConfiguration.getMainClass(),
-                getVersion( moduleConfiguration ),
-                inputFile,
-                outputPath,
-                overwriteExistingFiles
+                    getModuleInfoSource( inputJar, module, moduleInfoGenerator, assignedNamesByModule, modularizedJars ),
+                    module.getMainClass(),
+                    version,
+                    inputJar,
+                    outputPath,
+                    overwriteExistingFiles
             );
 
             addModuleInfo.run();
-
-            if ( moduleConfiguration.getArtifact() != null ) {
-                modularizedJars.put(
-                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ) ),
-                        outputPath.resolve( inputFile.getFileName() )
-                );
-            }
         }
     }
 
@@ -114,6 +157,10 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
         else if ( moduleConfiguration.getArtifact() != null ) {
             return moduleConfiguration.getArtifact().getVersion();
+        }
+        // TODO try to derive version from file name?
+        else if ( moduleConfiguration.getFile() != null ) {
+            return null;
         }
         else {
             return null;
@@ -138,10 +185,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
     }
 
-    private String getModuleInfoSource(ModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
-        String fileForLogging = moduleConfiguration.getFile() != null ? moduleConfiguration.getFile().getPath()
-                : moduleConfiguration.getArtifact().toDependencyString();
-
+    private String getModuleInfoSource(Path inputFile, ModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
         if ( moduleConfiguration.getModuleInfo() != null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() == null ) {
             GeneratedModuleInfo generatedModuleInfo;
 
@@ -157,9 +201,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
             else {
                 generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
                         moduleConfiguration.getFile().toPath(),
-                        Collections.emptyList(), // TODO additionalDependencies
+                        Collections.emptySet(), // TODO additionalDependencies
                         moduleConfiguration.getModuleInfo(),
-                        assignedNamesByModule,
                         modularizedJars
                 );
             }
@@ -173,7 +216,39 @@ public class AddModuleInfoMojo extends AbstractMojo {
             return getLines( moduleConfiguration.getModuleInfoFile().toPath() );
         }
         else {
-            throw new MojoExecutionException( "Either 'moduleInfo' or 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + fileForLogging);
+            throw new MojoExecutionException( "Either 'moduleInfo' or 'moduleInfoFile' or 'moduleInfoSource' must be specified for " + inputFile);
+        }
+    }
+
+    private String getModuleInfoSource(Path inputFile, MainModuleConfiguration moduleConfiguration, ModuleInfoGenerator moduleInfoGenerator, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
+        if ( moduleConfiguration.getModuleInfo() != null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() == null ) {
+
+            Set<DependencyDescriptor> dependencies = project.getArtifacts().stream()
+                .map( d -> new DependencyDescriptor(
+                        d.getFile().toPath(),
+                        d.isOptional(),
+                        getAssignedModuleName( assignedNamesByModule, d )
+                    )
+                )
+                .collect( Collectors.toSet() );
+
+            GeneratedModuleInfo generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
+                    inputFile,
+                    dependencies, // TODO additionalDependencies
+                    moduleConfiguration.getModuleInfo(),
+                    modularizedJars
+            );
+
+            return getLines( generatedModuleInfo.getPath() );
+        }
+        else if ( moduleConfiguration.getModuleInfo() == null && moduleConfiguration.getModuleInfoSource() != null && moduleConfiguration.getModuleInfoFile() == null ) {
+            return moduleConfiguration.getModuleInfoSource();
+        }
+        else if ( moduleConfiguration.getModuleInfo() == null && moduleConfiguration.getModuleInfoSource() == null && moduleConfiguration.getModuleInfoFile() != null ) {
+            return getLines( moduleConfiguration.getModuleInfoFile().toPath() );
+        }
+        else {
+            throw new MojoExecutionException( "Either 'moduleInfo' or 'moduleInfoFile' or 'moduleInfoSource' must be specified for <module>." );
         }
     }
 
@@ -204,6 +279,10 @@ public class AddModuleInfoMojo extends AbstractMojo {
     private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule(ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
         Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
 
+        if ( modules == null ) {
+            return assignedNamesByModule;
+        }
+
         for ( ModuleConfiguration configuredModule : modules ) {
             String assignedName;
 
@@ -227,5 +306,20 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
 
         return assignedNamesByModule;
+    }
+
+    private String getAssignedModuleName(Map<ArtifactIdentifier, String> assignedNamesByModule, Artifact artifact) {
+        for ( Entry<ArtifactIdentifier, String> assignedNameByModule : assignedNamesByModule.entrySet() ) {
+            // ignoring the version; the resolved artifact could have a different version then the one used
+            // in this modularization build
+            if ( assignedNameByModule.getKey().getGroupId().equals( artifact.getGroupId() ) &&
+                    assignedNameByModule.getKey().getArtifactId().equals( artifact.getArtifactId() ) &&
+                    ( artifact.getClassifier() == null && assignedNameByModule.getKey().getClassifier().equals("") || assignedNameByModule.getKey().getClassifier().equals( artifact.getClassifier() ) ) &&
+                    assignedNameByModule.getKey().getExtension().equals( artifact.getType() ) ) {
+                return assignedNameByModule.getValue();
+            }
+        }
+
+        return null;
     }
 }

@@ -25,6 +25,14 @@ public class ArtifactIdentifier {
     private String extension;
     private String classifier;
 
+    public ArtifactIdentifier(String groupId, String artifactId, String version, String extension, String classifier) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+        this.extension = extension;
+        this.classifier = classifier;
+    }
+
     public ArtifactIdentifier(Artifact artifact) {
         groupId = artifact.getGroupId();
         artifactId = artifact.getArtifactId();
