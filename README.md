@@ -106,6 +106,8 @@ descriptor (optional); has the following sub-elements:
   - `name`: Name to be used within the descriptor; if not given the name
 will be derived from the JAR name as per the naming rules for automatic modules
 (optional)
+  - `open`: Whether the descriptor should be an open module or not (optional, defaults
+to `false`)
   - `exports`: List of name patterns for describing the exported packages of the module,
 separated by ";". Patterns can be inclusive or exclusive (starting with "!") and may
 contain the "\*" as a wildcard. Inclusive patterns may be qualified exports ("to xyz").
@@ -152,9 +154,60 @@ mvn moditect:generate-module-info \
     -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final \ -Dmoditect.exportExcludes=com\.example\.core\.internal\..* \
     -Dmoditect.addServiceUses=true
 ```
+
+### Adding a module descriptor to the project JAR
+
+To add a module descriptor to the JAR produced by the current Maven project, configure
+the _add-module-info_ goal as follows:
+
+```xml
+...
+<plugin>
+    <groupId>org.moditect</groupId>
+    <artifactId>moditect-maven-plugin</artifactId>
+    <version>1.0.0.Alpha1</version>
+    <executions>
+        <execution>
+            <id>add-module-infos</id>
+            <phase>package</phase>
+            <goals>
+                <goal>add-module-info</goal>
+            </goals>
+            <configuration>
+                <module>
+                    <moduleInfo>
+                        <name>com.example</name>
+                        <exports>
+                            !com.example.internal.*;
+                            *;
+                        </exports>
+                    </moduleInfo>
+                </module>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+```
+
+The following configuration options exist for the `<module>` configuration element:
+
+* `moduleInfoSource`: Inline representation of a module-info.java descriptor
+(optional; either this or `moduleInfoFile` or `moduleInfo` must be given)
+* `moduleInfoFile`: Path to a module-info.java descriptor
+(optional; either this or `moduleInfoSource` or `moduleInfo` must be given)
+* `moduleInfo`: A `moduleInfo` configuration as used with the `generate-module-info`
+goal (optional; either this or `moduleInfoSource` or `moduleInfoFile` must be given)
+* `mainClass`: The fully-qualified name of the main class to be added to the
+module descriptor (optional)
+
+Note that `moduleInfoSource` and `moduleInfoFile` can be used on Java 8, allowing to add
+a Java 9 module descriptor to your JAR also if you did not move to Java 9 for your own
+build yet. `moduleInfo` can only be used on Java 9 or later.
+
 ### Adding module descriptors to existing JAR files
 
-To add a module descriptor for a given artifact, configure the
+To add a module descriptor for a given dependency, configure the
 _add-module-info_ goal as follows:
 
 ```xml
@@ -217,49 +270,7 @@ module descriptor (optional)
 `artifact` is given, the artifact's version will be used; otherwise no version
 will be added (optional)
 
-To add a module descriptor for the artifact built by the current project itself,
-configure the plug-in like so:
-
-```xml
-...
-<plugin>
-    <groupId>org.moditect</groupId>
-    <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha1</version>
-    <executions>
-        <execution>
-            <id>add-module-infos</id>
-            <phase>package</phase>
-            <goals>
-                <goal>add-module-info</goal>
-            </goals>
-            <configuration>
-                <outputDirectory>${project.build.directory}</outputDirectory>
-                <overwriteExistingFiles>true</overwriteExistingFiles>
-                <modules>
-                    <module>
-                        <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
-                        <moduleInfo>
-                            <name>com.example.somemodule</name>
-                            <exports>
-                                !com.example.internal*;
-                                *;
-                            </exports>
-                            <addServiceUses>true</addServiceUses>
-                        </moduleInfo>
-                        <mainClass>com.example.Main</mainClass>
-                        <version>${project.version}</version>
-                    </module>
-                </modules>
-            </configuration>
-        </execution>
-    </executions>
-</plugin>
-...
-```
-
-Note that as input and output file are the same in this case,
-`overwriteExistingFiles` must be set to `true`.
+The modularized JARs can be found in the folder given via `outputDirectory`.
 
 ### Creating modular runtime images
 
