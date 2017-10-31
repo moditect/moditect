@@ -9,8 +9,14 @@ Currently the following tasks are supported:
 
 * Generating module-info.java descriptors for given artifacts (Maven dependencies or local JAR
   files)
-* Adding module descriptors to existing JAR files
+* Adding module descriptors to your project's JAR as well as existing JAR files (dependencies)
 * Creating module runtime images
+
+Compared to authoring module descriptors by hand, using ModiTect saves you work by defining
+dependence clauses based on your project's dependencies, describing exported and opened
+packages with patterns (instead of listing all packages separately), auto-detecting service
+usages and more. You also can use ModiTect to add a module descriptor to your project JAR
+while staying on Java 8 with your own build.
 
 In future versions functionality may be added to work with other tools like
 jmod etc. under Maven and other dependency management tools in a comfortable
@@ -18,6 +24,7 @@ manner.
 
 * [Usage](#usage)
    * [Generating module-info.java descriptors](#generating-module-infojava-descriptors)
+   * [Adding a module descriptor to the project JAR](#adding-module-descriptors-to-the project-jar)
    * [Adding module descriptors to existing JAR files](#adding-module-descriptors-to-existing-jar-files)
    * [Creating module runtime images](#creating-module-runtime-images)
 * [Example](#example)
