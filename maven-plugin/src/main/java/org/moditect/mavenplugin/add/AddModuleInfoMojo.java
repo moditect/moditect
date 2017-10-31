@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -146,8 +147,14 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     outputPath,
                     overwriteExistingFiles
             );
-
             addModuleInfo.run();
+
+            try {
+                Files.copy( outputPath.resolve( inputJar.getFileName() ), inputJar, StandardCopyOption.REPLACE_EXISTING );
+            }
+            catch (IOException e) {
+                throw new RuntimeException( "Couldn't replace " + inputJar + " with modularized version", e );
+            }
         }
     }
 
