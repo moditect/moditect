@@ -1,6 +1,6 @@
 # ModiTect - Tooling for the Java 9 Module System
 
-Version 1.0.0.Alpha1 - 2017-08-28
+Version 1.0.0.Alpha2 - 2017-10-31
 
 The ModiTect project aims at providing productivity tools for working with
 the Java 9 module system ("Jigsaw").
@@ -24,7 +24,7 @@ manner.
 
 * [Usage](#usage)
    * [Generating module-info.java descriptors](#generating-module-infojava-descriptors)
-   * [Adding a module descriptor to the project JAR](#adding-module-descriptors-to-the project-jar)
+   * [Adding a module descriptor to the project JAR](#adding-a-module-descriptor-to-the-project-jar)
    * [Adding module descriptors to existing JAR files](#adding-module-descriptors-to-existing-jar-files)
    * [Creating module runtime images](#creating-module-runtime-images)
 * [Example](#example)
@@ -49,7 +49,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha1</version>
+    <version>1.0.0.Alpha2</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -172,7 +172,7 @@ the _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha1</version>
+    <version>1.0.0.Alpha2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -222,7 +222,7 @@ _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha1</version>
+    <version>1.0.0.Alpha2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -290,7 +290,7 @@ _create-runtime-image_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha1</version>
+    <version>1.0.0.Alpha2</version>
     <executions>
         <execution>
             <id>create-runtime-image</id>
