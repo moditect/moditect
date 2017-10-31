@@ -154,12 +154,10 @@
                             </modules>
                             <module>
                                 <mainClass>com.example.ValidationTest</mainClass>
-                                <moduleInfoSource>
-                                    open module com.example {
-                                        requires org.hibernate.validator;
-                                        exports com.example;
-                                    }
-                                </moduleInfoSource>
+                                <moduleInfo>
+                                    <name>com.example</name>
+                                    <open>true</open>
+                                </moduleInfo>
                             </module>
                         </configuration>
                         <goals>

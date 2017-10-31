@@ -54,20 +54,22 @@ public class GenerateModuleInfo {
 
     private final Path inputJar;
     private final String moduleName;
+    private final boolean open;
     private final Set<DependencyDescriptor> dependencies;
     private final List<PackageNamePattern> exportPatterns;
     private final List<PackageNamePattern> opensPatterns;
     private final List<DependencePattern> requiresPatterns;
-    private Set<String> uses;
+    private final Set<String> uses;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
     private final ServiceLoaderUseScanner serviceLoaderUseScanner;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
+        this.open = open;
         this.dependencies = dependencies;
         this.exportPatterns = exportPatterns;
         this.opensPatterns = opensPatterns;
@@ -101,6 +103,10 @@ public class GenerateModuleInfo {
     }
 
     private void updateModuleInfo(Map<String, Boolean> optionalityPerModule, ModuleDeclaration moduleDeclaration) {
+        if ( open ) {
+            moduleDeclaration.setOpen( true );
+        }
+
         List<ModuleRequiresStmt> requiresStatements = moduleDeclaration.getNodesByType( ModuleRequiresStmt.class );
 
         for ( ModuleRequiresStmt moduleRequiresStmt : requiresStatements ) {

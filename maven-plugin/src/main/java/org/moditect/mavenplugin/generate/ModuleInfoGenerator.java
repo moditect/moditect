@@ -102,6 +102,7 @@ public class ModuleInfoGenerator {
         return new GenerateModuleInfo(
                 inputJar,
                 moduleInfo.getName(),
+                moduleInfo.isOpen(),
                 dependencies,
                 PackageNamePattern.parsePatterns( moduleInfo.getExports() ),
                 PackageNamePattern.parsePatterns( moduleInfo.getOpens() ),

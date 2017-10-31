@@ -26,6 +26,7 @@ public class ModuleInfoConfiguration {
     private String uses;
     private String name;
     private boolean addServiceUses;
+    private boolean open;
 
     public String getName() {
         return name;
@@ -73,5 +74,19 @@ public class ModuleInfoConfiguration {
 
     public boolean isAddServiceUses() {
         return addServiceUses;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    @Override
+    public String toString() {
+        return "ModuleInfoConfiguration [requires=" + requires + ", exports=" + exports + ", opens=" + opens + ", uses="
+                + uses + ", name=" + name + ", addServiceUses=" + addServiceUses + ", open=" + open + "]";
     }
 }
