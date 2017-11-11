@@ -44,7 +44,7 @@ public class CreateRuntimeImage {
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
             Path outputDirectory, Integer compression, boolean stripDebug, Log log) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
-        this.modules = ( modules != null ? modules : Collections.emptyList() );
+        this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
         this.launcher = launcherName + "=" + launcherModule;
         this.compression = compression;
@@ -52,15 +52,19 @@ public class CreateRuntimeImage {
         this.log = log;
     }
 
+    private static List<String> getModules(List<String> modules) {
+        if ( modules == null || modules.isEmpty() ) {
+            throw new IllegalArgumentException("At least one module must be added using the <modules> configuration property.");
+        }
+
+        return Collections.unmodifiableList( modules );
+    }
+
     public void run() {
         runJlink();
     }
 
     private void runJlink() throws AssertionError {
-        if( modules.isEmpty() ) {
-            throw new AssertionError("At least one module must be added using the <modules> configuration property.");
-        }
-        
         String javaHome = System.getProperty("java.home");
         String jlinkBin = javaHome +
                 File.separator + "bin" +
@@ -68,9 +72,9 @@ public class CreateRuntimeImage {
 
         List<String> command = new ArrayList<>();
         command.add( jlinkBin );
-        
+
         command.add( "--add-modules" );
-        command.add( String.join( ",", modules ) ); 
+        command.add( String.join( ",", modules ) );
         command.add( "--module-path" );
         command.add( modulePath.stream()
                 .map( Path::toString )
