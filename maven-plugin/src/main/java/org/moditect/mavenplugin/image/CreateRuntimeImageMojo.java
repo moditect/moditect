@@ -35,13 +35,13 @@ import org.moditect.mavenplugin.util.MojoLog;
 @Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateRuntimeImageMojo extends AbstractMojo {
 
-    @Parameter
+    @Parameter(defaultValue = "[]")
     private List<File> modulePath;
 
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/image")
     private File outputDirectory;
 
-    @Parameter
+    @Parameter(required = true)
     private List<String> modules;
 
     @Parameter

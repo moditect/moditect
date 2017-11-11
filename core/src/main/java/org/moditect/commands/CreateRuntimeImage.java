@@ -18,6 +18,7 @@ package org.moditect.commands;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,8 +43,8 @@ public class CreateRuntimeImage {
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
             Path outputDirectory, Integer compression, boolean stripDebug, Log log) {
-        this.modulePath = modulePath;
-        this.modules = modules;
+        this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
+        this.modules = ( modules != null ? modules : Collections.emptyList() );
         this.outputDirectory = outputDirectory;
         this.launcher = launcherName + "=" + launcherModule;
         this.compression = compression;
@@ -56,6 +57,10 @@ public class CreateRuntimeImage {
     }
 
     private void runJlink() throws AssertionError {
+        if( modules.isEmpty() ) {
+            throw new AssertionError("At least one module must be added using the <modules> configuration property.");
+        }
+        
         String javaHome = System.getProperty("java.home");
         String jlinkBin = javaHome +
                 File.separator + "bin" +
@@ -63,9 +68,9 @@ public class CreateRuntimeImage {
 
         List<String> command = new ArrayList<>();
         command.add( jlinkBin );
-
+        
         command.add( "--add-modules" );
-        command.add( String.join( ",", modules ) );
+        command.add( String.join( ",", modules ) ); 
         command.add( "--module-path" );
         command.add( modulePath.stream()
                 .map( Path::toString )
