@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,6 +47,7 @@ import org.moditect.commands.AddModuleInfo;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.mavenplugin.add.model.MainModuleConfiguration;
 import org.moditect.mavenplugin.add.model.ModuleConfiguration;
+import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.generate.ModuleInfoGenerator;
 import org.moditect.mavenplugin.generate.model.ArtifactIdentifier;
 import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
@@ -54,7 +57,7 @@ import org.moditect.model.GeneratedModuleInfo;
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.RUNTIME)
 public class AddModuleInfoMojo extends AbstractMojo {
 
     @Component
@@ -105,6 +108,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
             repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, new File(workingDirectory, "generated-sources" )
         );
 
+        resolveArtifactsToBeModularized( artifactResolutionHelper );
+
         Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
         Map<ArtifactIdentifier, Path> modularizedJars = new HashMap<>();
 
@@ -126,7 +131,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
 
                 if ( moduleConfiguration.getArtifact() != null ) {
                     modularizedJars.put(
-                            new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ) ),
+                            new ArtifactIdentifier( moduleConfiguration.getResolvedArtifact() ),
                             outputPath.resolve( inputFile.getFileName() )
                     );
                 }
@@ -158,6 +163,67 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Sets the resolved artifact of all artifact configurations. If no version is given, we try
+     * to obtain it from the project dependencies.
+     */
+    private void resolveArtifactsToBeModularized(ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
+        if ( modules == null ) {
+            return;
+        }
+
+        for ( ModuleConfiguration moduleConfiguration : modules ) {
+            ArtifactConfiguration artifact = moduleConfiguration.getArtifact();
+
+            if ( artifact != null ) {
+                if ( artifact.getVersion() == null ) {
+                    artifact.setVersion( determineVersion( artifact ) );
+                }
+
+                moduleConfiguration.setResolvedArtifact( artifactResolutionHelper.resolveArtifact( artifact ) );
+            }
+        }
+    }
+
+    private String determineVersion(ArtifactConfiguration artifact) throws MojoExecutionException {
+        Optional<Artifact> resolvedDependency = project.getArtifacts()
+            .stream()
+            .filter( a -> {
+                return Objects.equals( a.getGroupId(), artifact.getGroupId() ) &&
+                        Objects.equals( a.getArtifactId(), artifact.getArtifactId() ) &&
+                        Objects.equals( a.getClassifier(), artifact.getClassifier() ) &&
+                        Objects.equals( a.getType(), artifact.getType() );
+            } )
+            .findFirst();
+
+        if ( resolvedDependency.isPresent() ) {
+            return resolvedDependency.get().getVersion();
+        }
+
+        Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
+            .getDependencies()
+            .stream()
+            .filter( d -> {
+                return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
+                        Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
+                        Objects.equals( d.getClassifier(), artifact.getClassifier() ) &&
+                        Objects.equals( d.getType(), artifact.getType() );
+            } )
+            .findFirst();
+
+        if ( managed.isPresent() ) {
+            return managed.get().getVersion();
+        }
+
+        else {
+            throw new MojoExecutionException(
+                    "A version must be given for artifact " + artifact.toDependencyString()
+                    + ". Either specify one explicitly, add it to the project dependencies"
+                    + " or add it to the project's dependency management."
+            );
+        }
+    }
+
     private String getVersion(ModuleConfiguration moduleConfiguration) {
         if ( moduleConfiguration.getVersion() != null ) {
             return moduleConfiguration.getVersion();
@@ -185,7 +251,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
             }
         }
         else if ( moduleConfiguration.getArtifact() != null ) {
-            return artifactResolutionHelper.resolveArtifact( moduleConfiguration.getArtifact() ).getFile().toPath();
+            return moduleConfiguration.getResolvedArtifact().getFile().toPath();
         }
         else {
             throw new MojoExecutionException( "One of 'file' and 'artifact' must be specified" );
@@ -306,7 +372,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
             // TODO handle file case; although file is unlikely to be used together with others
             if ( configuredModule.getArtifact() != null ) {
                 assignedNamesByModule.put(
-                        new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
+                        new ArtifactIdentifier( configuredModule.getResolvedArtifact() ),
                         assignedName
                 );
             }

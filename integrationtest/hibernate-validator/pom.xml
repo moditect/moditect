@@ -43,6 +43,11 @@
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>${javax.el.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -84,7 +89,6 @@
                                     <artifact>
                                         <groupId>javax.validation</groupId>
                                         <artifactId>validation-api</artifactId>
-                                        <version>${bean.validation.version}</version>
                                     </artifact>
                                     <moduleInfo>
                                         <addServiceUses>true</addServiceUses>
@@ -104,7 +108,6 @@
                                     <artifact>
                                         <groupId>com.fasterxml</groupId>
                                         <artifactId>classmate</artifactId>
-                                        <version>${classmate.version}</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>com.fasterxml.classmate</name>
@@ -114,7 +117,6 @@
                                     <artifact>
                                         <groupId>org.hibernate.validator</groupId>
                                         <artifactId>hibernate-validator</artifactId>
-                                        <version>${hibernate.validator.version}</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.hibernate.validator</name>
@@ -138,7 +140,6 @@
                                     <artifact>
                                         <groupId>org.jboss.logging</groupId>
                                         <artifactId>jboss-logging</artifactId>
-                                        <version>${jboss.logging.version}</version>
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.jboss.logging</name>

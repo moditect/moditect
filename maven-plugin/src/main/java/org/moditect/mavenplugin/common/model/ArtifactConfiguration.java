@@ -67,7 +67,7 @@ public class ArtifactConfiguration {
     }
 
     public String getType() {
-        return type;
+        return type != null ? type : "jar";
     }
 
     public void setType(String type) {

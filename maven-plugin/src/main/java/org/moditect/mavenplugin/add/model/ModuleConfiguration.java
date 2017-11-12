@@ -17,6 +17,7 @@ package org.moditect.mavenplugin.add.model;
 
 import java.io.File;
 
+import org.eclipse.aether.artifact.Artifact;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
 
@@ -35,6 +36,8 @@ public class ModuleConfiguration {
 
     private String mainClass;
     private String version;
+
+    private Artifact resolvedArtifact;
 
     public File getFile() {
         return file;
@@ -90,6 +93,18 @@ public class ModuleConfiguration {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Artifact getResolvedArtifact() {
+            if ( resolvedArtifact == null ) {
+                throw new IllegalStateException( "Artifact must be resolved first" );
+            }
+
+        return resolvedArtifact;
+    }
+
+    public void setResolvedArtifact(Artifact resolvedArtifact) {
+        this.resolvedArtifact = resolvedArtifact;
     }
 
     @Override
