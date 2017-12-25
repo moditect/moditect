@@ -16,6 +16,8 @@
 package org.moditect.mavenplugin.add.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
@@ -29,6 +31,7 @@ public class ModuleConfiguration {
 
     private File file;
     private ArtifactConfiguration artifact;
+    private List<ArtifactConfiguration> additionalDependencies = new ArrayList<>();
 
     private ModuleInfoConfiguration moduleInfo;
     private File moduleInfoFile;
@@ -53,6 +56,14 @@ public class ModuleConfiguration {
 
     public void setArtifact(ArtifactConfiguration artifact) {
         this.artifact = artifact;
+    }
+
+    public List<ArtifactConfiguration> getAdditionalDependencies() {
+        return additionalDependencies;
+    }
+
+    public void setAdditionalDependencies(List<ArtifactConfiguration> additionalDependencies) {
+        this.additionalDependencies = additionalDependencies;
     }
 
     public ModuleInfoConfiguration getModuleInfo() {

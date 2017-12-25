@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +104,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
 
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
-            repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, new File(workingDirectory, "generated-sources" )
+            project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, new File(workingDirectory, "generated-sources" )
         );
 
         resolveArtifactsToBeModularized( artifactResolutionHelper );
@@ -265,7 +264,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
             if ( moduleConfiguration.getArtifact() != null ) {
                 generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
                         moduleConfiguration.getArtifact(),
-                        Collections.emptyList(), // TODO additionalDependencies
+                        moduleConfiguration.getAdditionalDependencies(),
                         moduleConfiguration.getModuleInfo(),
                         assignedNamesByModule,
                         modularizedJars
@@ -274,9 +273,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
             else {
                 generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
                         moduleConfiguration.getFile().toPath(),
-                        Collections.emptySet(), // TODO additionalDependencies
+                        moduleConfiguration.getAdditionalDependencies(),
                         moduleConfiguration.getModuleInfo(),
-                        modularizedJars
+                        assignedNamesByModule
                 );
             }
 
@@ -307,9 +306,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
 
             GeneratedModuleInfo generatedModuleInfo = moduleInfoGenerator.generateModuleInfo(
                     inputFile,
-                    dependencies, // TODO additionalDependencies
-                    moduleConfiguration.getModuleInfo(),
-                    modularizedJars
+                    dependencies,
+                    moduleConfiguration.getModuleInfo()
             );
 
             return getLines( generatedModuleInfo.getPath() );

@@ -30,6 +30,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -50,6 +51,9 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
     @Parameter( defaultValue = "${session}", readonly = true, required = true )
     private MavenSession session;
+
+    @Parameter(defaultValue = "${project}", readonly = true)
+    protected MavenProject project;
 
     @Component
     private RepositorySystem repoSystem;
@@ -90,7 +94,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
-                repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, outputDirectory
+                project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, outputDirectory
         );
 
         Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );

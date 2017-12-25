@@ -19,19 +19,24 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.CollectResult;
 import org.eclipse.aether.collection.DependencyCollectionException;
@@ -55,16 +60,18 @@ import org.moditect.model.PackageNamePattern;
 
 public class ModuleInfoGenerator {
 
-    private RepositorySystem repoSystem;
-    private RepositorySystemSession repoSession;
-    private List<RemoteRepository> remoteRepos;
-    private ArtifactResolutionHelper artifactResolutionHelper;
-    private Log log;
-    private File workingDirectory;
-    private File outputDirectory;
+    private final MavenProject project;
+    private final RepositorySystem repoSystem;
+    private final RepositorySystemSession repoSession;
+    private final List<RemoteRepository> remoteRepos;
+    private final ArtifactResolutionHelper artifactResolutionHelper;
+    private final Log log;
+    private final File workingDirectory;
+    private final File outputDirectory;
 
-    public ModuleInfoGenerator(RepositorySystem repoSystem, RepositorySystemSession repoSession,
+    public ModuleInfoGenerator(MavenProject project, RepositorySystem repoSystem, RepositorySystemSession repoSession,
             List<RemoteRepository> remoteRepos, ArtifactResolutionHelper artifactResolutionHelper, Log log, File workingDirectory, File outputDirectory) {
+        this.project = project;
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
         this.remoteRepos = remoteRepos;
@@ -84,10 +91,21 @@ public class ModuleInfoGenerator {
             dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
         }
 
-        return generateModuleInfo( inputArtifact.getFile().toPath(), dependencies, moduleInfo, modularizedJars );
+        return generateModuleInfo( inputArtifact.getFile().toPath(), dependencies, moduleInfo );
     }
 
-    public GeneratedModuleInfo generateModuleInfo(Path inputJar, Set<DependencyDescriptor> dependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
+    public GeneratedModuleInfo generateModuleInfo(Path inputJar, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule) throws MojoExecutionException {
+        Set<DependencyDescriptor> dependencies = new HashSet<>();
+
+        for( ArtifactConfiguration further : additionalDependencies ) {
+            Artifact furtherArtifact = artifactResolutionHelper.resolveArtifact( further );
+            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
+        }
+
+        return generateModuleInfo( inputJar, dependencies, moduleInfo );
+    }
+
+    public GeneratedModuleInfo generateModuleInfo(Path inputJar, Set<DependencyDescriptor> dependencies, ModuleInfoConfiguration moduleInfo) throws MojoExecutionException {
         Set<String> uses;
 
         if ( moduleInfo.getUses() != null ) {
@@ -139,7 +157,15 @@ public class ModuleInfoGenerator {
         Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
 
         for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
-            Artifact resolvedDependency = artifactResolutionHelper.resolveArtifact( dependency.getDependency().getArtifact() );
+            Artifact artifact = dependency.getDependency().getArtifact();
+
+            // use the version of the dependency as used within the current project's build, if present
+            String versionFromProject = getVersionFromProject( artifact );
+            if ( versionFromProject != null ) {
+                artifact = new DefaultArtifact( artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(), artifact.getExtension(), versionFromProject );
+            }
+
+            Artifact resolvedDependency = artifactResolutionHelper.resolveArtifact( artifact );
             String assignedModuleName = getAssignedModuleName( assignedNamesByModule, new ArtifactIdentifier( resolvedDependency ) );
             Path modularized = getModularizedJar( modularizedJars, new ArtifactIdentifier( resolvedDependency ) );
 
@@ -183,5 +209,49 @@ public class ModuleInfoGenerator {
         }
 
         return null;
+    }
+
+    private String getVersionFromProject(Artifact artifact) throws MojoExecutionException {
+        Optional<org.apache.maven.artifact.Artifact> resolvedDependency = project.getArtifacts()
+            .stream()
+            .filter( a -> {
+                return Objects.equals( a.getGroupId(), artifact.getGroupId() ) &&
+                        Objects.equals( a.getArtifactId(), artifact.getArtifactId() ) &&
+                        areEqualClassifiers( a.getClassifier(), artifact.getClassifier() ) &&
+                        Objects.equals( a.getType(), artifact.getExtension() );
+            } )
+            .findFirst();
+
+        if ( resolvedDependency.isPresent() ) {
+            return resolvedDependency.get().getVersion();
+        }
+
+        Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
+            .getDependencies()
+            .stream()
+            .filter( d -> {
+                return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
+                        Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
+                        areEqualClassifiers( d.getClassifier(), artifact.getClassifier() ) &&
+                        Objects.equals( d.getType(), artifact.getExtension() );
+            } )
+            .findFirst();
+
+        if ( managed.isPresent() ) {
+            return managed.get().getVersion();
+        }
+
+        return null;
+    }
+
+    private boolean areEqualClassifiers(String classifier1, String classifier2) {
+        if ( classifier1 != null && classifier1.isEmpty() ) {
+            classifier1 = null;
+        }
+        if ( classifier2 != null && classifier2.isEmpty() ) {
+            classifier2 = null;
+        }
+
+        return Objects.equals( classifier1, classifier2 );
     }
 }
