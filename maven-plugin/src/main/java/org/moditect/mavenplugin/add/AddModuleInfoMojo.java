@@ -95,6 +95,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter
     private List<ModuleConfiguration> modules;
 
+    @Parameter
+    private List<String> jdepsExtraArgs;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path outputPath = outputDirectory.toPath();
@@ -104,7 +107,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
 
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
-            project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, new File(workingDirectory, "generated-sources" )
+            project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, jdepsExtraArgs, getLog(), workingDirectory, new File( workingDirectory, "generated-sources" )
         );
 
         resolveArtifactsToBeModularized( artifactResolutionHelper );

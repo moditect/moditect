@@ -65,17 +65,19 @@ public class ModuleInfoGenerator {
     private final RepositorySystemSession repoSession;
     private final List<RemoteRepository> remoteRepos;
     private final ArtifactResolutionHelper artifactResolutionHelper;
+    private final List<String> jdepsExtraArgs;
     private final Log log;
     private final File workingDirectory;
     private final File outputDirectory;
 
     public ModuleInfoGenerator(MavenProject project, RepositorySystem repoSystem, RepositorySystemSession repoSession,
-            List<RemoteRepository> remoteRepos, ArtifactResolutionHelper artifactResolutionHelper, Log log, File workingDirectory, File outputDirectory) {
+            List<RemoteRepository> remoteRepos, ArtifactResolutionHelper artifactResolutionHelper, List<String> jdepsExtraArgs, Log log, File workingDirectory, File outputDirectory) {
         this.project = project;
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
         this.remoteRepos = remoteRepos;
         this.artifactResolutionHelper = artifactResolutionHelper;
+        this.jdepsExtraArgs = jdepsExtraArgs;
         this.log = log;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
@@ -129,6 +131,7 @@ public class ModuleInfoGenerator {
                 outputDirectory.toPath(),
                 uses,
                 moduleInfo.isAddServiceUses(),
+                jdepsExtraArgs,
                 new MojoLog( log )
         )
         .run();

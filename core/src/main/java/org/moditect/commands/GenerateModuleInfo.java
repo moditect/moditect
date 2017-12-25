@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -64,9 +65,10 @@ public class GenerateModuleInfo {
     private final Path outputDirectory;
     private final boolean addServiceUses;
     private final ServiceLoaderUseScanner serviceLoaderUseScanner;
+    private final List<String> jdepsExtraArgs;
     private final Log log;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
         this.inputJar = inputJar;
         this.moduleName = moduleName;
         this.open = open;
@@ -79,6 +81,7 @@ public class GenerateModuleInfo {
         this.uses = uses;
         this.addServiceUses = addServiceUses;
         this.serviceLoaderUseScanner = new ServiceLoaderUseScanner( log );
+        this.jdepsExtraArgs = jdepsExtraArgs != null ? jdepsExtraArgs : Collections.emptyList();
         this.log = log;
     }
 
@@ -278,6 +281,8 @@ public class GenerateModuleInfo {
             command.add( modules.toString() );
             command.add( "--module-path" );
             command.add( modulePath.toString() );
+
+            command.addAll( jdepsExtraArgs );
         }
 
         command.add( inputJar.toString() );

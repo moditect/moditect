@@ -73,6 +73,9 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Parameter
     private List<ModuleConfiguration> modules;
 
+    @Parameter
+    private List<String> jdepsExtraArgs;
+
     @Parameter(property = "moditect.artifact")
     private String artifactOverride;
 
@@ -94,7 +97,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
-                project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, getLog(), workingDirectory, outputDirectory
+                project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, jdepsExtraArgs, getLog(), workingDirectory, outputDirectory
         );
 
         Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
