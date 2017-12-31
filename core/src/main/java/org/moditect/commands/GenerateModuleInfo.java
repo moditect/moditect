@@ -15,10 +15,15 @@
  */
 package org.moditect.commands;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.module.FindException;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
+import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,10 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.spi.ToolProvider;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
-import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
@@ -54,6 +62,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 public class GenerateModuleInfo {
 
     private final Path inputJar;
+    private final String autoModuleNameForInputJar;
     private final String moduleName;
     private final boolean open;
     private final Set<DependencyDescriptor> dependencies;
@@ -67,9 +76,23 @@ public class GenerateModuleInfo {
     private final ServiceLoaderUseScanner serviceLoaderUseScanner;
     private final List<String> jdepsExtraArgs;
     private final Log log;
+    private ToolProvider jdeps;
 
     public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
-        this.inputJar = inputJar;
+        String autoModuleNameForInputJar = getAutoModuleNameFromInputJar( inputJar );
+
+        // if no valid auto module name can be derived for the input JAR, create a copy of it and
+        // inject the target module name into the manifest ("Automatic-Module-Name"), as otherwise
+        // jdeps will fail (issue #37)
+        if ( autoModuleNameForInputJar != null ) {
+            this.autoModuleNameForInputJar = autoModuleNameForInputJar;
+            this.inputJar = inputJar;
+        }
+        else {
+            this.autoModuleNameForInputJar = moduleName;
+            this.inputJar = createCopyWithAutoModuleNameManifestHeader( workingDirectory, inputJar, moduleName );
+        }
+
         this.moduleName = moduleName;
         this.open = open;
         this.dependencies = dependencies;
@@ -83,6 +106,81 @@ public class GenerateModuleInfo {
         this.serviceLoaderUseScanner = new ServiceLoaderUseScanner( log );
         this.jdepsExtraArgs = jdepsExtraArgs != null ? jdepsExtraArgs : Collections.emptyList();
         this.log = log;
+
+        Optional<ToolProvider> jdeps = ToolProvider.findFirst( "jdeps" );
+
+        if ( jdeps.isPresent() ) {
+            this.jdeps = jdeps.get();
+        }
+        else {
+            throw new RuntimeException( "jdeps tool not found" );
+        }
+    }
+
+    private static String getAutoModuleNameFromInputJar(Path inputJar) {
+        try {
+            return ModuleFinder.of( inputJar )
+                    .findAll()
+                    .iterator()
+                    .next()
+                    .descriptor()
+                    .name();
+        }
+        catch (FindException e) {
+            if ( e.getCause() != null && e.getCause().getMessage().contains( "Invalid module name" ) ) {
+                return null;
+            }
+
+            throw e;
+        }
+    }
+
+    private static Path createCopyWithAutoModuleNameManifestHeader(Path workingDirectory, Path inputJar, String moduleName) {
+        if ( moduleName == null ) {
+            throw new IllegalArgumentException( "No automatic name can be derived for the JAR " + inputJar + ", hence an explicit module name is required" );
+        }
+
+        Path copiedJar = createCopy( workingDirectory, inputJar );
+
+        Map<String, String> env = new HashMap<>();
+        env.put( "create", "true" );
+        URI uri = URI.create( "jar:" + copiedJar.toUri().toString() );
+
+        try ( FileSystem zipfs = FileSystems.newFileSystem( uri, env );
+                ByteArrayOutputStream baos = new ByteArrayOutputStream() ) {
+
+            Manifest manifest = getManifest( inputJar );
+            manifest.getMainAttributes().putValue( "Automatic-Module-Name", moduleName );
+
+            manifest.write( baos );
+            Files.write( zipfs.getPath( "META-INF", "MANIFEST.MF" ), baos.toByteArray() );
+
+            return copiedJar;
+        }
+        catch(IOException ioe) {
+            throw new RuntimeException( "Couldn't inject automatic module name into manifest", ioe );
+        }
+    }
+
+    private static Path createCopy(Path workingDirectory, Path inputJar) {
+        try {
+            Path tempDir = Files.createTempDirectory( workingDirectory, null );
+            Path copiedJar = tempDir.resolve( inputJar.getFileName() );
+            Files.copy( inputJar, copiedJar );
+
+            return copiedJar;
+        }
+        catch (IOException ieo) {
+            throw new RuntimeException( ieo );
+        }
+    }
+
+    private static Manifest getManifest(Path inputJar) throws IOException {
+        try ( JarInputStream jar = new JarInputStream( Files.newInputStream( inputJar ) ) ) {
+            Manifest manifest = jar.getManifest();
+
+            return manifest != null ? manifest : new Manifest();
+        }
     }
 
     public GeneratedModuleInfo run() {
@@ -98,7 +196,7 @@ public class GenerateModuleInfo {
             throw new IllegalArgumentException( "Output directory doesn't exist: "  + outputDirectory );
         }
 
-        Map<String, Boolean> optionalityPerModule = runJdeps();
+        Map<String, Boolean> optionalityPerModule = generateModuleInfo();
         ModuleDeclaration moduleDeclaration = parseGeneratedModuleInfo();
         updateModuleInfo( optionalityPerModule, moduleDeclaration );
 
@@ -239,16 +337,10 @@ public class GenerateModuleInfo {
         return new ClassOrInterfaceType( scope, name );
     }
 
-    private Map<String, Boolean> runJdeps() throws AssertionError {
+    private Map<String, Boolean> generateModuleInfo() throws AssertionError {
         Map<String, Boolean> optionalityPerModule = new HashMap<>();
 
-        String javaHome = System.getProperty( "java.home" );
-        String jdepsBin = javaHome +
-                File.separator + "bin" +
-                File.separator + "jdeps";
-
         List<String> command = new ArrayList<>();
-        command.add( jdepsBin );
 
         command.add( "--generate-module-info" );
         command.add( workingDirectory.toString() );
@@ -287,22 +379,14 @@ public class GenerateModuleInfo {
 
         command.add( inputJar.toString() );
 
-        log.debug( "Running jdeps: " + String.join( " ", command ) );
-
-        ProcessExecutor.run( "jdeps", command, log );
+        log.debug( "Running jdeps " + String.join(  " ", command ) );
+        jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
 
         return optionalityPerModule;
     }
 
     private ModuleDeclaration parseGeneratedModuleInfo() {
-        String generatedModuleName = ModuleFinder.of( inputJar )
-                .findAll()
-                .iterator()
-                .next()
-                .descriptor()
-                .name();
-
-        Path moduleDir = workingDirectory.resolve( generatedModuleName );
+        Path moduleDir = workingDirectory.resolve( autoModuleNameForInputJar );
         Path moduleInfo = moduleDir.resolve( "module-info.java" );
 
         return ModuleInfoCompiler.parseModuleInfo( moduleInfo );
