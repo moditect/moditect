@@ -32,21 +32,12 @@ import java.util.stream.Collectors;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.collection.CollectRequest;
-import org.eclipse.aether.collection.CollectResult;
-import org.eclipse.aether.collection.DependencyCollectionException;
-import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.util.graph.selector.AndDependencySelector;
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
-import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
-import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 import org.moditect.commands.GenerateModuleInfo;
 import org.moditect.mavenplugin.common.model.ArtifactConfiguration;
 import org.moditect.mavenplugin.common.model.ModuleInfoConfiguration;
@@ -84,13 +75,16 @@ public class ModuleInfoGenerator {
     }
 
     public GeneratedModuleInfo generateModuleInfo(ArtifactConfiguration artifact, List<ArtifactConfiguration> additionalDependencies, ModuleInfoConfiguration moduleInfo, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
+        log.debug( "Adding module descriptor to artifact " + artifact.toDependencyString() );
+
         Artifact inputArtifact = artifactResolutionHelper.resolveArtifact(artifact);
 
         Set<DependencyDescriptor> dependencies = getDependencies( inputArtifact, assignedNamesByModule, modularizedJars );
 
         for( ArtifactConfiguration further : additionalDependencies ) {
             Artifact furtherArtifact = artifactResolutionHelper.resolveArtifact( further );
-            dependencies.add( new DependencyDescriptor( furtherArtifact.getFile().toPath(), false, null ) );
+            Path modularized = getModularizedJar( modularizedJars, new ArtifactIdentifier( further.getGroupId(), further.getArtifactId(), further.getVersion(), further.getType(), further.getClassifier() ) );
+            dependencies.add( new DependencyDescriptor( modularized != null ? modularized : furtherArtifact.getFile().toPath(), false, null ) );
         }
 
         return generateModuleInfo( inputArtifact.getFile().toPath(), dependencies, moduleInfo );
@@ -138,28 +132,9 @@ public class ModuleInfoGenerator {
     }
 
     private Set<DependencyDescriptor> getDependencies(Artifact inputArtifact, Map<ArtifactIdentifier, String> assignedNamesByModule, Map<ArtifactIdentifier, Path> modularizedJars) throws MojoExecutionException {
-        CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "provided" ), remoteRepos );
-        CollectResult collectResult = null;
-
-        try {
-            RepositorySystemSession sessionWithProvided = new DefaultRepositorySystemSession( repoSession )
-                .setDependencySelector(
-                    new AndDependencySelector(
-                        new ScopeDependencySelector( "test" ),
-                        new OptionalDependencySelector(),
-                        new ExclusionDependencySelector()
-                    )
-                );
-
-            collectResult = repoSystem.collectDependencies( sessionWithProvided, collectRequest );
-        }
-        catch (DependencyCollectionException e) {
-            throw new MojoExecutionException( "Couldn't collect dependencies", e );
-        }
-
         Set<DependencyDescriptor> dependencies = new LinkedHashSet<>();
 
-        for ( DependencyNode dependency : collectResult.getRoot().getChildren() ) {
+        for ( DependencyNode dependency : artifactResolutionHelper.getCompilationDependencies( inputArtifact ) ) {
             Artifact artifact = dependency.getDependency().getArtifact();
 
             // use the version of the dependency as used within the current project's build, if present
@@ -205,7 +180,7 @@ public class ModuleInfoGenerator {
             // in this modularization build
             if ( assignedNameByModule.getKey().getGroupId().equals( artifactIdentifier.getGroupId() ) &&
                     assignedNameByModule.getKey().getArtifactId().equals( artifactIdentifier.getArtifactId() ) &&
-                    assignedNameByModule.getKey().getClassifier().equals( artifactIdentifier.getClassifier() ) &&
+                    areEqualClassifiers( assignedNameByModule.getKey().getClassifier(), artifactIdentifier.getClassifier() ) &&
                     assignedNameByModule.getKey().getExtension().equals( artifactIdentifier.getExtension() ) ) {
                 return assignedNameByModule.getValue();
             }
