@@ -1,0 +1,382 @@
+<!--
+
+     Copyright 2017 The ModiTect authors
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-integrationtest-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>moditect-integrationtest-vertx</artifactId>
+    <packaging>jar</packaging>
+    <name>ModiTect Integration Test - Vert.x</name>
+
+    <properties>
+        <io.vertx.version>3.5.0</io.vertx.version>
+        <io.netty.version>4.1.15.Final</io.netty.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-dependencies</artifactId>
+                <version>${io.vertx.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+        </dependency>
+
+        <!-- TODO why causes this an exception -->
+<!--         <dependency> -->
+<!--             <groupId>io.netty</groupId> -->
+<!--             <artifactId>netty-transport-native-kqueue</artifactId> -->
+<!--             <version>${io.netty.version}</version> -->
+<!--         </dependency> -->
+
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>9</release>
+                        <compilerArgs>
+                            <compilerArg>--module-path</compilerArg>
+                            <compilerArg>${project.build.directory}/modules</compilerArg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <header>${basedir}/../../etc/license.txt</header>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-module-info-to-dependencies</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.fasterxml.jackson.core</groupId>
+                                          <artifactId>jackson-core</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>com.fasterxml.jackson.core</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.fasterxml.jackson.core</groupId>
+                                          <artifactId>jackson-annotations</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>com.fasterxml.jackson.annotations</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.fasterxml.jackson.core</groupId>
+                                        <artifactId>jackson-databind</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>com.fasterxml.jackson.databind</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-common</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.common</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-buffer</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.buffer</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-resolver</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.resolver</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-transport</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.transport</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec-dns</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec.dns</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec-http2</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec.http2</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-resolver-dns</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.resolver.dns</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-transport-native-unix-common</artifactId>
+                                        <version>${io.netty.version}</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.channel.unix</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-transport-native-epoll</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.channel.epoll</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-transport-native-kqueue</artifactId>
+                                    </artifact>
+                                    <!-- TODO <moduleInfo>, needs exclusion of unix-common dependency -->
+                                    <moduleInfoSource>
+                                        module io.netty.channel.kqueue {
+                                            exports io.netty.channel.kqueue;
+                                        }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-handler</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module io.netty.handler {
+                                            exports io.netty.handler.flow;
+                                            exports io.netty.handler.flush;
+                                            exports io.netty.handler.ipfilter;
+                                            exports io.netty.handler.logging;
+                                            exports io.netty.handler.ssl;
+                                            exports io.netty.handler.ssl.ocsp;
+                                            exports io.netty.handler.ssl.util;
+                                            exports io.netty.handler.stream;
+                                            exports io.netty.handler.timeout;
+                                            exports io.netty.handler.traffic;
+                                        }
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec-socks</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec.socks</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-handler-proxy</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.handler.proxy</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec-http</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec.http</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-core</artifactId>
+                                    </artifact>
+                                    <additionalDependencies>
+	                                        <dependency>
+                                            <groupId>io.netty</groupId>
+                                            <artifactId>netty-transport-native-unix-common</artifactId>
+                                            <version>${io.netty.version}</version>
+                                        </dependency>
+                                    </additionalDependencies>
+                                    <moduleInfo>
+                                        <name>io.vertx.core</name>
+                                        <requires>
+                                            static log4j.api;
+                                            static log4j;
+                                            static slf4j.api;
+                                            *;
+                                        </requires>
+                                        <uses>
+                                            io.vertx.core.spi.VertxFactory;
+                                            io.vertx.core.spi.VerticleFactory;
+                                            io.vertx.core.spi.FutureFactory;
+                                            io.vertx.core.spi.BufferFactory;
+                                        </uses>
+                                    </moduleInfo>
+                                </module>
+                            </modules>
+                            <module>
+                                <mainClass>com.example.HelloWorldServer</mainClass>
+                                <moduleInfo>
+                                    <name>com.example</name>
+                                    <exports>
+                                        com.example to io.vertx.core;
+                                    </exports>
+                                </moduleInfo>
+                            </module>
+                        </configuration>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-runtime-image</goal>
+                        </goals>
+                        <configuration>
+                            <modulePath>
+                                <path>${project.build.directory}/modules</path>
+                            </modulePath>
+                            <modules>
+                                <module>com.example</module>
+                            </modules>
+                            <launcher>
+                                <name>helloWorld</name>
+                                <module>com.example</module>
+                            </launcher>
+                            <compression>2</compression>
+                            <stripDebug>true</stripDebug>
+                            <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.21.0</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>vertx-helloworld</alias>
+                                    <name>moditect/vertx-helloworld</name>
+                                    <build>
+                                        <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                        <assembly>
+                                            <descriptor>assembly.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>docker:build</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
