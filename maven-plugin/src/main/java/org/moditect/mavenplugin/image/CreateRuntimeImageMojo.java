@@ -16,15 +16,22 @@
 package org.moditect.mavenplugin.image;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.toolchain.Toolchain;
+import org.apache.maven.toolchain.ToolchainManager;
 import org.moditect.commands.CreateRuntimeImage;
 import org.moditect.mavenplugin.image.model.Launcher;
 import org.moditect.mavenplugin.util.MojoLog;
@@ -34,6 +41,15 @@ import org.moditect.mavenplugin.util.MojoLog;
  */
 @Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateRuntimeImageMojo extends AbstractMojo {
+
+    @Component
+    private ToolchainManager toolchainManager;
+
+    @Parameter( defaultValue = "${session}", readonly = true )
+    private MavenSession mavenSession;
+
+    @Parameter
+    private String baseJdk;
 
     @Parameter(defaultValue = "[]")
     private List<File> modulePath;
@@ -67,10 +83,37 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        Path jmodsDir = null;
+
+        if ( baseJdk != null ) {
+            List<Toolchain> toolChains = toolchainManager.getToolchains( mavenSession, "jdk", Collections.singletonMap( "id", baseJdk ) );
+            if ( toolChains.isEmpty() ) {
+                throw new MojoExecutionException( "Found no tool chain of type 'jdk' and with id '" + baseJdk + "'" );
+            }
+            else if ( toolChains.size() > 1 ) {
+                throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and with id '" + baseJdk + "'" );
+            }
+            else {
+                jmodsDir = new File( toolChains.get( 0 ).findTool( "javac" ) )
+                        .toPath()
+                        .getParent()
+                        .getParent()
+                        .resolve( "jmods" );
+            }
+        }
+        else {
+            String javaHome = System.getProperty( "java.home" );
+            jmodsDir = new File( javaHome ).toPath().resolve( "jmods" );
+        }
+
+        Set<Path> effectiveModulePath = this.modulePath.stream()
+            .map( File::toPath )
+            .collect( Collectors.toSet() );
+
+        effectiveModulePath.add( jmodsDir );
+
         new CreateRuntimeImage(
-                modulePath.stream()
-                    .map( File::toPath )
-                    .collect( Collectors.toSet() ),
+                effectiveModulePath,
                 modules,
                 launcher != null ? launcher.getName() : null,
                 launcher != null ? launcher.getModule() : null,

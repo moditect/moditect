@@ -348,6 +348,42 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>moditect-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-runtime-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>create-runtime-image</goal>
+                                </goals>
+                                <configuration>
+                                    <!--
+                                        requires unique matching entry in toolchains.xml of type "jdk" and with
+                                        <provides>
+                                            <id>jdk-9_linux-x64</id>
+                                        </provides>
+                                     -->
+                                    <baseJdk>jdk-9_linux-x64</baseJdk>
+                                    <modulePath>
+                                        <path>${project.build.directory}/modules</path>
+                                    </modulePath>
+                                    <modules>
+                                        <module>com.example</module>
+                                    </modules>
+                                    <launcher>
+                                        <name>helloWorld</name>
+                                        <module>com.example</module>
+                                    </launcher>
+                                    <compression>2</compression>
+                                    <stripDebug>true</stripDebug>
+                                    <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
                         <version>0.21.0</version>

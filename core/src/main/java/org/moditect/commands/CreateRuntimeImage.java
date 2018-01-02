@@ -78,8 +78,7 @@ public class CreateRuntimeImage {
         command.add( "--module-path" );
         command.add( modulePath.stream()
                 .map( Path::toString )
-                .collect( Collectors.joining( File.pathSeparator ) ) +
-                File.pathSeparator + javaHome + File.separator + "jmods"
+                .collect( Collectors.joining( File.pathSeparator ) )
         );
         command.add( "--output" );
         command.add( outputDirectory.toString() );
