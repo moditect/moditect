@@ -64,6 +64,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>io.fabric8</groupId>
+                    <artifactId>docker-maven-plugin</artifactId>
+                    <version>0.21.0</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
@@ -312,36 +317,15 @@
                             <goal>add-module-info</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>create-runtime-image</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>create-runtime-image</goal>
-                        </goals>
-                        <configuration>
-                            <modulePath>
-                                <path>${project.build.directory}/modules</path>
-                            </modulePath>
-                            <modules>
-                                <module>com.example</module>
-                            </modules>
-                            <launcher>
-                                <name>helloWorld</name>
-                                <module>com.example</module>
-                            </launcher>
-                            <compression>2</compression>
-                            <stripDebug>true</stripDebug>
-                            <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
+        <!-- Builds a modular runtime image -->
         <profile>
-            <id>docker</id>
+            <id>jlink</id>
             <build>
                 <plugins>
                     <plugin>
@@ -350,6 +334,44 @@
                         <executions>
                             <execution>
                                 <id>create-runtime-image</id>
+                                <phase>none</phase>
+                                <goals>
+                                    <goal>create-runtime-image</goal>
+                                </goals>
+                                <configuration>
+                                    <modulePath>
+                                        <path>${project.build.directory}/modules</path>
+                                    </modulePath>
+                                    <modules>
+                                        <module>com.example</module>
+                                    </modules>
+                                    <launcher>
+                                        <name>helloWorld</name>
+                                        <module>com.example</module>
+                                    </launcher>
+                                    <compression>2</compression>
+                                    <stripDebug>true</stripDebug>
+                                    <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Builds a Docker image with the modular runtime image; requires a Linux JDK
+             to be present on the host from which the jmod files can be pulled -->
+        <profile>
+            <id>docker-base</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>${project.groupId}</groupId>
+                        <artifactId>moditect-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-dependency-image</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>create-runtime-image</goal>
@@ -383,7 +405,42 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.21.0</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>vertx-helloworld-base</alias>
+                                    <name>moditect/vertx-helloworld-base</name>
+                                    <build>
+                                        <dockerFileDir>${project.basedir}/src/main/docker-base</dockerFileDir>
+                                        <assembly>
+                                            <descriptor>assembly-base.xml</descriptor>
+                                        </assembly>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>docker:build</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Builds a Docker image extending base, just containing the app on the upgrade module path -->
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
                         <configuration>
                             <images>
                                 <image>

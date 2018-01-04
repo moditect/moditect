@@ -380,7 +380,7 @@ image with a "hello world" verticle.
 Execute
 
     cd integrationtest/vertx
-    mvn clean install
+    mvn clean install -Pjlink
 
 to build the example.
 
@@ -394,6 +394,29 @@ in your browser for the canonical "Hello World" example.
 The runtime image has a size of 45 MB, which could be further improved by a few adjustments to the involved libraries.
 E.g. _jackson-databind_ pulls in _java.sql_ unconditionally which could be avoided by making data converters related to
 `java.sql` types an optional feature.
+
+#### Using Docker
+
+The Vert.x example can also be run on Docker. To do so, run the build with the "docker-base" profile:
+
+    mvn clean install -Pdocker-base
+
+This will create an image named _moditect/vertx-helloworld-base_ which contains the jlink image.
+To run that image execute
+
+    docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld-base
+
+Changes to the application will require to rebuild the entire jlink image which actually isn't needed if just the app itself
+changed but not its dependencies (used JDK modules or 3rd-party modules).
+Therefore another image can be build using the "docker" profile:
+
+    mvn clean install -Pdocker-base
+
+This will create an image named _moditect/vertx-helloworld which extends the base image and just adds the application module (_com.example_) on the upgrade module path.
+Hence that image is very quick to be built (and distributed) once the base image is in place.
+To run that image execute
+
+    docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld
 
 ## Status
 

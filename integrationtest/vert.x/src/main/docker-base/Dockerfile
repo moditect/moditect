@@ -14,7 +14,12 @@
 #  limitations under the License.
 #
 
-FROM moditect/vertx-helloworld-base
+FROM centos:7
 
-COPY maven/moditect-integrationtest-vertx-1.0.0-SNAPSHOT.jar /opt/upgrade-modules/
-RUN sed -i 's/JLINK_VM_OPTIONS=/JLINK_VM_OPTIONS="--upgrade-module-path \/opt\/upgrade-modules\/"/g' /opt/vertx-helloworld/bin/helloWorld
+COPY maven/target/jlink-image /opt/vertx-helloworld/
+ADD entrypoint.sh /entrypoint.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]
+
