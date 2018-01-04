@@ -391,6 +391,10 @@ You can then run the modular runtime image like so:
 Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
 in your browser for the canonical "Hello World" example.
 
+The runtime image has a size of 45 MB, which could be further improved by a few adjustments to the involved libraries.
+E.g. _jackson-databind_ pulls in _java.sql_ unconditionally which could be avoided by making data converters related to
+`java.sql` types an optional feature.
+
 ## Status
 
 ModiTect is at an early stage of development and it still has some rough edges.
