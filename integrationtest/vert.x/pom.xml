@@ -277,13 +277,6 @@
                                         <groupId>io.vertx</groupId>
                                         <artifactId>vertx-core</artifactId>
                                     </artifact>
-                                    <additionalDependencies>
-	                                        <dependency>
-                                            <groupId>io.netty</groupId>
-                                            <artifactId>netty-transport-native-unix-common</artifactId>
-                                            <version>${io.netty.version}</version>
-                                        </dependency>
-                                    </additionalDependencies>
                                     <moduleInfo>
                                         <name>io.vertx.core</name>
                                         <requires>

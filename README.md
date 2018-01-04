@@ -27,7 +27,9 @@ manner.
    * [Adding a module descriptor to the project JAR](#adding-a-module-descriptor-to-the-project-jar)
    * [Adding module descriptors to existing JAR files](#adding-module-descriptors-to-existing-jar-files)
    * [Creating module runtime images](#creating-module-runtime-images)
-* [Example](#example)
+* [Example](#examples)
+   * [Undertow](#undertow)
+   * [Vert.x](#vertx)
 * [Status](#status)
 * [Further Planned Features](#further-planned-features)
 * [Related Work](#related-work)
@@ -343,7 +345,9 @@ Or, if a launcher has been configured:
 ./<outputDirectory>/bin/<launcherName>
 ```
 
-## Example
+## Examples
+
+### Undertow
 
 The [POM file](integrationtest/undertow/pom.xml) in _integrationtest/undertow_
 shows a more complete example. It adds module descriptors for
@@ -366,9 +370,30 @@ Alternatively, you can run the modular runtime image created by the example:
 Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
 in your browser for the canonical "Hello World" example.
 
+### Vert.x
+
+The [POM file](integrationtest/vertx/pom.xml) in _integrationtest/vertx_
+shows a more complete example. It adds module descriptors for
+[Vert.x](http://vertx.io) and its dependencies (Netty, Jackson) and creates a modular runtime
+image with a "hello world" verticle.
+
+Execute
+
+    cd integrationtest/vertx
+    mvn clean install
+
+to build the example.
+
+You can then run the modular runtime image like so:
+
+    ./target/jlink-image/bin/helloWorld
+
+Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
+in your browser for the canonical "Hello World" example.
+
 ## Status
 
-ModiTect is at a very early stage of development and it still has some rough edges.
+ModiTect is at an early stage of development and it still has some rough edges.
 Use it at your own risk.
 
 ## Further Planned Features
