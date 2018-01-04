@@ -285,6 +285,10 @@
                                             static slf4j.api;
                                             *;
                                         </requires>
+                                        <exports>
+                                            !*impl*;
+                                            *;
+                                        </exports>
                                         <uses>
                                             io.vertx.core.spi.VertxFactory;
                                             io.vertx.core.spi.VerticleFactory;
