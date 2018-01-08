@@ -334,7 +334,7 @@
                         <executions>
                             <execution>
                                 <id>create-runtime-image</id>
-                                <phase>none</phase>
+                                <phase>package</phase>
                                 <goals>
                                     <goal>create-runtime-image</goal>
                                 </goals>
@@ -390,12 +390,11 @@
                                     <modules>
                                         <module>com.example</module>
                                     </modules>
-                                    <launcher>
-                                        <name>helloWorld</name>
-                                        <module>com.example</module>
-                                    </launcher>
                                     <compression>2</compression>
                                     <stripDebug>true</stripDebug>
+                                    <excludedResources>
+                                        <pattern>glob:/com.example/**</pattern>
+                                    </excludedResources>
                                     <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
                                 </configuration>
                             </execution>
