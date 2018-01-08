@@ -40,15 +40,17 @@ public class CreateRuntimeImage {
     private final Log log;
     private final Integer compression;
     private final boolean stripDebug;
+    private final List<String> excludeResourcesPatterns;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
-            Path outputDirectory, Integer compression, boolean stripDebug, Log log) {
+            Path outputDirectory, Integer compression, boolean stripDebug, List<String> excludeResourcesPatterns, Log log) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
-        this.launcher = launcherName + "=" + launcherModule;
+        this.launcher = launcherName != null && launcherModule != null ? launcherName + "=" + launcherModule : null;
         this.compression = compression;
         this.stripDebug = stripDebug;
+        this.excludeResourcesPatterns = excludeResourcesPatterns;
         this.log = log;
     }
 
@@ -95,6 +97,10 @@ public class CreateRuntimeImage {
 
         if ( stripDebug ) {
             command.add( "--strip-debug" );
+        }
+
+        if ( !excludeResourcesPatterns.isEmpty() ) {
+            command.add( "--exclude-resources=" + String.join( ",", excludeResourcesPatterns ) );
         }
 
         log.debug( "Running jlink: " + String.join( " ", command ) );

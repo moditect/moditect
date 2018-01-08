@@ -69,6 +69,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean stripDebug;
 
+    @Parameter
+    List<String> excludedResources;
+
 //    @Parameter(property = "moditect.artifact")
 //    private String artifactOverride;
 //
@@ -120,8 +123,13 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 outputDirectory.toPath(),
                 compression,
                 stripDebug,
+                getExcludeResourcesPatterns(),
                 new MojoLog( getLog() )
         )
         .run();
+    }
+
+    private List<String> getExcludeResourcesPatterns() {
+        return excludedResources != null ? excludedResources : Collections.emptyList();
     }
 }
