@@ -17,4 +17,4 @@
 
 set -e
 
-exec /opt/vertx-helloworld/bin/helloWorld
+exec /opt/vertx-helloworld/bin/helloWorld.sh

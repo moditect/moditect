@@ -17,4 +17,4 @@
 FROM moditect/vertx-helloworld-base
 
 COPY maven/moditect-integrationtest-vertx-1.0.0-SNAPSHOT.jar /opt/upgrade-modules/
-RUN sed -i 's/JLINK_VM_OPTIONS=/JLINK_VM_OPTIONS="--upgrade-module-path \/opt\/upgrade-modules\/"/g' /opt/vertx-helloworld/bin/helloWorld
+COPY maven/helloWorld.sh /opt/vertx-helloworld/bin

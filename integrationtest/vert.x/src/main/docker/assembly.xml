@@ -23,5 +23,8 @@
         <file>
             <source>target/modules/moditect-integrationtest-vertx-1.0.0-SNAPSHOT.jar</source>
         </file>
+        <file>
+            <source>src/main/docker/helloWorld.sh</source>
+        </file>
     </files>
 </assembly>

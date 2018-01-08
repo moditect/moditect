@@ -360,8 +360,9 @@
             </build>
         </profile>
 
-        <!-- Builds a Docker image with the modular runtime image; requires a Linux JDK
-             to be present on the host from which the jmod files can be pulled -->
+        <!-- Builds a Docker image with a modular runtime image only containing the dependencies
+             but not the application module itself;
+             requires a Linux JDK to be present on the host from which the jmod files can be pulled -->
         <profile>
             <id>docker-base</id>
             <build>
@@ -404,27 +405,27 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <alias>vertx-helloworld-base</alias>
-                                    <name>moditect/vertx-helloworld-base</name>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/src/main/docker-base</dockerFileDir>
-                                        <assembly>
-                                            <descriptor>assembly-base.xml</descriptor>
-                                        </assembly>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
                         <executions>
                             <execution>
-                                <id>docker:build</id>
+                                <id>build-dependency-image</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
+                                <configuration>
+                                    <images>
+                                        <image>
+                                            <alias>vertx-helloworld-base</alias>
+                                            <name>moditect/vertx-helloworld-base</name>
+                                            <build>
+                                                <dockerFileDir>${project.basedir}/src/main/docker-base</dockerFileDir>
+                                                <assembly>
+                                                    <descriptor>assembly-base.xml</descriptor>
+                                                </assembly>
+                                            </build>
+                                        </image>
+                                    </images>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -440,27 +441,27 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <alias>vertx-helloworld</alias>
-                                    <name>moditect/vertx-helloworld</name>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
-                                        <assembly>
-                                            <descriptor>assembly.xml</descriptor>
-                                        </assembly>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
                         <executions>
                             <execution>
-                                <id>docker:build</id>
+                                <id>build-application-image</id>
                                 <phase>package</phase>
                                 <goals>
                                     <goal>build</goal>
                                 </goals>
+                                <configuration>
+                                    <images>
+                                        <image>
+                                            <alias>vertx-helloworld</alias>
+                                            <name>moditect/vertx-helloworld</name>
+                                            <build>
+                                                <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                                <assembly>
+                                                    <descriptor>assembly.xml</descriptor>
+                                                </assembly>
+                                            </build>
+                                        </image>
+                                    </images>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
