@@ -214,16 +214,23 @@
                                         <groupId>io.netty</groupId>
                                         <artifactId>netty-transport-native-epoll</artifactId>
                                     </artifact>
-                                    <moduleInfo>
-                                        <name>io.netty.channel.epoll</name>
-                                    </moduleInfo>
+                                    <!-- TODO <moduleInfo>, needs handling of native unix-common dependency -->
+                                    <moduleInfoSource>
+                                        module io.netty.channel.epoll {
+                                            requires io.netty.buffer;
+                                            requires io.netty.channel.unix;
+                                            requires io.netty.common;
+                                            requires io.netty.transport;
+                                            exports io.netty.channel.epoll;
+                                        }
+                                    </moduleInfoSource>
                                 </module>
                                 <module>
                                     <artifact>
                                         <groupId>io.netty</groupId>
                                         <artifactId>netty-transport-native-kqueue</artifactId>
                                     </artifact>
-                                    <!-- TODO <moduleInfo>, needs exclusion of unix-common dependency -->
+                                    <!-- TODO <moduleInfo>, needs handling of native unix-common dependency -->
                                     <moduleInfoSource>
                                         module io.netty.channel.kqueue {
                                             exports io.netty.channel.kqueue;
