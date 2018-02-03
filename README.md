@@ -379,7 +379,7 @@ image with a "hello world" verticle.
 
 Execute
 
-    cd integrationtest/vertx
+    cd integrationtest/vert.x
     mvn clean install -Pjlink
 
 to build the example.
