@@ -1,0 +1,281 @@
+plugins{
+    id "java"
+    id "application"
+    id "com.zyxist.chainsaw" version "0.1.3"
+    id "io.spring.dependency-management" version "1.0.4.RELEASE"
+    id "org.moditect.gradleplugin" version "1.0.0"
+}
+
+repositories {
+    maven{ url "https://repository.jboss.org/nexus/content/repositories/releases/" }
+    maven{ url "http://central.maven.org/maven2/"}
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+group = "org.moditect"
+version = "2.0.0"
+
+targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_1_9
+
+
+javaModule.name = 'com.example'
+mainClassName = 'com.example.HelloWorldServer'
+jar {
+    manifest {
+        attributes("Automatic-Module-Name": javaModule.name)
+    }
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', "${buildDir}/modules", '--add-modules', "io.vertx.core"
+        ]
+        classpath = files()
+    }
+}
+
+dependencyManagement {
+    dependencies {
+        dependency 'io.vertx:vertx-dependencies:3.5.0'
+    }
+}
+
+dependencies{
+    compile 'io.vertx:vertx-core:3.5.0'
+}
+
+moditect {
+    moduleInfo {
+        version = project.version
+        overwriteExistingFiles = true
+        outputDirectory = file("${buildDir}/modules")
+        mainModule {
+            mainClass = mainClassName
+            moduleInfo {
+                name = javaModule.name
+                exports = "com.example to io.vertx.core;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "com.fasterxml.jackson.core"
+                artifactId = "jackson-core"
+            }
+            moduleInfo{
+                name = "com.fasterxml.jackson.core"
+            }
+        }
+        module {
+            artifact {
+                groupId = "com.fasterxml.jackson.core"
+                artifactId = "jackson-annotations"
+            }
+            moduleInfo{
+                name = "com.fasterxml.jackson.annotations"
+            }
+        }
+        module {
+            artifact {
+                groupId = "com.fasterxml.jackson.core"
+                artifactId = "jackson-databind"
+            }
+            moduleInfo{
+                name = "com.fasterxml.jackson.databind"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-common"
+            }
+            moduleInfo{
+                name = "io.netty.common"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-buffer"
+            }
+            moduleInfo{
+                name = "io.netty.buffer"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec"
+            }
+            moduleInfo{
+                name = "io.netty.codec"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-resolver"
+            }
+            moduleInfo{
+                name = "io.netty.resolver"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-transport"
+            }
+            moduleInfo{
+                name = "io.netty.transport"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec-dns"
+            }
+            moduleInfo{
+                name = "io.netty.codec.dns"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec-http2"
+            }
+            moduleInfo{
+                name = "io.netty.codec.http2"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-resolver-dns"
+            }
+            moduleInfo{
+                name = "io.netty.resolver.dns"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-transport-native-unix-common"
+                version = "4.1.15.Final"
+            }
+            moduleInfo{
+                name = "io.netty.channel.unix"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-transport-native-epoll"
+                version = "4.1.15.Final"
+            }
+            moduleInfoSource = "module io.netty.channel.epoll {\n" +
+            "    requires io.netty.buffer;\n" +
+            "    requires io.netty.channel.unix;\n" +
+            "    requires io.netty.common;\n" +
+            "    requires io.netty.transport;\n" +
+            "    exports io.netty.channel.epoll;\n" +
+            "}"
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-transport-native-kqueue"
+                version = "4.1.15.Final"
+            }
+            moduleInfoSource = "module io.netty.channel.kqueue {\n" +
+                    "exports io.netty.channel.kqueue;\n" +
+                    "}"
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-handler"
+            }
+            moduleInfoSource = "module io.netty.handler {\n" +
+                    "      exports io.netty.handler.flow;\n" +
+                    "      exports io.netty.handler.flush;\n" +
+                    "      exports io.netty.handler.ipfilter;\n" +
+                    "      exports io.netty.handler.logging;\n" +
+                    "      exports io.netty.handler.ssl;\n" +
+                    "      exports io.netty.handler.ssl.ocsp;\n" +
+                    "      exports io.netty.handler.ssl.util;\n" +
+                    "      exports io.netty.handler.stream;\n" +
+                    "      exports io.netty.handler.timeout;\n" +
+                    "      exports io.netty.handler.traffic;\n" +
+                    "}"
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec-socks"
+            }
+            moduleInfo{
+                name = "io.netty.codec.socks"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-handler-proxy"
+            }
+            moduleInfo{
+                name = "io.netty.handler.proxy"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec-http"
+            }
+            moduleInfo{
+                name = "io.netty.codec.http"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.netty"
+                artifactId = "netty-codec-http2"
+            }
+            moduleInfo{
+                name = "io.netty.codec.http2"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.vertx"
+                artifactId = "vertx-core"
+            }
+            moduleInfo{
+                name = "io.vertx.core"
+                requires = "static log4j.api;\n" +
+                        "static log4j;\n" +
+                        "static slf4j.api;\n" +
+                        "*;"
+                exports = "!*impl*;\n" +
+                        "*;"
+                uses = "io.vertx.core.spi.VertxFactory;\n" +
+                        "io.vertx.core.spi.VerticleFactory;\n" +
+                        "io.vertx.core.spi.FutureFactory;\n" +
+                        "io.vertx.core.spi.BufferFactory;"
+            }
+        }
+    }
+    image {
+        modulePath = [file("${buildDir}/modules").toPath()]
+        modules = ["com.example"]
+        launcher {
+            name = "helloWorld"
+            module = "com.example"
+        }
+        compression = 2
+        stripDebug = true
+        outputDirectory = file("${buildDir}/jlink-image").toPath()
+    }
+}

@@ -82,8 +82,8 @@ public class AddModuleInfoTest {
             "1.42.3",
             Paths.get( "target", "generated-test-resources", "example.jar" ),
             Paths.get( "target", "generated-test-modules" ),
-            false
-        )
+            false, null, null, null,
+                null)
         .run();
 
         builder = new ProcessBuilder(

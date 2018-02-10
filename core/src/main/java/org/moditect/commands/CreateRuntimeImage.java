@@ -32,7 +32,6 @@ import org.moditect.spi.log.Log;
  * @author Gunnar Morling
  */
 public class CreateRuntimeImage {
-
     private final Set<Path> modulePath;
     private final List<String> modules;
     private final Path outputDirectory;
@@ -67,14 +66,13 @@ public class CreateRuntimeImage {
     }
 
     private void runJlink() throws AssertionError {
-        String javaHome = System.getProperty("java.home");
-        String jlinkBin = javaHome +
-                File.separator + "bin" +
-                File.separator + "jlink";
-
-        List<String> command = new ArrayList<>();
+        final String javaHome = System.getProperty("java.home");
+        if(javaHome == null || javaHome.isEmpty()) {
+            throw new IllegalStateException("No java home configured, which is required");
+        }
+        final String jlinkBin = javaHome.concat(File.separator).concat("bin").concat(File.separator).concat("jlink");
+        final List<String> command = new ArrayList<>();
         command.add( jlinkBin );
-
         command.add( "--add-modules" );
         command.add( String.join( ",", modules ) );
         command.add( "--module-path" );

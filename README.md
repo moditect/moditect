@@ -349,14 +349,14 @@ Or, if a launcher has been configured:
 
 ### Undertow
 
-The [POM file](integrationtest/undertow/pom.xml) in _integrationtest/undertow_
+The [POM file](moditect-maven-parent/integrationtest/undertow/pom.xml) in _moditect-maven-parent/integrationtest/undertow_
 shows a more complete example. It adds module descriptors for
 [Undertow Core](http://undertow.io/) and its dependencies, i.e. it allows to run
 the Undertow web server based on Java 9 modules.
 
 Run
 
-    cd integrationtest/undertow
+    cd moditect-maven-parent/integrationtest/undertow
     mvn clean install
 
 to build the example. You then can start Undertow by executing
@@ -372,14 +372,14 @@ in your browser for the canonical "Hello World" example.
 
 ### Vert.x
 
-The [POM file](integrationtest/vertx/pom.xml) in _integrationtest/vertx_
+The [POM file](moditect-maven-parent/integrationtest/vert.x/pom.xml) in _moditect-maven-parent/integrationtest/vert.x_
 shows a more complete example. It adds module descriptors for
 [Vert.x](http://vertx.io) and its dependencies (Netty, Jackson) and creates a modular runtime
 image with a "hello world" verticle.
 
 Execute
 
-    cd integrationtest/vert.x
+    cd moditect-maven-parent/integrationtest/vert.x
     mvn clean install -Pjlink
 
 to build the example.

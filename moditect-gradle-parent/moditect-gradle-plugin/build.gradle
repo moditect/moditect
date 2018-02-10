@@ -1,0 +1,48 @@
+plugins {
+    id 'groovy'
+    id 'idea'
+    id 'jacoco'
+    id 'maven-publish'
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    maven{ url "https://repo.gradle.org/gradle/libs-releases-local"}
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+group = "org.moditect"
+version = "1.0.0"
+
+targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_1_9
+
+dependencies {
+    compile 'org.apache.maven:maven-aether-provider:3.3.9'
+    compile group: 'org.eclipse.aether', name: 'aether-api', version: '1.0.2.v20150114'
+    compile group: 'org.eclipse.aether', name: 'aether-util', version: '1.0.2.v20150114'
+    compile "org.eclipse.aether:aether-connector-basic:1.0.2.v20150114"
+    compile "org.eclipse.aether:aether-transport-http:1.0.2.v20150114"
+    compile "org.eclipse.aether:aether-transport-file:1.0.2.v20150114"
+    // https://mvnrepository.com/artifact/org.moditect/moditect
+    compile group: 'org.moditect', name: 'moditect', version: '1.0.0-SNAPSHOT'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+check.dependsOn jacocoTestReport
+
+gradlePlugin {
+    plugins {
+        moditectPlugin {
+            id = "org.moditect.gradleplugin"
+            implementationClass = "org.moditect.gradleplugin.ModitectPlugin"
+        }
+    }
+}

@@ -48,6 +48,12 @@
             <email>gunnar.morling@googlemail.com</email>
             <url>http://www.gunnarmorling.de/</url>
         </developer>
+        <developer>
+            <id>pratikpparikh</id>
+            <name>Pratik Parikh</name>
+            <email>pratik.p.parikh@gmail.com</email>
+            <url>http://www.linkedin.com/pratikpparikh</url>
+        </developer>
     </developers>
 
     <scm>
@@ -194,6 +200,9 @@
                 <configuration>
                     <header>${basedir}/../etc/license.txt</header>
                     <strictCheck>true</strictCheck>
+                    <excludes>
+                        <exclude>*.*/*.sh</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        maven{ url "https://repo.gradle.org/gradle/libs-releases-local"}
+        mavenLocal()
+        maven {
+            name 'OWASP dependency-check snapshot'
+            url 'https://dependencycheck.jfrog.io/dependencycheck/libs-snapshot'
+        }
+        maven {
+            name 'OWASP dependency-check release'
+            url 'https://dependencycheck.jfrog.io/dependencycheck/libs-release'
+        }
+        mavenCentral()
+        jcenter()
+    }
+}
+
+subprojects {
+}

@@ -19,6 +19,8 @@ nb-configuration.xml
 
 # Build
 /**/target/
+/**/build/
+/**/out/
 test-output
 
 # Misc.

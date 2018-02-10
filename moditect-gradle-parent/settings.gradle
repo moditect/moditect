@@ -1,0 +1,13 @@
+pluginManagement{
+    repositories {
+        maven { url "${System.getProperty('user.home')}/.m2/repository" }
+        gradlePluginPortal() // Include public Gradle plugin portal
+    }
+}
+
+rootProject.name = 'moditect-gradle-parent'
+
+include "moditect-gradle-plugin"
+include "integrationtest:hibernate-validator"
+include "integrationtest:undertow"
+include "integrationtest:vert.x"

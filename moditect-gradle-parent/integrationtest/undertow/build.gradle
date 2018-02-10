@@ -1,0 +1,144 @@
+plugins{
+    id "java"
+    id "application"
+    id "com.zyxist.chainsaw" version "0.1.3"
+    id "io.spring.dependency-management" version "1.0.4.RELEASE"
+    id "org.moditect.gradleplugin" version "1.0.0"
+}
+
+repositories {
+    maven{ url "https://repository.jboss.org/nexus/content/repositories/releases/" }
+    maven{ url "http://central.maven.org/maven2/"}
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+group = "org.moditect"
+version = "2.0.0"
+
+targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_1_9
+
+
+javaModule.name = 'com.example'
+mainClassName = 'com.example.HelloWorldServer'
+jar {
+    manifest {
+        attributes("Automatic-Module-Name": javaModule.name)
+    }
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', "${buildDir}/modules", '--add-modules', "io.undertow.core"
+        ]
+        classpath = files()
+    }
+}
+
+dependencyManagement {
+    dependencies {
+        dependency 'org.jboss.logging:jboss-logging-annotations:1.2.0.Final'
+        dependency 'org.eclipse.jetty.alpn:alpn-api:1.0.0'
+    }
+}
+
+dependencies{
+    compile 'io.undertow:undertow-core:1.4.21.Final'
+}
+
+moditect {
+    moduleInfo {
+        version = project.version
+        overwriteExistingFiles = true
+        outputDirectory = file("${buildDir}/modules")
+        mainModule {
+            mainClass = mainClassName
+            moduleInfo {
+                name = javaModule.name
+                exports = "!*;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.logging"
+                artifactId = "jboss-logging"
+            }
+            moduleInfo{
+                name = "org.jboss.logging"
+                requires = "static jboss.logmanager;\n" +
+                        "static log4j;\n" +
+                        "static log4j.api;\n" +
+                        "static slf4j.api;\n" +
+                        "*;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.logging"
+                artifactId = "jboss-logging-annotations"
+                version = "1.2.0.Final"
+            }
+            moduleInfo{
+                name = "org.jboss.logging.annotations"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.xnio"
+                artifactId = "xnio-api"
+            }
+            moduleInfo{
+                name = "org.jboss.xnio.api"
+                addServiceUses = true
+                exports = "org.xnio._private to org.jboss.logging;\n" +
+                        "*;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.xnio"
+                artifactId = "xnio-nio"
+            }
+            moduleInfo{
+                name = "org.jboss.xnio.nio"
+                addServiceUses = true
+                requires = "static org.jboss.logging.annotations;\n" +
+                        "org.jboss.logging;\n" +
+                        "*;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.eclipse.jetty.alpn"
+                artifactId = "alpn-api"
+                version = "1.0.0"
+            }
+            moduleInfo{
+                name = "alpn.api"
+            }
+        }
+        module {
+            artifact {
+                groupId = "io.undertow"
+                artifactId = "undertow-core"
+            }
+            moduleInfo{
+                name = "io.undertow.core"
+            }
+        }
+    }
+    image {
+        modulePath = [file("${buildDir}/modules").toPath()]
+        modules = ["com.example","org.jboss.xnio.nio"]
+        launcher {
+            name = "helloWorld"
+            module = "com.example"
+        }
+        compression = 2
+        stripDebug = true
+        outputDirectory = file("${buildDir}/jlink-image").toPath()
+    }
+}

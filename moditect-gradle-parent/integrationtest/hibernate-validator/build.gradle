@@ -1,0 +1,132 @@
+plugins{
+    id "java"
+    id "application"
+    id "com.zyxist.chainsaw" version "0.1.3"
+    id "org.moditect.gradleplugin" version "1.0.0"
+}
+
+repositories {
+    maven{ url "https://repository.jboss.org/nexus/content/repositories/releases/" }
+    maven{ url "http://central.maven.org/maven2/"}
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+group = "org.moditect"
+version = "2.0.0"
+
+targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_1_9
+
+javaModule.name = 'com.example'
+mainClassName = 'com.example.ValidationTest'
+jar {
+    manifest {
+        attributes("Automatic-Module-Name": javaModule.name)
+    }
+}
+
+compileJava {
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', "${buildDir}/modules", '--add-modules', "java.validation"
+        ]
+        classpath = files()
+    }
+}
+
+dependencies{
+    // https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator
+    compile group: 'org.hibernate.validator', name: 'hibernate-validator', version: '6.0.7.Final'
+    // https://mvnrepository.com/artifact/org.glassfish/javax.el
+    compile group: 'org.glassfish', name: 'javax.el', version: '3.0.1-b09'
+}
+
+moditect {
+    moduleInfo {
+        version = project.version
+        overwriteExistingFiles = true
+        outputDirectory = file("${buildDir}/modules")
+        mainModule {
+            mainClass = mainClassName
+            moduleInfo {
+                name = javaModule.name
+                open = true
+            }
+        }
+        module {
+            artifact {
+                groupId = "javax.validation"
+                artifactId = "validation-api"
+            }
+            moduleInfo {
+                addServiceUses = true
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.glassfish"
+                artifactId = "javax.el"
+            }
+            moduleInfo{
+                name = "java.el"
+            }
+        }
+        module {
+            artifact {
+                groupId = "com.fasterxml"
+                artifactId = "classmate"
+            }
+            moduleInfo{
+                name = "com.fasterxml.classmate"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.hibernate.validator"
+                artifactId = "hibernate-validator"
+            }
+            moduleInfo{
+                name = "org.hibernate.validator"
+                requires = "static jboss.logging.annotations;\n" +
+                        "transitive java.validation;\n" +
+                        "*;"
+                exports = "org.hibernate.validator.internal.util.logging to org.jboss.logging;\n" +
+                        "!org.hibernate.validator.internal*;\n" +
+                        "*;"
+                uses = "javax.validation.ConstraintValidator;\n" +
+                        "javax.validation.valueextraction.ValueExtractor;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.logging"
+                artifactId = "jboss-logging"
+            }
+            moduleInfo{
+                name = "org.jboss.logging"
+                requires = "static jboss.logmanager;\n" +
+                        "static log4j;\n" +
+                        "static log4j.api;\n" +
+                        "static slf4j.api;\n" +
+                        "*;"
+            }
+        }
+        module {
+            artifact {
+                groupId = "org.jboss.logging"
+                artifactId = "jboss-logging-processor"
+                version = "2.0.2.Final"
+            }
+            moduleInfo{
+                name = "org.jboss.logging.processor"
+                requires = "static org.jboss.logging;\n" +
+                        "static log4j;\n" +
+                        "static log4j.api;\n" +
+                        "static slf4j.api;\n" +
+                        "*;"
+            }
+        }
+    }
+}

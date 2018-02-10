@@ -40,7 +40,9 @@ import java.util.Set;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.spi.ToolProvider;
+import java.util.stream.Collectors;
 
+import com.github.javaparser.ast.modules.*;
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.model.DependencePattern;
@@ -52,13 +54,14 @@ import org.moditect.spi.log.Log;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.modules.ModuleExportsStmt;
-import com.github.javaparser.ast.modules.ModuleOpensStmt;
-import com.github.javaparser.ast.modules.ModuleRequiresStmt;
-import com.github.javaparser.ast.modules.ModuleUsesStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
+/**
+ * Generate a module-info.class descriptor.
+ *
+ * @author Gunnar Morling
+ * @author Pratik Parikh
+ */
 public class GenerateModuleInfo {
 
     private final Path inputJar;
@@ -78,7 +81,10 @@ public class GenerateModuleInfo {
     private final Log log;
     private ToolProvider jdeps;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
+    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies,
+                              List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns,
+                              List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory,
+                              Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
         String autoModuleNameForInputJar = getAutoModuleNameFromInputJar( inputJar );
 
         // if no valid auto module name can be derived for the input JAR, create a copy of it and
@@ -90,7 +96,8 @@ public class GenerateModuleInfo {
         }
         else {
             this.autoModuleNameForInputJar = moduleName;
-            this.inputJar = createCopyWithAutoModuleNameManifestHeader( workingDirectory, inputJar, moduleName );
+            this.inputJar = createCopyWithAutoModuleNameManifestHeader( workingDirectory, inputJar,
+                    this.autoModuleNameForInputJar );
         }
 
         this.moduleName = moduleName;
@@ -117,9 +124,9 @@ public class GenerateModuleInfo {
         }
     }
 
-    private static String getAutoModuleNameFromInputJar(Path inputJar) {
+    private String getAutoModuleNameFromInputJar(Path inputJar) {
         try {
-            return ModuleFinder.of( inputJar )
+            return ModuleFinder.of(inputJar)
                     .findAll()
                     .iterator()
                     .next()
@@ -135,7 +142,7 @@ public class GenerateModuleInfo {
         }
     }
 
-    private static Path createCopyWithAutoModuleNameManifestHeader(Path workingDirectory, Path inputJar, String moduleName) {
+    private Path createCopyWithAutoModuleNameManifestHeader(Path workingDirectory, Path inputJar, String moduleName) {
         if ( moduleName == null ) {
             throw new IllegalArgumentException( "No automatic name can be derived for the JAR " + inputJar + ", hence an explicit module name is required" );
         }
@@ -261,6 +268,8 @@ public class GenerateModuleInfo {
                 moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
             }
         }
+
+        List<ModuleProvidesStmt> providesStatements = moduleDeclaration.getNodesByType( ModuleProvidesStmt.class );
     }
 
     private ModuleDeclaration applyExportPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
@@ -348,32 +357,33 @@ public class GenerateModuleInfo {
         if ( !dependencies.isEmpty() ) {
             StringBuilder modules = new StringBuilder();
             StringBuilder modulePath = new StringBuilder();
-            boolean isFirst = true;
-
-            for ( DependencyDescriptor dependency : dependencies ) {
-                if ( isFirst ) {
-                    isFirst = false;
-                }
-                else {
+            dependencies.forEach(dependency -> {
+                if ( modules.length() > 1 && !modules.toString().startsWith(",") ) {
                     modules.append( "," );
                     modulePath.append( File.pathSeparator );
                 }
-                ModuleDescriptor descriptor = ModuleFinder.of( dependency.getPath() )
-                        .findAll()
-                        .iterator()
-                        .next()
-                        .descriptor();
-
-                modules.append( descriptor.name() );
-                optionalityPerModule.put( descriptor.name(), dependency.isOptional() );
+                String descriptorName = getAutoModuleNameFromInputJar( dependency.getPath() );
+                // if no valid auto module name can be derived for the input JAR, create a copy of it and
+                // inject the target module name into the manifest ("Automatic-Module-Name"), as otherwise
+                // jdeps will fail (issue #37)
+                if ( descriptorName == null ) {
+                    descriptorName = dependency.getAssignedModuleName();
+                    dependency.setPath(createCopyWithAutoModuleNameManifestHeader( workingDirectory, inputJar,
+                            descriptorName ));
+                }
+                modules.append( descriptorName );
+                optionalityPerModule.put( descriptorName, dependency.isOptional() );
                 modulePath.append( dependency.getPath() );
+            });
+
+            if(modules.length() > 0) {
+                command.add("--add-modules");
+                command.add(modules.toString());
             }
-
-            command.add( "--add-modules" );
-            command.add( modules.toString() );
-            command.add( "--module-path" );
-            command.add( modulePath.toString() );
-
+            if(modulePath.length() > 0) {
+                command.add("--module-path");
+                command.add(modulePath.toString());
+            }
             command.addAll( jdepsExtraArgs );
         }
 
@@ -435,5 +445,27 @@ public class GenerateModuleInfo {
         }
 
         return dir;
+    }
+
+    @Override
+    public String toString() {
+        return "GenerateModuleInfo{" +
+                "inputJar=" + inputJar +
+                ", autoModuleNameForInputJar='" + autoModuleNameForInputJar + '\'' +
+                ", moduleName='" + moduleName + '\'' +
+                ", open=" + open +
+                ", dependencies=" + dependencies +
+                ", exportPatterns=" + exportPatterns +
+                ", opensPatterns=" + opensPatterns +
+                ", requiresPatterns=" + requiresPatterns +
+                ", uses=" + uses +
+                ", workingDirectory=" + workingDirectory +
+                ", outputDirectory=" + outputDirectory +
+                ", addServiceUses=" + addServiceUses +
+                ", serviceLoaderUseScanner=" + serviceLoaderUseScanner +
+                ", jdepsExtraArgs=" + jdepsExtraArgs +
+                ", log=" + log +
+                ", jdeps=" + jdeps +
+                '}';
     }
 }

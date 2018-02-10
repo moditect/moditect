@@ -15,18 +15,19 @@
  */
 package org.moditect.model;
 
+import java.lang.module.FindException;
 import java.lang.module.ModuleFinder;
 import java.nio.file.Path;
 
 public class DependencyDescriptor {
 
-    private final Path path;
+    private Path path;
     private final boolean optional;
 
     /**
      * The original (automatic) module name of that dependency.
      */
-    private final String originalModuleName;
+    private String originalModuleName;
 
     /**
      * The module name of that dependency as assigned during the current modularization build.
@@ -36,17 +37,28 @@ public class DependencyDescriptor {
     public DependencyDescriptor(Path path, boolean optional, String assignedModuleName) {
         this.path = path;
         this.optional = optional;
-        this.originalModuleName = ModuleFinder.of( path )
-                .findAll()
-                .iterator()
-                .next()
-                .descriptor()
-                .name();
+        try {
+            this.originalModuleName =  ModuleFinder.of(path)
+                    .findAll()
+                    .iterator()
+                    .next()
+                    .descriptor()
+                    .name();
+        }
+        catch (FindException e) {
+            if ( e.getCause() != null && e.getCause().getMessage().contains( "Invalid module name" ) ) {
+                this.originalModuleName = assignedModuleName;
+            }
+        }
         this.assignedModuleName = assignedModuleName;
     }
 
     public Path getPath() {
         return path;
+    }
+
+    public void setPath(final Path path){
+        this.path = path;
     }
 
     public boolean isOptional() {
