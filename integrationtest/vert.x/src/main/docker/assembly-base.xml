@@ -20,6 +20,13 @@
     xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <id>vertx-helloworld-base</id>
     <fileSets>
-        <fileSet><directory>target/jlink-image</directory></fileSet>
+        <fileSet>
+            <directory>target/jlink-image</directory>
+        </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>src/main/docker/helloWorld.sh</source>
+        </file>
+    </files>
 </assembly>

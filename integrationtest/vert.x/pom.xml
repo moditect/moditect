@@ -400,9 +400,9 @@
                                     </modules>
                                     <compression>2</compression>
                                     <stripDebug>true</stripDebug>
-                                    <excludedResources>
-                                        <pattern>glob:/com.example/**</pattern>
-                                    </excludedResources>
+<!--                                     <excludedResources> -->
+<!--                                         <pattern>glob:/com.example/**</pattern> -->
+<!--                                     </excludedResources> -->
                                     <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
                                 </configuration>
                             </execution>

@@ -17,6 +17,8 @@
 FROM centos:7
 
 COPY maven/target/jlink-image /opt/vertx-helloworld/
+COPY maven/helloWorld.sh /opt/vertx-helloworld/bin
+
 ADD entrypoint.sh /entrypoint.sh
 
 EXPOSE 8080
