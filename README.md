@@ -410,7 +410,7 @@ Changes to the application will require to rebuild the entire jlink image which 
 changed but not its dependencies (used JDK modules or 3rd-party modules).
 Therefore another image can be build using the "docker" profile:
 
-    mvn clean install -Pdocker-base
+    mvn clean install -Pdocker
 
 This will create an image named _moditect/vertx-helloworld which extends the base image and just adds the application module (_com.example_) on the upgrade module path.
 Hence that image is very quick to be built (and distributed) once the base image is in place.
