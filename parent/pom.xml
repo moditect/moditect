@@ -21,7 +21,7 @@
 
     <groupId>org.moditect</groupId>
     <artifactId>moditect-parent</artifactId>
-    <version>1.0.0.Beta1</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ModiTect Parent</name>
@@ -54,7 +54,7 @@
         <connection>scm:git:git://github.com/moditect/moditect.git</connection>
         <developerConnection>scm:git:git@github.com:moditect/moditect.git</developerConnection>
         <url>https://github.com/moditect/moditect/</url>
-        <tag>1.0.0.Beta1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
