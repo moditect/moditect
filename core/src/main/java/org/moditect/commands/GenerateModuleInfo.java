@@ -225,6 +225,9 @@ public class GenerateModuleInfo {
 
             for ( DependencePattern dependence : requiresPatterns ) {
                 if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) ) {
+                    if ( !dependence.isInclusive() ) {
+                        moduleDeclaration.remove( moduleRequiresStmt );
+                    }
                     if ( dependence.isMatchAll() && dependence.getModifiers().isEmpty() ) {
                         moduleRequiresStmt.getModifiers().remove( Modifier.TRANSITIVE );
                     }

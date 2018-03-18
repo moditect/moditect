@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Alpha2</version>
+    <version>1.0.0-SNAPSHOT</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -82,6 +82,7 @@ _generate-module-info_ goal as follows:
                             </exports>
                             <requires>
                                 static com.some.optional.dependency;
+                                !com.excluded.dependency;
                                 *;
                             </requires>
                             <uses>
@@ -137,11 +138,14 @@ list of open packages and no further patterns will be applied.
 (optional; the default value is "!\*;", i.e. no packages will be opened)
   - `requires`: List of name patterns for describing the dependences of the module,
   based on the automatically determined dependences.
-Patterns are inclusive and may contain the "\*" character as a wildcard. Patterns may
+Patterns are inclusive or exclusive (starting with "!") and may contain the "\*" character as a wildcard.
+Inclusive patterns may
 contain the `static` and `transitive` modifiers, in which case those modifiers will
 override the modifiers of the automatically determined dependence. For each of the
-automatically determined dependences of the module, the given patterns are processed in the order they are given. As soon a dependence is matched by a pattern, the dependence will be
-added to the list of dependences and no further patterns will be applied. Usually,
+automatically determined dependences of the module, the given patterns are processed in the order they are given.
+As soon as a dependence is matched by a pattern, the dependence will be
+added to the list of dependences (if the pattern is inclusive) or the dependence will be
+filtered out (for exclusive patterns) and no further patterns will be applied. Usually,
 only a few dependences will be given explicitly in order to override their modifiers,
 followed by a `*;` pattern to add all remaining automatically determined dependences.
   - `addServiceUses`: If `true`, the given artifact will be scanned for usages of

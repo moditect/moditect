@@ -23,10 +23,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * A pattern for matching dependences (requires directives). Any matching
+ * dependence will be amended with the pattern's modifiers or it will be
+ * excluded, if the pattern isn't inclusive.
+ *
+ * @author Gunnar Morling
+ */
 public class DependencePattern {
 
     private static final Pattern PATTERN = Pattern.compile( "((.*)\\s+)?(.*?)" );
 
+    private final boolean inclusive;
     private final Pattern pattern;
     private final Set<String> modifiers;
 
@@ -58,6 +66,14 @@ public class DependencePattern {
     }
 
     private DependencePattern(String pattern, String modifiers) {
+        if (pattern.startsWith("!")) {
+            pattern = pattern.substring(1);
+            this.inclusive = false;
+        }
+        else {
+            this.inclusive = true;
+        }
+
         this.pattern = Pattern.compile( pattern.replace( ".", "\\." ).replace( "*", ".*" ) );
 
         if ( modifiers == null ) {
@@ -84,6 +100,10 @@ public class DependencePattern {
 
     public boolean isMatchAll() {
         return ".*".equals( pattern.pattern() );
+    }
+
+    public boolean isInclusive() {
+        return inclusive;
     }
 
     @Override
