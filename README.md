@@ -312,6 +312,9 @@ _create-runtime-image_ goal as follows:
                     <module>com.example.module1</module>
                     <module>com.example.module2</module>
                 </modules>
+                <excludedResources>
+                    <pattern>glob:/com.example/**</pattern>
+                </excludedResources>
                 <launcher>
                     <name>helloWorld</name>
                     <module>com.example.module1</module>
@@ -336,7 +339,8 @@ be added to the image (required)
 (required)
 * `launcher`: file name and main module for creating a launcher file (optional)
 * `stripDebug` whether to strip debug symbols or not (optional, defaults to `false`)
-
+* `excludedResources` list of patterns for excluding matching resources from the created
+runtime image
 Once the image has been created, it can be executed by running:
 
 ```
