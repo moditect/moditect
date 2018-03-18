@@ -202,28 +202,28 @@ public class AddModuleInfoMojo extends AbstractMojo {
             return resolvedDependency.get().getVersion();
         }
 
-        Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
-            .getDependencies()
-            .stream()
-            .filter( d -> {
-                return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
-                        Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
-                        Objects.equals( d.getClassifier(), artifact.getClassifier() ) &&
-                        Objects.equals( d.getType(), artifact.getType() );
-            } )
-            .findFirst();
+        if ( project.getDependencyManagement() != null ) {
+            Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
+                    .getDependencies()
+                    .stream()
+                    .filter( d -> {
+                        return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
+                                Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
+                                Objects.equals( d.getClassifier(), artifact.getClassifier() ) &&
+                                Objects.equals( d.getType(), artifact.getType() );
+                    } )
+                    .findFirst();
 
-        if ( managed.isPresent() ) {
-            return managed.get().getVersion();
+            if ( managed.isPresent() ) {
+                return managed.get().getVersion();
+            }
         }
 
-        else {
-            throw new MojoExecutionException(
-                    "A version must be given for artifact " + artifact.toDependencyString()
-                    + ". Either specify one explicitly, add it to the project dependencies"
-                    + " or add it to the project's dependency management."
-            );
-        }
+        throw new MojoExecutionException(
+                "A version must be given for artifact " + artifact.toDependencyString() +
+                ". Either specify one explicitly, add it to the project dependencies" +
+                " or add it to the project's dependency management."
+        );
     }
 
     private String getVersion(ModuleConfiguration moduleConfiguration) {

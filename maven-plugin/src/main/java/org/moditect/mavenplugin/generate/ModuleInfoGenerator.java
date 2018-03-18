@@ -204,19 +204,21 @@ public class ModuleInfoGenerator {
             return resolvedDependency.get().getVersion();
         }
 
-        Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
-            .getDependencies()
-            .stream()
-            .filter( d -> {
-                return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
-                        Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
-                        areEqualClassifiers( d.getClassifier(), artifact.getClassifier() ) &&
-                        Objects.equals( d.getType(), artifact.getExtension() );
-            } )
-            .findFirst();
+        if ( project.getDependencyManagement() != null ) {
+            Optional<org.apache.maven.model.Dependency> managed = project.getDependencyManagement()
+                    .getDependencies()
+                    .stream()
+                    .filter( d -> {
+                        return Objects.equals( d.getGroupId(), artifact.getGroupId() ) &&
+                                Objects.equals( d.getArtifactId(), artifact.getArtifactId() ) &&
+                                areEqualClassifiers( d.getClassifier(), artifact.getClassifier() ) &&
+                                Objects.equals( d.getType(), artifact.getExtension() );
+                    } )
+                    .findFirst();
 
-        if ( managed.isPresent() ) {
-            return managed.get().getVersion();
+            if ( managed.isPresent() ) {
+                return managed.get().getVersion();
+            }
         }
 
         return null;
