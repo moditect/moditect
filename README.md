@@ -315,6 +315,7 @@ _create-runtime-image_ goal as follows:
                 <excludedResources>
                     <pattern>glob:/com.example/**</pattern>
                 </excludedResources>
+                <baseJdk>version=9,vendor=openjdk,platform=linux-x64</baseJdk>
                 <launcher>
                     <name>helloWorld</name>
                     <module>com.example.module1</module>
@@ -341,6 +342,12 @@ be added to the image (required)
 * `stripDebug` whether to strip debug symbols or not (optional, defaults to `false`)
 * `excludedResources` list of patterns for excluding matching resources from the created
 runtime image
+* `baseJdk`: requirements for identifying a JDK in _~/.m2/toolchains.xml_ whose jmod files
+will be used when creating the runtime image (optional; if not given the JDK running the
+current build will be used). Must unambiguously identify one toolchain entry of type `jdk`
+that matches all given requirements in its `<provides>` configuration. This can be used for
+creating runtime images on one platform (e.g. OS X) while targeting another (e.g. Linux).
+
 Once the image has been created, it can be executed by running:
 
 ```
