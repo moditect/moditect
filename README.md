@@ -26,7 +26,7 @@ manner.
    * [Generating module-info.java descriptors](#generating-module-infojava-descriptors)
    * [Adding a module descriptor to the project JAR](#adding-a-module-descriptor-to-the-project-jar)
    * [Adding module descriptors to existing JAR files](#adding-module-descriptors-to-existing-jar-files)
-   * [Creating module runtime images](#creating-module-runtime-images)
+   * [Creating modular runtime images](#creating-modular-runtime-images)
 * [Example](#examples)
    * [Undertow](#undertow)
    * [Vert.x](#vertx)
