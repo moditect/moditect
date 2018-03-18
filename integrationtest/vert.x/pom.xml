@@ -388,10 +388,12 @@
                                     <!--
                                         requires unique matching entry in toolchains.xml of type "jdk" and with
                                         <provides>
-                                            <id>jdk-9_linux-x64</id>
+                                            <version>9</version>
+                                            <vendor>openjdk</vendor>
+                                            <platform>linux-x64</platform>
                                         </provides>
                                      -->
-                                    <baseJdk>jdk-9_linux-x64</baseJdk>
+                                    <baseJdk>version=9,vendor=openjdk,platform=linux-x64</baseJdk>
                                     <modulePath>
                                         <path>${project.build.directory}/modules</path>
                                     </modulePath>

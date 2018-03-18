@@ -18,7 +18,9 @@ package org.moditect.mavenplugin.image;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -86,28 +88,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        Path jmodsDir = null;
-
-        if ( baseJdk != null ) {
-            List<Toolchain> toolChains = toolchainManager.getToolchains( mavenSession, "jdk", Collections.singletonMap( "id", baseJdk ) );
-            if ( toolChains.isEmpty() ) {
-                throw new MojoExecutionException( "Found no tool chain of type 'jdk' and with id '" + baseJdk + "'" );
-            }
-            else if ( toolChains.size() > 1 ) {
-                throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and with id '" + baseJdk + "'" );
-            }
-            else {
-                jmodsDir = new File( toolChains.get( 0 ).findTool( "javac" ) )
-                        .toPath()
-                        .getParent()
-                        .getParent()
-                        .resolve( "jmods" );
-            }
-        }
-        else {
-            String javaHome = System.getProperty( "java.home" );
-            jmodsDir = new File( javaHome ).toPath().resolve( "jmods" );
-        }
+        Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
             .map( File::toPath )
@@ -127,6 +108,53 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 new MojoLog( getLog() )
         )
         .run();
+    }
+
+    /**
+     * Returns the directory with the jmod files to be used for creating the image.
+     * If {@code baseJdk} has been given, the jmod files from the JDK identified that way
+     * will be used; otherwise the jmod files from the JDK running the current build
+     * will be used.
+     */
+    private Path getJModsDir() throws MojoExecutionException {
+        if ( baseJdk != null ) {
+            List<Toolchain> toolChains = toolchainManager.getToolchains( mavenSession, "jdk", getToolChainRequirements( baseJdk ) );
+            if ( toolChains.isEmpty() ) {
+                throw new MojoExecutionException( "Found no tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
+            }
+            else if ( toolChains.size() > 1 ) {
+                throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
+            }
+            else {
+                return new File( toolChains.get( 0 ).findTool( "javac" ) )
+                        .toPath()
+                        .getParent()
+                        .getParent()
+                        .resolve( "jmods" );
+            }
+        }
+        else {
+            String javaHome = System.getProperty( "java.home" );
+            return new File( javaHome ).toPath().resolve( "jmods" );
+        }
+    }
+
+    private Map<String, String> getToolChainRequirements(String baseJdk) throws MojoExecutionException {
+        Map<String, String> toolChainRequirements = new HashMap<>();
+        String[] requirements = baseJdk.split( "," );
+
+        for (String requirement : requirements) {
+            String[] keyAndValue = requirement.split("=");
+            if ( keyAndValue.length != 2 ) {
+                throw new MojoExecutionException(
+                        "Toolchain requirements must be given in the form 'key1=value1,key2=value2,...'." +
+                        "Given value '" + baseJdk + "' doesn't match this pattern." );
+            }
+
+            toolChainRequirements.put( keyAndValue[0].trim(), keyAndValue[1].trim() );
+        }
+
+        return toolChainRequirements;
     }
 
     private List<String> getExcludeResourcesPatterns() {
