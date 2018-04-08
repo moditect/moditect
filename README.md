@@ -387,7 +387,7 @@ in your browser for the canonical "Hello World" example.
 
 ### Vert.x
 
-The [POM file](integrationtest/vertx/pom.xml) in _integrationtest/vertx_
+The [POM file](integrationtest/vert.x/pom.xml) in _integrationtest/vertx_
 shows a more complete example. It adds module descriptors for
 [Vert.x](http://vertx.io) and its dependencies (Netty, Jackson) and creates a modular runtime
 image with a "hello world" verticle.
