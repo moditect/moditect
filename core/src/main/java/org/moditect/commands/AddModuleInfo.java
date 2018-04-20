@@ -16,6 +16,7 @@
 package org.moditect.commands;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -24,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 
@@ -41,14 +44,16 @@ public class AddModuleInfo {
     private final String version;
     private final Path inputJar;
     private final Path outputDirectory;
+    private final Integer jvmVersion;
     private final boolean overwriteExistingFiles;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, boolean overwriteExistingFiles) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, Integer jvmVersion, boolean overwriteExistingFiles) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
         this.version = version;
         this.inputJar = inputJar;
         this.outputDirectory = outputDirectory;
+        this.jvmVersion = jvmVersion;
         this.overwriteExistingFiles = overwriteExistingFiles;
     }
 
@@ -83,8 +88,30 @@ public class AddModuleInfo {
         URI uri = URI.create( "jar:" + outputJar.toUri().toString() );
 
        try (FileSystem zipfs = FileSystems.newFileSystem( uri, env ) ) {
-           Files.write( zipfs.getPath( "module-info.class" ), clazz );
-        }
+           if (jvmVersion == null) {
+               Files.write( zipfs.getPath( "module-info.class" ), clazz );
+           }
+           else {
+               Path path = zipfs.getPath( "META-INF/versions", jvmVersion.toString(), "module-info.class" );
+               Files.createDirectories( path.getParent() );
+               Files.write( path, clazz );
+
+               Path manifestPath = zipfs.getPath( "META-INF/MANIFEST.MF" );
+               Manifest manifest;
+               if ( Files.exists( manifestPath ) ) {
+                   manifest = new Manifest( Files.newInputStream( manifestPath ) );
+               }
+               else {
+                   manifest = new Manifest();
+                   manifest.getMainAttributes().put( Attributes.Name.MANIFEST_VERSION, "1.0" );
+               }
+
+               manifest.getMainAttributes().put( Attributes.Name.MULTI_RELEASE, "true" );
+               try (OutputStream manifestOs = Files.newOutputStream( manifestPath )) {
+                   manifest.write( manifestOs );
+               }
+           }
+       }
        catch(IOException e) {
             throw new RuntimeException( "Couldn't add module-info.class to JAR", e );
         }

@@ -187,6 +187,7 @@ the _add-module-info_ goal as follows:
                 <goal>add-module-info</goal>
             </goals>
             <configuration>
+                <jvmVersion>9</jvmVersion>
                 <module>
                     <moduleInfo>
                         <name>com.example</name>
@@ -202,6 +203,9 @@ the _add-module-info_ goal as follows:
 </plugin>
 ...
 ```
+
+The optional `jvmVersion` element allows to define for which JVM version the module descriptor should be created.
+When defined, the module descriptor will be put into `META-INF/versions/${jvmVersion}`, otherwise it will be put into the root of the final JAR.
 
 The following configuration options exist for the `<module>` configuration element:
 
