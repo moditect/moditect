@@ -77,6 +77,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.version}", readonly = true, required = true)
     private String version;
 
+    @Parameter(readonly = true)
+    private Integer jvmVersion;
+
     @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
     private File workingDirectory;
 
@@ -126,6 +129,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     getVersion( moduleConfiguration ),
                     inputFile,
                     outputPath,
+                    jvmVersion,
                     overwriteExistingFiles
                 );
 
@@ -152,6 +156,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     version,
                     inputJar,
                     outputPath,
+                    jvmVersion,
                     overwriteExistingFiles
             );
             addModuleInfo.run();

@@ -31,7 +31,7 @@ public class Moditect {
         CliArgs cliArgs = new CliArgs();
         new JCommander( cliArgs, args );
 
-        new AddModuleInfo( null, null, null, null, cliArgs.outputDirecory, cliArgs.overwriteExistingFiles ).run();
+        new AddModuleInfo( null, null, null, null, cliArgs.outputDirecory, cliArgs.jvmVersion, cliArgs.overwriteExistingFiles ).run();
     }
 
     @Parameters(separators = "=")
@@ -52,6 +52,13 @@ public class Moditect {
                 converter = PathConverter.class
         )
         private Path outputDirecory;
+
+        @Parameter(
+                names = "--jvm-version",
+                required = false,
+                description = "The JVM version for which to add the module-info.java descriptor"
+        )
+        private Integer jvmVersion;
 
         @Parameter(
                 names = "--overwrite-existing-files",

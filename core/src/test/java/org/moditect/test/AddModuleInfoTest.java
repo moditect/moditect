@@ -15,13 +15,18 @@
  */
 package org.moditect.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ProcessBuilder.Redirect;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -49,15 +54,71 @@ public class AddModuleInfoTest {
 
     @Before
     public void prepareDirectories() throws Exception {
-        Files.deleteIfExists( GENERATED_TEST_RESOURCES );
-        Files.createDirectory( GENERATED_TEST_RESOURCES );
+        truncateFolder( GENERATED_TEST_RESOURCES );
+        truncateFolder( GENERATED_TEST_MODULES );
+    }
 
-        Files.deleteIfExists( GENERATED_TEST_MODULES );
-        Files.createDirectory( GENERATED_TEST_MODULES );
+    private void truncateFolder(Path folder) throws Exception {
+        if ( Files.exists( folder ) ) {
+            Files.walkFileTree(folder, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                    Files.deleteIfExists(path);
+                    return super.visitFile(path, attrs);
+                }
+            });
+            Files.deleteIfExists( folder );
+        }
+        Files.createDirectory( folder );
     }
 
     @Test
-    public void foo() throws Exception {
+    public void addJvmVersionModuleInfoAndRunModular() throws Exception {
+        prepareTestJar();
+
+        String javaHome = System.getProperty("java.home");
+        String javaBin = javaHome +
+                File.separator + "bin" +
+                File.separator + "java";
+
+        ProcessBuilder builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_RESOURCES + File.separator + "example.jar", "--module", "com.example" )
+                .redirectOutput( Redirect.INHERIT );
+
+        Process process = builder.start();
+        process.waitFor();
+
+        if ( process.exitValue() == 0 ) {
+            throw new AssertionError();
+        }
+
+        new AddModuleInfo(
+                "module com.example {}",
+                "com.example.HelloWorld",
+                "1.42.3",
+                Paths.get( "target", "generated-test-resources", "example.jar" ),
+                Paths.get( "target", "generated-test-modules" ),
+                9,
+                false
+        )
+        .run();
+
+        builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_MODULES + File.separator + "example.jar", "--module", "com.example" );
+
+        process = builder.start();
+        process.waitFor();
+
+        if ( process.exitValue() != 0 ) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            process.getInputStream().transferTo( baos );
+            process.getErrorStream().transferTo( baos );
+            throw new AssertionError( baos.toString() );
+        }
+    }
+
+    @Test
+    public void addModuleInfoAndRunModular() throws Exception {
         prepareTestJar();
 
         String javaHome = System.getProperty("java.home");
@@ -82,6 +143,7 @@ public class AddModuleInfoTest {
             "1.42.3",
             Paths.get( "target", "generated-test-resources", "example.jar" ),
             Paths.get( "target", "generated-test-modules" ),
+            null,
             false
         )
         .run();
@@ -116,23 +178,6 @@ public class AddModuleInfoTest {
         );
 
         Path exampleJar = GENERATED_TEST_RESOURCES.resolve( "example.jar" );
-
-
-//        Map<String, String> env = new HashMap<>();
-//        env.put( "create", "true" );
-//
-//        URI uri = URI.create( "jar:" + exampleJar.toUri().toString() );
-//
-//           try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
-//               Files.write( zipfs.getPath( "com/example/HelloWorld.class" ), ByteStreams.toByteArray( classFile.get().openInputStream()  ) );
-//            }
-//           catch(IOException e) {
-//                throw new RuntimeException( "Couldn't add module-info.class to JAR", e );
-//            }
-
-
-
-
 
         Manifest manifest = new Manifest();
         manifest.getMainAttributes().put( Attributes.Name.MANIFEST_VERSION, "1.0" );
