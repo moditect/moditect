@@ -23,6 +23,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -123,8 +124,8 @@ public class AddModuleInfo {
                    manifest.getMainAttributes().put( Attributes.Name.MANIFEST_VERSION, "1.0" );
                }
 
-               manifest.getMainAttributes().put( Attributes.Name.MULTI_RELEASE, "true" );
-               try (OutputStream manifestOs = Files.newOutputStream( manifestPath )) {
+               manifest.getMainAttributes().put( new Attributes.Name("Multi-Release"), "true" );
+               try (OutputStream manifestOs = Files.newOutputStream( manifestPath, StandardOpenOption.TRUNCATE_EXISTING )) {
                    manifest.write( manifestOs );
                }
            }
