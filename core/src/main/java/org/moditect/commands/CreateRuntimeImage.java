@@ -36,6 +36,7 @@ public class CreateRuntimeImage {
     private final Set<Path> modulePath;
     private final List<String> modules;
     private final Path outputDirectory;
+    private boolean ignoreSigningInformation;
     private final String launcher;
     private final Log log;
     private final Integer compression;
@@ -43,10 +44,11 @@ public class CreateRuntimeImage {
     private final List<String> excludeResourcesPatterns;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
-            Path outputDirectory, Integer compression, boolean stripDebug, List<String> excludeResourcesPatterns, Log log) {
+                              Path outputDirectory, Integer compression, boolean stripDebug, boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
+        this.ignoreSigningInformation = ignoreSigningInformation;
         this.launcher = launcherName != null && launcherModule != null ? launcherName + "=" + launcherModule : null;
         this.compression = compression;
         this.stripDebug = stripDebug;
@@ -97,6 +99,10 @@ public class CreateRuntimeImage {
 
         if ( stripDebug ) {
             command.add( "--strip-debug" );
+        }
+
+        if (ignoreSigningInformation) {
+            command.add( "--ignore-signing-information" );
         }
 
         if ( !excludeResourcesPatterns.isEmpty() ) {
