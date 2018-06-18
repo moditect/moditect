@@ -74,6 +74,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter
     List<String> excludedResources;
 
+    @Parameter(property = "ignoreSigningInformation", defaultValue = "false")
+    private boolean ignoreSigningInformation;
+
 //    @Parameter(property = "moditect.artifact")
 //    private String artifactOverride;
 //
@@ -91,8 +94,8 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
         Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
-            .map( File::toPath )
-            .collect( Collectors.toSet() );
+                .map( File::toPath )
+                .collect( Collectors.toSet() );
 
         effectiveModulePath.add( jmodsDir );
 
@@ -104,10 +107,11 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 outputDirectory.toPath(),
                 compression,
                 stripDebug,
+                ignoreSigningInformation,
                 getExcludeResourcesPatterns(),
                 new MojoLog( getLog() )
         )
-        .run();
+                .run();
     }
 
     /**
@@ -148,7 +152,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
             if ( keyAndValue.length != 2 ) {
                 throw new MojoExecutionException(
                         "Toolchain requirements must be given in the form 'key1=value1,key2=value2,...'." +
-                        "Given value '" + baseJdk + "' doesn't match this pattern." );
+                                "Given value '" + baseJdk + "' doesn't match this pattern." );
             }
 
             toolChainRequirements.put( keyAndValue[0].trim(), keyAndValue[1].trim() );
