@@ -351,6 +351,9 @@ will be used when creating the runtime image (optional; if not given the JDK run
 current build will be used). Must unambiguously identify one toolchain entry of type `jdk`
 that matches all given requirements in its `<provides>` configuration. This can be used for
 creating runtime images on one platform (e.g. OS X) while targeting another (e.g. Linux).
+* `ignoreSigningInformation`: Suppresses a fatal error when signed modular JARs are linked
+in the runtime image. The signature-related files of the signed modular JARs aren’t copied 
+to the runtime image.
 
 Once the image has been created, it can be executed by running:
 
