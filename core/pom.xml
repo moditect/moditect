@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>6.0_BETA</version>
+            <version>6.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>
