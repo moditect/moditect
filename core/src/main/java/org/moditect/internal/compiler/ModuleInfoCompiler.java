@@ -21,7 +21,7 @@ import static org.objectweb.asm.Opcodes.ACC_OPEN;
 import static org.objectweb.asm.Opcodes.ACC_STATIC_PHASE;
 import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 import static org.objectweb.asm.Opcodes.ACC_TRANSITIVE;
-import static org.objectweb.asm.Opcodes.V1_9;
+import static org.objectweb.asm.Opcodes.V9;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -74,7 +74,7 @@ public class ModuleInfoCompiler {
 
     public static byte[] compileModuleInfo(ModuleDeclaration module, String mainClass, String version) {
         ClassWriter classWriter = new ClassWriter( 0 );
-        classWriter.visit( V1_9, ACC_MODULE, "module-info", null, null, null );
+        classWriter.visit( V9, ACC_MODULE, "module-info", null, null, null );
 
         int moduleAccess = module.isOpen() ? ACC_SYNTHETIC | ACC_OPEN : ACC_SYNTHETIC;
         ModuleVisitor mv = classWriter.visitModule( module.getNameAsString(), moduleAccess, version );
