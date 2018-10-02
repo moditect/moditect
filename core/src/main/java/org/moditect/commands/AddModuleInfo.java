@@ -47,13 +47,27 @@ public class AddModuleInfo {
     private final Integer jvmVersion;
     private final boolean overwriteExistingFiles;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, Integer jvmVersion, boolean overwriteExistingFiles) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, String jvmVersion, boolean overwriteExistingFiles) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
         this.version = version;
         this.inputJar = inputJar;
         this.outputDirectory = outputDirectory;
-        this.jvmVersion = jvmVersion;
+        if (jvmVersion == null) {
+            // By default, put module descriptor in "META-INF/versions/9" for maximum backwards compatibility
+            this.jvmVersion = Integer.valueOf(9);
+        } else if (jvmVersion.equals("NONE")) {
+            this.jvmVersion = null;
+        } else {
+            try {
+                this.jvmVersion = Integer.valueOf(jvmVersion);
+                if (this.jvmVersion < 9) {
+                    throw new NumberFormatException();
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid JVM Version: " + jvmVersion);
+            }
+        }
         this.overwriteExistingFiles = overwriteExistingFiles;
     }
 

@@ -56,9 +56,10 @@ public class Moditect {
         @Parameter(
                 names = "--jvm-version",
                 required = false,
-                description = "The JVM version for which to add the module-info.java descriptor"
+                description = "The JVM version for which to add the module-info.java descriptor, "
+                        + "or \"NONE\" to add the descriptor to the root of the jarfile (default: 9)"
         )
-        private Integer jvmVersion;
+        private String jvmVersion;
 
         @Parameter(
                 names = "--overwrite-existing-files",
