@@ -57,7 +57,7 @@ public class AddModuleInfo {
             // By default, put module descriptor in "META-INF/versions/9" for maximum backwards compatibility
             this.jvmVersion = Integer.valueOf(9);
         }
-        else if (jvmVersion.equals("NONE")) {
+        else if (jvmVersion.equals("base")) {
             this.jvmVersion = null;
         }
         else {

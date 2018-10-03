@@ -57,7 +57,7 @@ public class Moditect {
                 names = "--jvm-version",
                 required = false,
                 description = "The JVM version for which to add the module-info.java descriptor, "
-                        + "or \"NONE\" to add the descriptor to the root of the jarfile (default: 9)"
+                        + "or \"base\" to add the descriptor to the root of the jarfile (default: 9)"
         )
         private String jvmVersion;
 

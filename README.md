@@ -208,7 +208,7 @@ The optional `jvmVersion` element allows to define which JVM version the module 
 (leveraging the concept of multi-release JARs).
 When defined, the module descriptor will be put into `META-INF/versions/${jvmVersion}`.
 The value must be `9` or greater.
-The special value `NONE` can be used to add the descriptor to the root of the final JAR.
+The special value `base` can be used to add the descriptor to the root of the final JAR.
 By default, `9` is used, i.e. module descriptors will go into `META-INF/versions/9`.
 This is to ensure a maximum of compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
 (and chances are much lower that such tool will look for class files under `META-INF/versions/...`).
