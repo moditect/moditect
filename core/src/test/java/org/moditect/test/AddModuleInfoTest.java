@@ -98,7 +98,7 @@ public class AddModuleInfoTest {
                 "1.42.3",
                 Paths.get( "target", "generated-test-resources", "example.jar" ),
                 Paths.get( "target", "generated-test-modules" ),
-                9,
+                "9",
                 false
         )
         .run();

@@ -187,7 +187,7 @@ the _add-module-info_ goal as follows:
                 <goal>add-module-info</goal>
             </goals>
             <configuration>
-                <jvmVersion>9</jvmVersion>
+                <jvmVersion>11</jvmVersion>
                 <module>
                     <moduleInfo>
                         <name>com.example</name>
@@ -204,8 +204,15 @@ the _add-module-info_ goal as follows:
 ...
 ```
 
-The optional `jvmVersion` element allows to define for which JVM version the module descriptor should be created.
-When defined, the module descriptor will be put into `META-INF/versions/${jvmVersion}`, otherwise it will be put into the root of the final JAR.
+The optional `jvmVersion` element allows to define which JVM version the module descriptor should target
+(leveraging the concept of multi-release JARs).
+When defined, the module descriptor will be put into `META-INF/versions/${jvmVersion}`.
+The value must be `9` or greater.
+The special value `NONE` can be used to add the descriptor to the root of the final JAR.
+By default, `9` is used, i.e. module descriptors will go into `META-INF/versions/9`.
+This is to ensure a maximum of compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
+(and chances are much lower that such tool will look for class files under `META-INF/versions/...`).
+For tools aware of the module system the effect of having the module descriptor in the JAR root and under `META-INF/versions/9` should be the same.
 
 The following configuration options exist for the `<module>` configuration element:
 
@@ -352,7 +359,7 @@ current build will be used). Must unambiguously identify one toolchain entry of 
 that matches all given requirements in its `<provides>` configuration. This can be used for
 creating runtime images on one platform (e.g. OS X) while targeting another (e.g. Linux).
 * `ignoreSigningInformation`: Suppresses a fatal error when signed modular JARs are linked
-in the runtime image. The signature-related files of the signed modular JARs aren’t copied 
+in the runtime image. The signature-related files of the signed modular JARs aren’t copied
 to the runtime image.
 
 Once the image has been created, it can be executed by running:
