@@ -386,12 +386,16 @@
                                 </goals>
                                 <configuration>
                                     <!--
-                                        requires unique matching entry in toolchains.xml of type "jdk" and with
+
+                                        <baseJdk>...</baseJdk> below causes following JDK entry from
+                                        ~/.m2/toolchains.xml to be used as source for jmod files:
+
                                         <provides>
                                             <version>9</version>
                                             <vendor>openjdk</vendor>
                                             <platform>linux-x64</platform>
                                         </provides>
+
                                      -->
                                     <baseJdk>version=9,vendor=openjdk,platform=linux-x64</baseJdk>
                                     <modulePath>
