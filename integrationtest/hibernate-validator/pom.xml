@@ -30,12 +30,22 @@
     <name>ModiTect Integration Test - Hibernate Validator</name>
 
     <properties>
-        <hibernate.validator.version>6.0.4.Final</hibernate.validator.version>
-        <bean.validation.version>2.0.0.Final</bean.validation.version>
-        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
-        <classmate.version>1.3.1</classmate.version>
+        <hibernate.validator.version>6.0.13.Final</hibernate.validator.version>
+        <bean.validation.version>2.0.1.Final</bean.validation.version>
+        <jboss.logging.version>3.3.2.Final</jboss.logging.version>
+        <classmate.version>1.3.4</classmate.version>
         <javax.el.version>3.0.1-b08</javax.el.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-base</artifactId>
+                <version>11-ea+19</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -85,6 +95,15 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.openjfx</groupId>
+                                        <artifactId>javafx-base</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.openjfx.javafx.base</name>
+                                    </moduleInfo>
+                                </module>
                                 <module>
                                     <artifact>
                                         <groupId>javax.validation</groupId>
