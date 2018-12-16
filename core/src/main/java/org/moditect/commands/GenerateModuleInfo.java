@@ -376,14 +376,17 @@ public class GenerateModuleInfo {
             command.add( modules.toString() );
             command.add( "--module-path" );
             command.add( modulePath.toString() );
-
-            command.addAll( jdepsExtraArgs );
         }
 
+        command.addAll( jdepsExtraArgs );
         command.add( inputJar.toString() );
 
         log.debug( "Running jdeps " + String.join(  " ", command ) );
-        jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
+        int result = jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
+
+        if (result != 0) {
+            throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(  " ", command ) );
+        }
 
         return optionalityPerModule;
     }

@@ -40,6 +40,8 @@ import com.github.javaparser.ast.modules.ModuleDeclaration;
  */
 public class AddModuleInfo {
 
+    private static final String NO_JVM_VERSION = "base";
+
     private final String moduleInfoSource;
     private final String mainClass;
     private final String version;
@@ -54,11 +56,11 @@ public class AddModuleInfo {
         this.version = version;
         this.inputJar = inputJar;
         this.outputDirectory = outputDirectory;
-        if (jvmVersion == null) {
-            // By default, put module descriptor in "META-INF/versions/9" for maximum backwards compatibility
-            this.jvmVersion = Integer.valueOf(9);
-        }
-        else if (jvmVersion.equals("base")) {
+
+        // #67 It'd be nice to use META-INF/services/9 by default to avoid conflicts with legacy
+        // classpath scanners, but this causes isses with subsequent jdeps invocations if there
+        // are MR-JARs and non-MR JARs passed to it due to https://bugs.openjdk.java.net/browse/JDK-8207162
+        if (jvmVersion == null || jvmVersion.equals(NO_JVM_VERSION)) {
             this.jvmVersion = null;
         }
         else {
@@ -69,7 +71,7 @@ public class AddModuleInfo {
                 }
             }
             catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid JVM Version: " + jvmVersion);
+                throw new IllegalArgumentException("Invalid JVM Version: " + jvmVersion + ". Allowed values are 'base' and integer values >= 9." );
             }
         }
         this.overwriteExistingFiles = overwriteExistingFiles;
