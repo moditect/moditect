@@ -130,7 +130,20 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
             }
             else {
-                return new File( toolChains.get( 0 ).findTool( "javac" ) )
+                Toolchain toolchain = toolChains.get( 0 );
+
+                String javac = toolchain.findTool( "javac" );
+
+                // #63; when building on Linux / OS X but creating a Windows runtime image
+                // the tool lookup must be for javac.exe explicitly (as the toolchain mechanism
+                // itself won't append the suffix if not running this build on Windows
+                if (javac == null) {
+                    javac = toolchain.findTool( "javac.exe" );
+                }
+                if (javac == null) {
+                    throw new MojoExecutionException ("Couldn't locate toolchain directory" );
+                }
+                return new File( javac )
                         .toPath()
                         .getParent()
                         .getParent()
