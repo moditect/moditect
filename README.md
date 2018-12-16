@@ -95,6 +95,9 @@ _generate-module-info_ goal as follows:
                         ...
                     </module>
                 </modules>
+                <jdepsExtraArgs>
+                  <arg>--upgrade-module-path=...</arg>
+                </jdepsExtraArgs>
             </configuration>
         </execution>
     </executions>
@@ -156,6 +159,7 @@ passed, are ignored (optional, defaults to `false`)
   - `uses`: List of names of used services, separated by ";" only required if `addServiceUses`
 cannot be used due to dynamic invocations of `ServiceLoader#load()`, i.e. no class literal is
 passed (optional)
+  - `jdepsExtraArgs`: A list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor"
 
 It is also possible to run this goal directly, specifying the different options
 as JVM parameters like this:
@@ -208,11 +212,11 @@ The optional `jvmVersion` element allows to define which JVM version the module 
 (leveraging the concept of multi-release JARs).
 When defined, the module descriptor will be put into `META-INF/versions/${jvmVersion}`.
 The value must be `9` or greater.
-The special value `base` can be used to add the descriptor to the root of the final JAR.
-By default, `9` is used, i.e. module descriptors will go into `META-INF/versions/9`.
-This is to ensure a maximum of compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
-(and chances are much lower that such tool will look for class files under `META-INF/versions/...`).
-For tools aware of the module system the effect of having the module descriptor in the JAR root and under `META-INF/versions/9` should be the same.
+The special value `base` (the default) can be used to add the descriptor to the root of the final JAR.
+Putting the descriptor under `META-INF/versions` can help to increase compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
+(as chances are lower that such tool will look for class files under `META-INF/versions/...`).
+
+The `jdepsExtraArgs` option can be used to specify a list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor".
 
 The following configuration options exist for the `<module>` configuration element:
 
@@ -295,6 +299,7 @@ module descriptor (optional)
 will be added (optional)
 
 The modularized JARs can be found in the folder given via `outputDirectory`.
+The `jdepsExtraArgs` option can be used to specify a list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor".
 
 ### Creating modular runtime images
 
