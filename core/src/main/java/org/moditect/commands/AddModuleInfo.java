@@ -109,12 +109,18 @@ public class AddModuleInfo {
 
        try (FileSystem zipfs = FileSystems.newFileSystem( uri, env ) ) {
            if (jvmVersion == null) {
-               Files.write( zipfs.getPath( "module-info.class" ), clazz );
+               Files.write( zipfs.getPath( "module-info.class" ), clazz,
+                 StandardOpenOption.CREATE,
+                 StandardOpenOption.WRITE,
+                 StandardOpenOption.TRUNCATE_EXISTING );
            }
            else {
                Path path = zipfs.getPath( "META-INF/versions", jvmVersion.toString(), "module-info.class" );
                Files.createDirectories( path.getParent() );
-               Files.write( path, clazz );
+               Files.write( path, clazz,
+                 StandardOpenOption.CREATE,
+                 StandardOpenOption.WRITE,
+                 StandardOpenOption.TRUNCATE_EXISTING );
 
                Path manifestPath = zipfs.getPath( "META-INF/MANIFEST.MF" );
                Manifest manifest;
