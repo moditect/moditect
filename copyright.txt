@@ -4,6 +4,7 @@
 Antoine Sabot-Durand
 Gunnar Morling
 Guillermo González de Agüero
+Hervé Guillemet
 J. Pablo Fernández
 Luke Hutchison
 Ricardo Malikoski
