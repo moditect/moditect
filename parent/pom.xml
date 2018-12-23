@@ -21,7 +21,7 @@
 
     <groupId>org.moditect</groupId>
     <artifactId>moditect-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0.Beta2</version>
     <packaging>pom</packaging>
 
     <name>ModiTect Parent</name>
