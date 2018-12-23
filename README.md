@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta1</version>
+    <version>1.0.0.Beta2</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -182,7 +182,7 @@ the _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta1</version>
+    <version>1.0.0.Beta2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -243,7 +243,7 @@ _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta1</version>
+    <version>1.0.0.Beta2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -312,7 +312,7 @@ _create-runtime-image_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta1</version>
+    <version>1.0.0.Beta2</version>
     <executions>
         <execution>
             <id>create-runtime-image</id>
