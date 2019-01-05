@@ -37,7 +37,10 @@ public class DependencyDescriptor {
     public DependencyDescriptor(Path path, boolean optional, String assignedModuleName) {
         this.path = path;
         this.optional = optional;
-        this.originalModuleName = getAutoModuleNameFromInputJar(path, "<invalid-module-name>");
+        this.originalModuleName = getAutoModuleNameFromInputJar(path, assignedModuleName);
+        if(this.originalModuleName == null) {
+            throw new IllegalArgumentException("No assignedModuleName provided for jar with invalid module name: " + path);
+        }
         this.assignedModuleName = assignedModuleName;
     }
 

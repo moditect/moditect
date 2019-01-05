@@ -18,8 +18,6 @@ package org.moditect.commands;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.module.ModuleDescriptor;
-import java.lang.module.ModuleFinder;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -116,7 +114,7 @@ public class GenerateModuleInfo {
         }
     }
 
-    private static Path createCopyWithAutoModuleNameManifestHeader(Path workingDirectory, Path inputJar, String moduleName) {
+    public static Path createCopyWithAutoModuleNameManifestHeader(Path workingDirectory, Path inputJar, String moduleName) {
         if ( moduleName == null ) {
             throw new IllegalArgumentException( "No automatic name can be derived for the JAR " + inputJar + ", hence an explicit module name is required" );
         }
@@ -342,14 +340,9 @@ public class GenerateModuleInfo {
                     modules.append( "," );
                     modulePath.append( File.pathSeparator );
                 }
-                ModuleDescriptor descriptor = ModuleFinder.of( dependency.getPath() )
-                        .findAll()
-                        .iterator()
-                        .next()
-                        .descriptor();
-
-                modules.append( descriptor.name() );
-                optionalityPerModule.put( descriptor.name(), dependency.isOptional() );
+                String moduleName = DependencyDescriptor.getAutoModuleNameFromInputJar(dependency.getPath(), dependency.getAssignedModuleName());
+                modules.append( moduleName );
+                optionalityPerModule.put( moduleName, dependency.isOptional() );
                 modulePath.append( dependency.getPath() );
             }
 
