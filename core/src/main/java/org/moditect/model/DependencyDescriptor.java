@@ -37,11 +37,11 @@ public class DependencyDescriptor {
     public DependencyDescriptor(Path path, boolean optional, String assignedModuleName) {
         this.path = path;
         this.optional = optional;
-        this.originalModuleName = getOriginalModuleNameOf(path);
+        this.originalModuleName = getAutoModuleNameFromInputJar(path, "<invalid-module-name>");
         this.assignedModuleName = assignedModuleName;
     }
 
-    private static String getOriginalModuleNameOf(Path path) {
+    public static String getAutoModuleNameFromInputJar(Path path, String invalidModuleName) {
         try {
             return ModuleFinder.of( path )
                     .findAll()
@@ -52,7 +52,7 @@ public class DependencyDescriptor {
         }
         catch (FindException e) {
             if ( e.getCause() != null && e.getCause().getMessage().contains( "Invalid module name" ) ) {
-                return "<invalid-module-name>";
+                return invalidModuleName;
             }
             throw e;
         }

@@ -18,7 +18,6 @@ package org.moditect.commands;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.module.FindException;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleFinder;
 import java.net.URI;
@@ -79,7 +78,7 @@ public class GenerateModuleInfo {
     private ToolProvider jdeps;
 
     public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
-        String autoModuleNameForInputJar = getAutoModuleNameFromInputJar( inputJar );
+        String autoModuleNameForInputJar = DependencyDescriptor.getAutoModuleNameFromInputJar(inputJar, null);
 
         // if no valid auto module name can be derived for the input JAR, create a copy of it and
         // inject the target module name into the manifest ("Automatic-Module-Name"), as otherwise
@@ -114,24 +113,6 @@ public class GenerateModuleInfo {
         }
         else {
             throw new RuntimeException( "jdeps tool not found" );
-        }
-    }
-
-    private static String getAutoModuleNameFromInputJar(Path inputJar) {
-        try {
-            return ModuleFinder.of( inputJar )
-                    .findAll()
-                    .iterator()
-                    .next()
-                    .descriptor()
-                    .name();
-        }
-        catch (FindException e) {
-            if ( e.getCause() != null && e.getCause().getMessage().contains( "Invalid module name" ) ) {
-                return null;
-            }
-
-            throw e;
         }
     }
 
