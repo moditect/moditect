@@ -81,6 +81,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.ow2.asm:asm</include>
+                                    <include>com.github.javaparser:javaparser-core</include>
                                 </includes>
                             </artifactSet>
                             <!-- <minimizeJar>true</minimizeJar> -->
@@ -92,11 +93,22 @@
                                         <exclude>module-info.class</exclude>
                                     </excludes>
                                 </filter>
+                                <filter>
+                                    <artifact>com.github.javaparser:javaparser-core</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.*</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
                             </filters>
                             <relocations>
                                 <relocation>
                                     <pattern>org.objectweb.asm</pattern>
                                     <shadedPattern>org.moditect.internal.shaded.asm</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.github.javaparser</pattern>
+                                    <shadedPattern>org.moditect.internal.shaded.javaparser</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
