@@ -92,6 +92,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter(property = "overwriteExistingFiles", defaultValue = "false")
     private boolean overwriteExistingFiles;
 
+    @Parameter(property = "moditect.skip", defaultValue = "false")
+    private boolean skip;
+
     @Parameter
     private MainModuleConfiguration module;
 
@@ -103,6 +106,18 @@ public class AddModuleInfoMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+    	// Check if this plugin should be skipped
+    	if (skip) {
+    		getLog().debug("Mojo 'add-module-info' skipped by configuration");
+    		return;
+    	}
+    	// Don't try to run this plugin, when packaging type is 'pom'
+    	// (may be better to only run it on specific packaging types, like 'jar')
+//    	if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
+//    		getLog().debug("Mojo 'add-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
+//    		return;
+//    	}
+    	
         Path outputPath = outputDirectory.toPath();
 
         createDirectories();
