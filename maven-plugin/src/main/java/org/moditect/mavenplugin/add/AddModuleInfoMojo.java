@@ -113,10 +113,10 @@ public class AddModuleInfoMojo extends AbstractMojo {
     	}
     	// Don't try to run this plugin, when packaging type is 'pom'
     	// (may be better to only run it on specific packaging types, like 'jar')
-//    	if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
-//    		getLog().debug("Mojo 'add-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
-//    		return;
-//    	}
+    	if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
+    		getLog().debug("Mojo 'add-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
+    		return;
+    	}
     	
         Path outputPath = outputDirectory.toPath();
 
