@@ -1,6 +1,4 @@
 jdk:
   - openjdk11
-before_install:
-  - ./prepareEnvironment.sh
 install:
-  - mvn clean install -DskipTests
+  - mvn clean install
