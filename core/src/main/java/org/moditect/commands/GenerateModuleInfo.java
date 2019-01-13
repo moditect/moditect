@@ -47,14 +47,14 @@ import org.moditect.model.PackageNamePattern;
 import org.moditect.model.PackageNamePattern.Kind;
 import org.moditect.spi.log.Log;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.modules.ModuleExportsStmt;
-import com.github.javaparser.ast.modules.ModuleOpensStmt;
-import com.github.javaparser.ast.modules.ModuleRequiresStmt;
-import com.github.javaparser.ast.modules.ModuleUsesStmt;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.modules.ModuleExportsDirective;
+import com.github.javaparser.ast.modules.ModuleOpensDirective;
+import com.github.javaparser.ast.modules.ModuleRequiresDirective;
+import com.github.javaparser.ast.modules.ModuleUsesDirective;
+
+import static com.github.javaparser.JavaParser.*;
 
 public class GenerateModuleInfo {
 
@@ -187,35 +187,35 @@ public class GenerateModuleInfo {
             moduleDeclaration.setOpen( true );
         }
 
-        List<ModuleRequiresStmt> requiresStatements = moduleDeclaration.getNodesByType( ModuleRequiresStmt.class );
+        List<ModuleRequiresDirective> requiresStatements = moduleDeclaration.findAll( ModuleRequiresDirective.class );
 
-        for ( ModuleRequiresStmt moduleRequiresStmt : requiresStatements ) {
-            if ( Boolean.TRUE.equals( optionalityPerModule.get( moduleRequiresStmt.getNameAsString() ) ) ) {
-                moduleRequiresStmt.addModifier( Modifier.STATIC );
+        for ( ModuleRequiresDirective moduleRequiresDirective : requiresStatements ) {
+            if ( Boolean.TRUE.equals( optionalityPerModule.get( moduleRequiresDirective.getNameAsString() ) ) ) {
+                moduleRequiresDirective.addModifier( Modifier.Keyword.STATIC );
             }
 
             // update any requires clauses to modules modularized with us to use the assigned module
             // name instead of the automatic module name
             for ( DependencyDescriptor dependency : dependencies ) {
-                if ( dependency.getOriginalModuleName().equals( moduleRequiresStmt.getNameAsString() ) && dependency.getAssignedModuleName() != null ) {
-                    moduleRequiresStmt.setName( dependency.getAssignedModuleName() );
+                if ( dependency.getOriginalModuleName().equals( moduleRequiresDirective.getNameAsString() ) && dependency.getAssignedModuleName() != null ) {
+                    moduleRequiresDirective.setName( dependency.getAssignedModuleName() );
                 }
             }
 
             for ( DependencePattern dependence : requiresPatterns ) {
-                if ( dependence.matches( moduleRequiresStmt.getNameAsString() ) ) {
+                if ( dependence.matches( moduleRequiresDirective.getNameAsString() ) ) {
                     if ( !dependence.isInclusive() ) {
-                        moduleDeclaration.remove( moduleRequiresStmt );
+                        moduleDeclaration.remove( moduleRequiresDirective );
                     }
                     if ( dependence.isMatchAll() && dependence.getModifiers().isEmpty() ) {
-                        moduleRequiresStmt.getModifiers().remove( Modifier.TRANSITIVE );
+                        moduleRequiresDirective.removeModifier(Modifier.Keyword.TRANSITIVE );
                     }
                     else {
-                        moduleRequiresStmt.getModifiers().clear();
+                        moduleRequiresDirective.getModifiers().clear();
                         dependence.getModifiers()
                             .stream()
-                            .map( m -> Modifier.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
-                            .forEach( m -> moduleRequiresStmt.getModifiers().add( m ) );
+                            .map( m -> Modifier.Keyword.valueOf( m.toUpperCase( Locale.ENGLISH ) ) )
+                            .forEach( m -> moduleRequiresDirective.addModifier(m) );
                     }
 
                     break;
@@ -223,10 +223,10 @@ public class GenerateModuleInfo {
             }
         }
 
-        List<ModuleExportsStmt> exportStatements = moduleDeclaration.getNodesByType( ModuleExportsStmt.class );
-        for ( ModuleExportsStmt moduleExportsStmt : exportStatements ) {
-            applyExportPatterns( moduleDeclaration, moduleExportsStmt );
-            applyOpensPatterns( moduleDeclaration, moduleExportsStmt );
+        List<ModuleExportsDirective> exportStatements = moduleDeclaration.findAll( ModuleExportsDirective.class );
+        for ( ModuleExportsDirective moduleExportsDirective : exportStatements ) {
+            applyExportPatterns( moduleDeclaration, moduleExportsDirective );
+            applyOpensPatterns( moduleDeclaration, moduleExportsDirective );
         }
 
         if ( moduleName != null ) {
@@ -234,31 +234,31 @@ public class GenerateModuleInfo {
         }
 
         for (String usedService : uses) {
-            moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
+            moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
         }
 
         if ( addServiceUses ) {
             Set<String> usedServices = serviceLoaderUseScanner.getUsedServices( inputJar );
             for ( String usedService : usedServices ) {
-                moduleDeclaration.getModuleStmts().add( new ModuleUsesStmt( getType( usedService ) ) );
+                moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
             }
         }
     }
 
-    private ModuleDeclaration applyExportPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
+    private ModuleDeclaration applyExportPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsDirective moduleExportsDirective) {
         boolean foundMatchingPattern = false;
 
         for (PackageNamePattern pattern : exportPatterns ) {
-            if ( pattern.matches( moduleExportsStmt.getNameAsString() ) ) {
+            if ( pattern.matches( moduleExportsDirective.getNameAsString() ) ) {
                 if ( pattern.getKind() == Kind.INCLUSIVE ) {
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleExportsStmt.getModuleNames().add( JavaParser.parseName( module ) );
+                            moduleExportsDirective.getModuleNames().add( parseName( module ) );
                         }
                     }
                 }
                 else {
-                    moduleDeclaration.remove( moduleExportsStmt );
+                    moduleDeclaration.remove( moduleExportsDirective );
                 }
 
                 foundMatchingPattern = true;
@@ -268,26 +268,26 @@ public class GenerateModuleInfo {
 
         // remove export if not matched by any pattern
         if ( !foundMatchingPattern ) {
-            moduleDeclaration.remove( moduleExportsStmt );
+            moduleDeclaration.remove( moduleExportsDirective );
         }
 
         return moduleDeclaration;
     }
 
-    private ModuleDeclaration applyOpensPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsStmt moduleExportsStmt) {
+    private ModuleDeclaration applyOpensPatterns(ModuleDeclaration moduleDeclaration, ModuleExportsDirective moduleExportsDirective) {
         for (PackageNamePattern pattern : opensPatterns ) {
-            if ( pattern.matches( moduleExportsStmt.getNameAsString() ) ) {
+            if ( pattern.matches( moduleExportsDirective.getNameAsString() ) ) {
                 if ( pattern.getKind() == Kind.INCLUSIVE ) {
-                    ModuleOpensStmt moduleOpensStmt = new ModuleOpensStmt();
-                    moduleOpensStmt.setName( moduleExportsStmt.getName() );
+                    ModuleOpensDirective moduleOpensDirective = new ModuleOpensDirective();
+                    moduleOpensDirective.setName( moduleExportsDirective.getName() );
 
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleOpensStmt.getModuleNames().add( JavaParser.parseName( module ) );
+                            moduleOpensDirective.getModuleNames().add( parseName( module ) );
                         }
                     }
 
-                    moduleDeclaration.getModuleStmts().add( moduleOpensStmt );
+                    moduleDeclaration.getDirectives().add( moduleOpensDirective );
                 }
 
                 break;
@@ -295,28 +295,6 @@ public class GenerateModuleInfo {
         }
 
         return moduleDeclaration;
-    }
-
-    private ClassOrInterfaceType getType(String fqn) {
-        String[] parts = fqn.split( "\\." );
-
-        ClassOrInterfaceType scope = null;
-        String name = null;
-
-        if ( parts.length == 1 ) {
-            scope = null;
-            name = parts[0];
-        }
-        else {
-            ClassOrInterfaceType parentScope = null;
-            for( int i = 0; i < parts.length - 1; i++ ) {
-                scope = new ClassOrInterfaceType( parentScope, parts[i] );
-                parentScope = scope;
-            }
-            name = parts[parts.length - 1];
-        }
-
-        return new ClassOrInterfaceType( scope, name );
     }
 
     private Map<String, Boolean> generateModuleInfo() throws AssertionError {

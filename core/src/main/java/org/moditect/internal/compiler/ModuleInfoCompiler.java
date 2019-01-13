@@ -15,6 +15,7 @@
  */
 package org.moditect.internal.compiler;
 
+import static com.github.javaparser.ParserConfiguration.LanguageLevel.*;
 import static org.objectweb.asm.Opcodes.ACC_MANDATED;
 import static org.objectweb.asm.Opcodes.ACC_MODULE;
 import static org.objectweb.asm.Opcodes.ACC_OPEN;
@@ -26,9 +27,9 @@ import static org.objectweb.asm.Opcodes.V9;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Iterator;
 
+import com.github.javaparser.ast.nodeTypes.NodeWithModifiers;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ModuleVisitor;
 
@@ -37,22 +38,20 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
-import com.github.javaparser.ast.modules.ModuleExportsStmt;
-import com.github.javaparser.ast.modules.ModuleOpensStmt;
-import com.github.javaparser.ast.modules.ModuleProvidesStmt;
-import com.github.javaparser.ast.modules.ModuleRequiresStmt;
-import com.github.javaparser.ast.modules.ModuleUsesStmt;
-import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.ast.validator.Java9Validator;
+import com.github.javaparser.ast.modules.ModuleExportsDirective;
+import com.github.javaparser.ast.modules.ModuleOpensDirective;
+import com.github.javaparser.ast.modules.ModuleProvidesDirective;
+import com.github.javaparser.ast.modules.ModuleRequiresDirective;
+import com.github.javaparser.ast.modules.ModuleUsesDirective;
 
 public class ModuleInfoCompiler {
 
     static {
-        JavaParser.getStaticConfiguration().setValidator( new Java9Validator() );
+        JavaParser.getStaticConfiguration().setLanguageLevel(JAVA_9 );
     }
 
     public static ModuleDeclaration parseModuleInfo(Path moduleInfo) {
-        CompilationUnit ast = null;
+        CompilationUnit ast;
 
         try {
             ast = JavaParser.parse( moduleInfo );
@@ -83,15 +82,15 @@ public class ModuleInfoCompiler {
             mv.visitMainClass( getNameForBinary( mainClass ) );
         }
 
-        for ( ModuleRequiresStmt requires : module.getNodesByType( ModuleRequiresStmt.class ) ) {
+        for ( ModuleRequiresDirective requires : module.findAll( ModuleRequiresDirective.class ) ) {
             mv.visitRequire(
                 requires.getName().asString(),
-                requiresModifiersAsInt( requires.getModifiers() ),
+                requiresModifiersAsInt( requires ),
                 null
             );
         }
 
-        for ( ModuleExportsStmt export : module.getNodesByType( ModuleExportsStmt.class ) ) {
+        for ( ModuleExportsDirective export : module.findAll( ModuleExportsDirective.class ) ) {
             mv.visitExport(
                     getNameForBinary( export.getNameAsString() ),
                     0,
@@ -102,21 +101,21 @@ public class ModuleInfoCompiler {
             );
         }
 
-        for ( ModuleProvidesStmt provides : module.getNodesByType( ModuleProvidesStmt.class ) ) {
+        for ( ModuleProvidesDirective provides : module.findAll( ModuleProvidesDirective.class ) ) {
             mv.visitProvide(
-                getNameForBinary( provides.getType() ),
-                provides.getWithTypes()
+                getNameForBinary( provides.getName() ),
+                provides.getWith()
                     .stream()
                     .map( ModuleInfoCompiler::getNameForBinary )
                     .toArray( String[]::new )
             );
         }
 
-        for ( ModuleUsesStmt uses : module.getNodesByType( ModuleUsesStmt.class ) ) {
-            mv.visitUse( getNameForBinary( uses.getType() ) );
+        for ( ModuleUsesDirective uses : module.findAll( ModuleUsesDirective.class ) ) {
+            mv.visitUse( getNameForBinary( uses.getName() ) );
         }
 
-        for ( ModuleOpensStmt opens : module.getNodesByType( ModuleOpensStmt.class ) ) {
+        for ( ModuleOpensDirective opens : module.findAll( ModuleOpensDirective.class ) ) {
             mv.visitOpen(
                     getNameForBinary( opens.getNameAsString() ),
                     0,
@@ -135,12 +134,12 @@ public class ModuleInfoCompiler {
         return classWriter.toByteArray();
     }
 
-    private static String getNameForBinary(Type type) {
-        return getNameForBinary( type.toString() );
+    private static String getNameForBinary(Name name) {
+        return getNameForBinary( name.asString() );
     }
 
     private static String getNameForBinary(String typeName) {
-        Iterator<String> parts = Arrays.asList( typeName.toString().split( "\\." ) ).iterator();
+        Iterator<String> parts = Arrays.asList( typeName.split( "\\." ) ).iterator();
         StringBuilder typeNameForBinary = new StringBuilder();
 
         while ( parts.hasNext() ) {
@@ -162,13 +161,13 @@ public class ModuleInfoCompiler {
         return typeNameForBinary.toString();
     }
 
-    private static int requiresModifiersAsInt(EnumSet<Modifier> modifiers) {
+    private static int requiresModifiersAsInt(NodeWithModifiers<?> modifiers) {
         int result = 0;
 
-        if ( modifiers.contains( Modifier.STATIC ) ) {
+        if ( modifiers.hasModifier( Modifier.Keyword.STATIC ) ) {
             result |= ACC_STATIC_PHASE;
         }
-        if ( modifiers.contains( Modifier.TRANSITIVE ) ) {
+        if ( modifiers.hasModifier( Modifier.Keyword.TRANSITIVE ) ) {
             result |= ACC_TRANSITIVE;
         }
 
