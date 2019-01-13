@@ -91,9 +91,24 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Parameter(property = "moditect.addServiceUses", defaultValue = "false")
     private boolean addServiceUsesOverride;
 
+    @Parameter(property = "moditect.skip", defaultValue = "false")
+    private boolean skip;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        createDirectories();
+    	// Check if this plugin should be skipped
+    	if (skip) {
+    		getLog().debug("Mojo 'generate-module-info' skipped by configuration");
+    		return;
+    	}
+    	// Don't try to run this plugin, when packaging type is 'pom'
+    	// (may be better to only run it on specific packaging types, like 'jar')
+    	if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
+    		getLog().debug("Mojo 'generate-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
+    		return;
+    	}
+
+    	createDirectories();
 
         ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
