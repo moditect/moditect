@@ -2,6 +2,7 @@
 ============
 
 Antoine Sabot-Durand
+Danny van Bruggen
 Gunnar Morling
 Guillermo González de Agüero
 Hervé Guillemet
