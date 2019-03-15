@@ -89,6 +89,12 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 //    @Parameter(property = "moditect.exportExcludes")
 //    private String exportExcludesOverride;
 
+    @Parameter(defaultValue = "false")
+    private boolean noHeaderFiles;
+
+    @Parameter(defaultValue = "false")
+    private boolean noManPages;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
@@ -109,7 +115,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 stripDebug,
                 ignoreSigningInformation,
                 getExcludeResourcesPatterns(),
-                new MojoLog( getLog() )
+                new MojoLog( getLog() ),
+                noHeaderFiles,
+                noManPages
         )
                 .run();
     }
