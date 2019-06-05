@@ -47,7 +47,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Component
     private ToolchainManager toolchainManager;
 
-    @Parameter( defaultValue = "${session}", readonly = true )
+    @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession mavenSession;
 
     @Parameter
@@ -70,6 +70,18 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "false")
     private boolean stripDebug;
+    
+    /**
+     * Excludes native commands (such as java/java.exe) from the image
+     */
+    @Parameter(defaultValue = "false")
+    private boolean stripNativeCommands;
+
+    /**
+     * Specifies a JMOD section to exclude where section-name is man or headers.
+     */
+    @Parameter
+    private String excludeJmodSection;
 
     @Parameter
     List<String> excludedResources;
@@ -88,16 +100,15 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 //
 //    @Parameter(property = "moditect.exportExcludes")
 //    private String exportExcludesOverride;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
-                .map( File::toPath )
-                .collect( Collectors.toSet() );
+                .map(File::toPath)
+                .collect(Collectors.toSet());
 
-        effectiveModulePath.add( jmodsDir );
+        effectiveModulePath.add(jmodsDir);
 
         new CreateRuntimeImage(
                 effectiveModulePath,
@@ -109,66 +120,65 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 stripDebug,
                 ignoreSigningInformation,
                 getExcludeResourcesPatterns(),
-                new MojoLog( getLog() )
+                new MojoLog(getLog()),
+                stripNativeCommands,
+                excludeJmodSection
         )
                 .run();
     }
 
     /**
-     * Returns the directory with the jmod files to be used for creating the image.
-     * If {@code baseJdk} has been given, the jmod files from the JDK identified that way
-     * will be used; otherwise the jmod files from the JDK running the current build
-     * will be used.
+     * Returns the directory with the jmod files to be used for creating the
+     * image. If {@code baseJdk} has been given, the jmod files from the JDK
+     * identified that way will be used; otherwise the jmod files from the JDK
+     * running the current build will be used.
      */
     private Path getJModsDir() throws MojoExecutionException {
-        if ( baseJdk != null ) {
-            List<Toolchain> toolChains = toolchainManager.getToolchains( mavenSession, "jdk", getToolChainRequirements( baseJdk ) );
-            if ( toolChains.isEmpty() ) {
-                throw new MojoExecutionException( "Found no tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
-            }
-            else if ( toolChains.size() > 1 ) {
-                throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
-            }
-            else {
-                Toolchain toolchain = toolChains.get( 0 );
+        if (baseJdk != null) {
+            List<Toolchain> toolChains = toolchainManager.getToolchains(mavenSession, "jdk", getToolChainRequirements(baseJdk));
+            if (toolChains.isEmpty()) {
+                throw new MojoExecutionException("Found no tool chain of type 'jdk' and matching requirements '" + baseJdk + "'");
+            } else if (toolChains.size() > 1) {
+                throw new MojoExecutionException("Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'");
+            } else {
+                Toolchain toolchain = toolChains.get(0);
 
-                String javac = toolchain.findTool( "javac" );
+                String javac = toolchain.findTool("javac");
 
                 // #63; when building on Linux / OS X but creating a Windows runtime image
                 // the tool lookup must be for javac.exe explicitly (as the toolchain mechanism
                 // itself won't append the suffix if not running this build on Windows
                 if (javac == null) {
-                    javac = toolchain.findTool( "javac.exe" );
+                    javac = toolchain.findTool("javac.exe");
                 }
                 if (javac == null) {
-                    throw new MojoExecutionException ("Couldn't locate toolchain directory" );
+                    throw new MojoExecutionException("Couldn't locate toolchain directory");
                 }
-                return new File( javac )
+                return new File(javac)
                         .toPath()
                         .getParent()
                         .getParent()
-                        .resolve( "jmods" );
+                        .resolve("jmods");
             }
-        }
-        else {
-            String javaHome = System.getProperty( "java.home" );
-            return new File( javaHome ).toPath().resolve( "jmods" );
+        } else {
+            String javaHome = System.getProperty("java.home");
+            return new File(javaHome).toPath().resolve("jmods");
         }
     }
 
     private Map<String, String> getToolChainRequirements(String baseJdk) throws MojoExecutionException {
         Map<String, String> toolChainRequirements = new HashMap<>();
-        String[] requirements = baseJdk.split( "," );
+        String[] requirements = baseJdk.split(",");
 
         for (String requirement : requirements) {
             String[] keyAndValue = requirement.split("=");
-            if ( keyAndValue.length != 2 ) {
+            if (keyAndValue.length != 2) {
                 throw new MojoExecutionException(
-                        "Toolchain requirements must be given in the form 'key1=value1,key2=value2,...'." +
-                                "Given value '" + baseJdk + "' doesn't match this pattern." );
+                        "Toolchain requirements must be given in the form 'key1=value1,key2=value2,...'."
+                        + "Given value '" + baseJdk + "' doesn't match this pattern.");
             }
 
-            toolChainRequirements.put( keyAndValue[0].trim(), keyAndValue[1].trim() );
+            toolChainRequirements.put(keyAndValue[0].trim(), keyAndValue[1].trim());
         }
 
         return toolChainRequirements;

@@ -20,7 +20,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.moditect.internal.command.ProcessExecutor;
@@ -36,15 +39,18 @@ public class CreateRuntimeImage {
     private final Set<Path> modulePath;
     private final List<String> modules;
     private final Path outputDirectory;
-    private boolean ignoreSigningInformation;
+    private final boolean ignoreSigningInformation;
     private final String launcher;
     private final Log log;
     private final Integer compression;
     private final boolean stripDebug;
     private final List<String> excludeResourcesPatterns;
+    private final boolean stripNativeCommands;
+    private final String excludeJmodSection;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
-                              Path outputDirectory, Integer compression, boolean stripDebug, boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log) {
+                              Path outputDirectory, Integer compression, boolean stripDebug, boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log
+                                , boolean stripNativeCommands, String excludeJmodSection) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
@@ -54,6 +60,8 @@ public class CreateRuntimeImage {
         this.stripDebug = stripDebug;
         this.excludeResourcesPatterns = excludeResourcesPatterns;
         this.log = log;
+        this.excludeJmodSection = excludeJmodSection;
+        this.stripNativeCommands = stripNativeCommands;
     }
 
     private static List<String> getModules(List<String> modules) {
@@ -96,6 +104,14 @@ public class CreateRuntimeImage {
             command.add( "--compress" );
             command.add( compression.toString() );
         }
+        
+        Optional.ofNullable(excludeJmodSection).ifPresent(s -> {
+            command.add( "--exclude-jmod-section=" + s );
+        });
+        
+        if ( stripNativeCommands ) {
+            command.add( "--strip-native-commands" );
+        }
 
         if ( stripDebug ) {
             command.add( "--strip-debug" );
@@ -104,6 +120,10 @@ public class CreateRuntimeImage {
         if (ignoreSigningInformation) {
             command.add( "--ignore-signing-information" );
         }
+        
+//        Optional.ofNullable(dedupLegalNotices).ifPresent(s -> {
+//            Optional.ofNullable(s).filter(b -> b.length() != 0).ifPresentOrElse(c -> "--dedup-legal-notices", emptyAction);
+//        });
 
         if ( !excludeResourcesPatterns.isEmpty() ) {
             command.add( "--exclude-resources=" + String.join( ",", excludeResourcesPatterns ) );
