@@ -54,7 +54,7 @@ import com.github.javaparser.ast.modules.ModuleOpensDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
 
-import static com.github.javaparser.JavaParser.*;
+import static com.github.javaparser.StaticJavaParser.*;
 
 public class GenerateModuleInfo {
 
