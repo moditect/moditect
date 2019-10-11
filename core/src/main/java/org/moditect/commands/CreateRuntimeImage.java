@@ -37,19 +37,25 @@ public class CreateRuntimeImage {
     private final List<String> modules;
     private final Path outputDirectory;
     private boolean ignoreSigningInformation;
-    private final String launcher;
+    private final List<String> launchers = new ArrayList<>();
     private final Log log;
     private final Integer compression;
     private final boolean stripDebug;
     private final List<String> excludeResourcesPatterns;
 
-    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
+    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, List<String> launcherNames, List<String> launcherModules,
                               Path outputDirectory, Integer compression, boolean stripDebug, boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
         this.ignoreSigningInformation = ignoreSigningInformation;
-        this.launcher = launcherName != null && launcherModule != null ? launcherName + "=" + launcherModule : null;
+        
+        if (launcherNames != null && launcherModules != null) {
+          for (int i=0; i < launcherNames.size() && i < launcherModules.size(); i++) {
+            this.launchers.add(launcherNames.get(i)  + "=" + launcherModules.get(i));
+          }
+        }
+        
         this.compression = compression;
         this.stripDebug = stripDebug;
         this.excludeResourcesPatterns = excludeResourcesPatterns;
@@ -87,7 +93,7 @@ public class CreateRuntimeImage {
         command.add( "--output" );
         command.add( outputDirectory.toString() );
 
-        if ( launcher != null ) {
+        for (String launcher : launchers) {
             command.add( "--launcher" );
             command.add( launcher );
         }

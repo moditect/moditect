@@ -63,7 +63,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private List<String> modules;
 
     @Parameter
-    private Launcher launcher;
+    private List<Launcher> launchers;
 
     @Parameter
     private Integer compression;
@@ -98,12 +98,24 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 .collect( Collectors.toSet() );
 
         effectiveModulePath.add( jmodsDir );
+        
+        List<String> launcherNames = launchers.stream().map(Launcher::getName).collect(Collectors.toList());
+        
+        List<String> launcherModules = launchers.stream().map(l -> {
+          StringBuilder sb = new StringBuilder(l.getModule());
+          String mainClass = l.getMainClass();
+          if (mainClass != null) {
+            sb.append("/");
+            sb.append(mainClass);
+          }
+          return sb.toString();
+        }).collect(Collectors.toList());
 
         new CreateRuntimeImage(
                 effectiveModulePath,
                 modules,
-                launcher != null ? launcher.getName() : null,
-                launcher != null ? launcher.getModule() : null,
+                launcherNames,
+                launcherModules,
                 outputDirectory.toPath(),
                 compression,
                 stripDebug,

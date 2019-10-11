@@ -22,22 +22,31 @@ package org.moditect.mavenplugin.image.model;
  */
 public class Launcher {
 
-    private String name;
+    private String mainClass;
     private String module;
+    private String name;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public String getMainClass() {
+      return mainClass;
     }
 
     public String getModule() {
         return module;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setMainClass(String mainClass) {
+      this.mainClass = mainClass;
+    }
+
     public void setModule(String module) {
         this.module = module;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
