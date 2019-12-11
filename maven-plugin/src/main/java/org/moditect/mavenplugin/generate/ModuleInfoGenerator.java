@@ -112,6 +112,17 @@ public class ModuleInfoGenerator {
         else {
             uses = Collections.emptySet();
         }
+        
+        Set<String> provides;
+
+        if ( moduleInfo.getProvides() != null ) {
+            provides = Arrays.stream( moduleInfo.getProvides().split( ";" ) )
+                .map( String::trim )
+                .collect( Collectors.toSet() );
+        }
+        else {
+            provides = Collections.emptySet();
+        }
 
         return new GenerateModuleInfo(
                 inputJar,
@@ -124,6 +135,7 @@ public class ModuleInfoGenerator {
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
                 uses,
+                provides,
                 moduleInfo.isAddServiceUses(),
                 jdepsExtraArgs,
                 new MojoLog( log )

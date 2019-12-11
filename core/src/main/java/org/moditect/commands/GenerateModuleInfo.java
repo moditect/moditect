@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.Set;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.spi.ToolProvider;
+import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
@@ -47,14 +49,15 @@ import org.moditect.model.PackageNamePattern;
 import org.moditect.model.PackageNamePattern.Kind;
 import org.moditect.spi.log.Log;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import com.github.javaparser.ast.modules.ModuleExportsDirective;
 import com.github.javaparser.ast.modules.ModuleOpensDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
-
-import static com.github.javaparser.StaticJavaParser.*;
+import com.github.javaparser.ast.modules.ModuleProvidesDirective;
 
 public class GenerateModuleInfo {
 
@@ -67,6 +70,7 @@ public class GenerateModuleInfo {
     private final List<PackageNamePattern> opensPatterns;
     private final List<DependencePattern> requiresPatterns;
     private final Set<String> uses;
+    private final Set<String> provides;
     private final Path workingDirectory;
     private final Path outputDirectory;
     private final boolean addServiceUses;
@@ -75,7 +79,13 @@ public class GenerateModuleInfo {
     private final Log log;
     private ToolProvider jdeps;
 
-    public GenerateModuleInfo(Path inputJar, String moduleName, boolean open, Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns, List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns, Path workingDirectory, Path outputDirectory, Set<String> uses, boolean addServiceUses, List<String> jdepsExtraArgs, Log log) {
+    public GenerateModuleInfo(
+            Path inputJar, String moduleName, boolean open, 
+            Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns,
+            List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns,
+            Path workingDirectory, Path outputDirectory, Set<String> uses, Set<String> provides,
+            boolean addServiceUses, List<String> jdepsExtraArgs, Log log
+    ) {
         String autoModuleNameForInputJar = DependencyDescriptor.getAutoModuleNameFromInputJar(inputJar, null);
 
         // if no valid auto module name can be derived for the input JAR, create a copy of it and
@@ -99,6 +109,7 @@ public class GenerateModuleInfo {
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         this.uses = uses;
+        this.provides = provides;
         this.addServiceUses = addServiceUses;
         this.serviceLoaderUseScanner = new ServiceLoaderUseScanner( log );
         this.jdepsExtraArgs = jdepsExtraArgs != null ? jdepsExtraArgs : Collections.emptyList();
@@ -234,13 +245,30 @@ public class GenerateModuleInfo {
         }
 
         for (String usedService : uses) {
-            moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
+            moduleDeclaration.getDirectives().add( new ModuleUsesDirective(JavaParser.parseName(usedService)) );
         }
+
+        provides.stream().map(
+                providedService -> providedService.split("with")
+        ).forEach(
+                providedServiceArray -> moduleDeclaration.getDirectives().add(
+                        new ModuleProvidesDirective(
+                                JavaParser.parseName(providedServiceArray[0]),
+                                NodeList.nodeList(
+                                        Arrays.stream(
+                                                providedServiceArray[1].split( "," )
+                                        ).map( String::trim ).map( JavaParser::parseName ).collect(
+                                                Collectors.toSet()
+                                        )
+                                )
+                        )
+                )
+        );
 
         if ( addServiceUses ) {
             Set<String> usedServices = serviceLoaderUseScanner.getUsedServices( inputJar );
             for ( String usedService : usedServices ) {
-                moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
+                moduleDeclaration.getDirectives().add( new ModuleUsesDirective(JavaParser.parseName(usedService)) );
             }
         }
     }
@@ -253,7 +281,7 @@ public class GenerateModuleInfo {
                 if ( pattern.getKind() == Kind.INCLUSIVE ) {
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleExportsDirective.getModuleNames().add( parseName( module ) );
+                            moduleExportsDirective.getModuleNames().add( JavaParser.parseName( module ) );
                         }
                     }
                 }
@@ -283,7 +311,7 @@ public class GenerateModuleInfo {
 
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleOpensDirective.getModuleNames().add( parseName( module ) );
+                            moduleOpensDirective.getModuleNames().add( JavaParser.parseName( module ) );
                         }
                     }
 
