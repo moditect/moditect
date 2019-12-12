@@ -49,7 +49,6 @@ import org.moditect.model.PackageNamePattern;
 import org.moditect.model.PackageNamePattern.Kind;
 import org.moditect.spi.log.Log;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -58,6 +57,8 @@ import com.github.javaparser.ast.modules.ModuleOpensDirective;
 import com.github.javaparser.ast.modules.ModuleRequiresDirective;
 import com.github.javaparser.ast.modules.ModuleUsesDirective;
 import com.github.javaparser.ast.modules.ModuleProvidesDirective;
+
+import static com.github.javaparser.StaticJavaParser.parseName;
 
 public class GenerateModuleInfo {
 
@@ -245,7 +246,7 @@ public class GenerateModuleInfo {
         }
 
         for (String usedService : uses) {
-            moduleDeclaration.getDirectives().add( new ModuleUsesDirective(JavaParser.parseName(usedService)) );
+            moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
         }
 
         provides.stream().map(
@@ -253,11 +254,11 @@ public class GenerateModuleInfo {
         ).forEach(
                 providedServiceArray -> moduleDeclaration.getDirectives().add(
                         new ModuleProvidesDirective(
-                                JavaParser.parseName(providedServiceArray[0]),
+                                parseName(providedServiceArray[0]),
                                 NodeList.nodeList(
                                         Arrays.stream(
                                                 providedServiceArray[1].split( "," )
-                                        ).map( String::trim ).map( JavaParser::parseName ).collect(
+                                        ).map( String::trim ).map(s -> parseName(s)).collect(
                                                 Collectors.toSet()
                                         )
                                 )
@@ -268,7 +269,7 @@ public class GenerateModuleInfo {
         if ( addServiceUses ) {
             Set<String> usedServices = serviceLoaderUseScanner.getUsedServices( inputJar );
             for ( String usedService : usedServices ) {
-                moduleDeclaration.getDirectives().add( new ModuleUsesDirective(JavaParser.parseName(usedService)) );
+                moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
             }
         }
     }
@@ -281,7 +282,7 @@ public class GenerateModuleInfo {
                 if ( pattern.getKind() == Kind.INCLUSIVE ) {
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleExportsDirective.getModuleNames().add( JavaParser.parseName( module ) );
+                            moduleExportsDirective.getModuleNames().add( parseName( module ) );
                         }
                     }
                 }
@@ -311,7 +312,7 @@ public class GenerateModuleInfo {
 
                     if ( !pattern.getTargetModules().isEmpty() ) {
                         for (String module : pattern.getTargetModules() ) {
-                            moduleOpensDirective.getModuleNames().add( JavaParser.parseName( module ) );
+                            moduleOpensDirective.getModuleNames().add( parseName( module ) );
                         }
                     }
 
