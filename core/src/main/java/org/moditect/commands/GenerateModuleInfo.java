@@ -249,7 +249,7 @@ public class GenerateModuleInfo {
         }
 
         provides.stream().map(
-                providedService -> providedService.split("with")
+                providedService -> providedService.split(" with ")
         ).forEach(
                 providedServiceArray -> moduleDeclaration.getDirectives().add(
                         new ModuleProvidesDirective(
