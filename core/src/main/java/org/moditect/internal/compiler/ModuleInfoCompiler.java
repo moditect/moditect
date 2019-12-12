@@ -29,11 +29,11 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.nodeTypes.NodeWithModifiers;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ModuleVisitor;
 
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.expr.Name;
@@ -47,14 +47,14 @@ import com.github.javaparser.ast.modules.ModuleUsesDirective;
 public class ModuleInfoCompiler {
 
     static {
-        JavaParser.getStaticConfiguration().setLanguageLevel(JAVA_9 );
+        StaticJavaParser.getConfiguration().setLanguageLevel(JAVA_9 );
     }
 
     public static ModuleDeclaration parseModuleInfo(Path moduleInfo) {
         CompilationUnit ast;
 
         try {
-            ast = JavaParser.parse( moduleInfo );
+            ast = StaticJavaParser.parse( moduleInfo );
         }
         catch (IOException e) {
             throw new RuntimeException( "Couldn't parse " + moduleInfo, e );
@@ -65,7 +65,7 @@ public class ModuleInfoCompiler {
     }
 
     public static ModuleDeclaration parseModuleInfo(String moduleInfoSource) {
-        CompilationUnit ast = JavaParser.parse( moduleInfoSource );
+        CompilationUnit ast = StaticJavaParser.parse( moduleInfoSource );
 
         return ast.getModule()
             .orElseThrow( () -> new IllegalArgumentException( "Not a module-info.java: " + moduleInfoSource ) );
