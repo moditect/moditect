@@ -88,6 +88,9 @@ _generate-module-info_ goal as follows:
                             <uses>
                                  com.example.SomeService;
                             </uses>
+							<provides>
+								com.example.SomeService with com.example.SomeServiceImpl1,com.example.SomeServiceImpl2;
+							</provides>
                             <addServiceUses>true</addServiceUses>
                         </moduleInfo>
                     </module>
@@ -159,6 +162,7 @@ passed, are ignored (optional, defaults to `false`)
   - `uses`: List of names of used services, separated by ";" only required if `addServiceUses`
 cannot be used due to dynamic invocations of `ServiceLoader#load()`, i.e. no class literal is
 passed (optional)
+  - `provides`: List of services with their provided service implementations, separated by ";". A service and its implementation must be separated by the keyword "with" e.g. `serviceX with implementationX; serviceY with implementationY;`. If the module implements a particular service through several service implementations, those implementation classes must be separated by "," e.g. `myService with implementation1, implementation2, implementation3;`.
   - `jdepsExtraArgs`: A list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor"
 
 It is also possible to run this goal directly, specifying the different options
