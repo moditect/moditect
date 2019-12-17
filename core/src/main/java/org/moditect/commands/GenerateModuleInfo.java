@@ -84,7 +84,8 @@ public class GenerateModuleInfo {
             Path inputJar, String moduleName, boolean open, 
             Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns,
             List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns,
-            Path workingDirectory, Path outputDirectory, Set<String> uses, Set<String> provides,
+            Path workingDirectory, Path outputDirectory,
+            Set<String> uses, Set<String> provides,
             boolean addServiceUses, List<String> jdepsExtraArgs, Log log
     ) {
         String autoModuleNameForInputJar = DependencyDescriptor.getAutoModuleNameFromInputJar(inputJar, null);
@@ -244,13 +245,13 @@ public class GenerateModuleInfo {
         if ( moduleName != null ) {
             moduleDeclaration.setName( moduleName );
         }
-
+        
         for (String usedService : uses) {
             moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
         }
 
         provides.stream().map(
-                providedService -> providedService.split(" with ")
+                providedService -> providedService.split("\\s+with\\s+")
         ).forEach(
                 providedServiceArray -> moduleDeclaration.getDirectives().add(
                         new ModuleProvidesDirective(
