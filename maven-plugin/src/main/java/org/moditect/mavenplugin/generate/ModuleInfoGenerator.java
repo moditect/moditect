@@ -102,6 +102,17 @@ public class ModuleInfoGenerator {
     }
 
     public GeneratedModuleInfo generateModuleInfo(Path inputJar, Set<DependencyDescriptor> dependencies, ModuleInfoConfiguration moduleInfo) throws MojoExecutionException {
+        Set<String> opensResources;
+
+        if ( moduleInfo.getOpensResources() != null ) {
+            opensResources = Arrays.stream( moduleInfo.getOpensResources().split( ";" ) )
+                .map( String::trim )
+                .collect( Collectors.toSet() );
+        }
+        else {
+            opensResources = Collections.emptySet();
+        }
+        
         Set<String> uses;
 
         if ( moduleInfo.getUses() != null ) {
@@ -134,6 +145,7 @@ public class ModuleInfoGenerator {
                 DependencePattern.parsePatterns( moduleInfo.getRequires() ),
                 workingDirectory.toPath(),
                 outputDirectory.toPath(),
+                opensResources,
                 uses,
                 provides,
                 moduleInfo.isAddServiceUses(),

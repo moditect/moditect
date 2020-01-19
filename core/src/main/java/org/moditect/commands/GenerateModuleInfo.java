@@ -70,6 +70,7 @@ public class GenerateModuleInfo {
     private final List<PackageNamePattern> exportPatterns;
     private final List<PackageNamePattern> opensPatterns;
     private final List<DependencePattern> requiresPatterns;
+    private final Set<String> opensResources;
     private final Set<String> uses;
     private final Set<String> provides;
     private final Path workingDirectory;
@@ -85,7 +86,7 @@ public class GenerateModuleInfo {
             Set<DependencyDescriptor> dependencies, List<PackageNamePattern> exportPatterns,
             List<PackageNamePattern> opensPatterns, List<DependencePattern> requiresPatterns,
             Path workingDirectory, Path outputDirectory,
-            Set<String> uses, Set<String> provides,
+            Set<String> opensResources, Set<String> uses, Set<String> provides,
             boolean addServiceUses, List<String> jdepsExtraArgs, Log log
     ) {
         String autoModuleNameForInputJar = DependencyDescriptor.getAutoModuleNameFromInputJar(inputJar, null);
@@ -110,6 +111,7 @@ public class GenerateModuleInfo {
         this.requiresPatterns = requiresPatterns;
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
+        this.opensResources = opensResources;
         this.uses = uses;
         this.provides = provides;
         this.addServiceUses = addServiceUses;
@@ -246,6 +248,10 @@ public class GenerateModuleInfo {
             moduleDeclaration.setName( moduleName );
         }
         
+        opensResources.stream().forEach(resourcePackage -> moduleDeclaration.getDirectives().add(
+                new ModuleOpensDirective(parseName(resourcePackage), new NodeList<>())
+        ));
+
         for (String usedService : uses) {
             moduleDeclaration.getDirectives().add( new ModuleUsesDirective(parseName(usedService)) );
         }

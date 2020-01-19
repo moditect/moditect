@@ -85,6 +85,14 @@ _generate-module-info_ goal as follows:
                                 !com.excluded.dependency;
                                 *;
                             </requires>
+							<opens>
+								com.example.core.internal.controller to javafx.fxml;
+							</opens>
+							<opensResources>
+								com.example.resource;
+								com.example.resource.icon;
+								com.example.resource.sound;
+							</opensResources>
                             <uses>
                                  com.example.SomeService;
                             </uses>
@@ -142,6 +150,12 @@ added to the list of open packages and no further patterns will be applied. As s
 as a package is matched by an exclusive pattern, this package will not be added to the
 list of open packages and no further patterns will be applied.
 (optional; the default value is "!\*;", i.e. no packages will be opened)
+  - `opensResources`: List of package names only containing resources as png, css or mp3 files
+i.e. everything not being java files, separated by ";". For JavaFX 9+, it is required to force
+open resource-only packages. Please, refer to https://github.com/javafxports/openjdk-jfx/issues/441
+for more details. `opensResources` allows to do this. Contrary to `opens`, `opensResources`
+cannot accept patterns because Moditect manages patterns using a technical solution that can
+only works with compiled java classes. Hence, each resource-only packages must be declared one by one.
   - `requires`: List of name patterns for describing the dependences of the module,
   based on the automatically determined dependences.
 Patterns are inclusive or exclusive (starting with "!") and may contain the "\*" character as a wildcard.

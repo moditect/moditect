@@ -23,6 +23,7 @@ public class ModuleInfoConfiguration {
     private String requires = "*;";
     private String exports = "*;";
     private String opens = "!*;";
+    private String opensResources;
     private String uses;
     private String provides;
     private String name;
@@ -61,6 +62,14 @@ public class ModuleInfoConfiguration {
         this.opens = opens;
     }
 
+    public String getOpensResources() {
+        return opensResources;
+    }
+
+    public void setOpensResources(String opensResources) {
+        this.opensResources = opensResources;
+    }
+
     public String getUses() {
         return uses;
     }
@@ -95,7 +104,7 @@ public class ModuleInfoConfiguration {
 
     @Override
     public String toString() {
-        return "ModuleInfoConfiguration [requires=" + requires + ", exports=" + exports + ", opens=" + opens + ", uses="
-                + uses + ", provides=" + provides + ", name=" + name + ", addServiceUses=" + addServiceUses + ", open=" + open + "]";
+        return "ModuleInfoConfiguration [requires=" + requires + ", exports=" + exports + ", opens=" + opens + ", opensResources=" + opensResources
+                + ", uses=" + uses + ", provides=" + provides + ", name=" + name + ", addServiceUses=" + addServiceUses + ", open=" + open + "]";
     }
 }
