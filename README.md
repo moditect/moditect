@@ -366,6 +366,8 @@ creating runtime images on one platform (e.g. OS X) while targeting another (e.g
 * `ignoreSigningInformation`: Suppresses a fatal error when signed modular JARs are linked
 in the runtime image. The signature-related files of the signed modular JARs aren’t copied
 to the runtime image.
+* `noManPages`: No man pages will be added
+* `noHeaderFiles`: No native header files will be added
 
 Once the image has been created, it can be executed by running:
 
