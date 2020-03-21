@@ -381,6 +381,14 @@ public class GenerateModuleInfo {
 
     private ModuleDeclaration parseGeneratedModuleInfo() {
         Path moduleDir = workingDirectory.resolve( autoModuleNameForInputJar );
+        int javaMajorVersion = Integer.parseInt(
+                System.getProperty("java.specification.version").replace("-ea", "").split("\\.")[0]
+        );
+        if (javaMajorVersion >= 14) {
+            int multiReleaseIdx = jdepsExtraArgs.indexOf("--multi-release");
+            if (multiReleaseIdx >= 0)
+                moduleDir = moduleDir.resolve("versions").resolve(jdepsExtraArgs.get(multiReleaseIdx + 1));
+        }
         Path moduleInfo = moduleDir.resolve( "module-info.java" );
 
         return ModuleInfoCompiler.parseModuleInfo( moduleInfo );
