@@ -1,6 +1,6 @@
 # ModiTect - Tooling for the Java Module System
 
-Version 1.0.0.Beta2 - 2018-12-23
+Version 1.0.0.RC1 - 2020-03-24
 
 The ModiTect project aims at providing productivity tools for working with
 the Java module system ("Jigsaw").
