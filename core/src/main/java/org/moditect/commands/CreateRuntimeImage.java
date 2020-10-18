@@ -44,9 +44,12 @@ public class CreateRuntimeImage {
     private final boolean noHeaderFiles;
     private final boolean noManPages;
     private final List<String> excludeResourcesPatterns;
+    private final boolean bindServices;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
-                              Path outputDirectory, Integer compression, boolean stripDebug, boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log, boolean noHeaderFiles, boolean noManPages) {
+                              Path outputDirectory, Integer compression, boolean stripDebug,
+                              boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
+                              boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
         this.outputDirectory = outputDirectory;
@@ -58,6 +61,7 @@ public class CreateRuntimeImage {
         this.log = log;
         this.noHeaderFiles = noHeaderFiles;
         this.noManPages = noManPages;
+        this.bindServices = bindServices;
     }
 
     private static List<String> getModules(List<String> modules) {
@@ -119,6 +123,10 @@ public class CreateRuntimeImage {
 
         if ( noManPages ) {
             command.add( "--no-man-pages" );
+        }
+
+        if ( bindServices ) {
+            command.add( "--bind-services" );
         }
 
         log.debug( "Running jlink: " + String.join( " ", command ) );
