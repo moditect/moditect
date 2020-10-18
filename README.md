@@ -386,6 +386,7 @@ in the runtime image. The signature-related files of the signed modular JARs are
 to the runtime image.
 * `noManPages`: No man pages will be added
 * `noHeaderFiles`: No native header files will be added
+* `bindServices`: Link service provider modules and their dependencies
 
 Once the image has been created, it can be executed by running:
 

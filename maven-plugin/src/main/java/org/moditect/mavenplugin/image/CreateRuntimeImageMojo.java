@@ -95,6 +95,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean noManPages;
 
+    @Parameter(defaultValue = "false")
+    private boolean bindServices;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
@@ -117,7 +120,8 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 getExcludeResourcesPatterns(),
                 new MojoLog( getLog() ),
                 noHeaderFiles,
-                noManPages
+                noManPages,
+                bindServices
         )
                 .run();
     }
