@@ -16,7 +16,10 @@
 package org.moditect.commands;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +38,8 @@ public class CreateRuntimeImage {
 
     private final Set<Path> modulePath;
     private final List<String> modules;
+    private final boolean includeJars;
+    private final Path projectJar;
     private final Path outputDirectory;
     private boolean ignoreSigningInformation;
     private final String launcher;
@@ -46,12 +51,15 @@ public class CreateRuntimeImage {
     private final List<String> excludeResourcesPatterns;
     private final boolean bindServices;
 
-    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, String launcherName, String launcherModule,
+    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, boolean includeJars, Path projectJar,
+                              String launcherName, String launcherModule,
                               Path outputDirectory, Integer compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
                               boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
+        this.includeJars = includeJars;
+        this.projectJar = projectJar;
         this.outputDirectory = outputDirectory;
         this.ignoreSigningInformation = ignoreSigningInformation;
         this.launcher = launcherName != null && launcherModule != null ? launcherName + "=" + launcherModule : null;
@@ -72,11 +80,22 @@ public class CreateRuntimeImage {
         return Collections.unmodifiableList( modules );
     }
 
-    public void run() {
+    public void run() throws IOException {
         runJlink();
+        if (includeJars)
+            copyJars();
+        log.info("Done creating image");
+    }
+
+    private void copyJars() throws IOException {
+        log.info("Copying project JAR");
+        Path jarDirectory = outputDirectory.resolve("jars");
+        Files.createDirectories(jarDirectory);
+        Files.copy(projectJar, jarDirectory.resolve(projectJar.getFileName()));
     }
 
     private void runJlink() throws AssertionError {
+        log.info("Running jlink");
         String javaHome = System.getProperty("java.home");
         String jlinkBin = javaHome +
                 File.separator + "bin" +

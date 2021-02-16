@@ -24,6 +24,7 @@ public class Launcher {
 
     private String name;
     private String module;
+    private String mainClass;
 
     public String getName() {
         return name;
@@ -40,4 +41,13 @@ public class Launcher {
     public void setModule(String module) {
         this.module = module;
     }
+
+    public String getMainClass() {
+        return mainClass;
+    }
+
+    public void setMainClass(String mainClass) {
+        this.mainClass = mainClass;
+    }
+
 }
