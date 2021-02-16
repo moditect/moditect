@@ -177,20 +177,39 @@
                             <goal>create-runtime-image</goal>
                         </goals>
                         <configuration>
-                            <modulePath>
-                                <path>${project.build.directory}/modules</path>
-                            </modulePath>
                             <modules>
-                                <module>com.example</module>
-                                <module>org.jboss.xnio.nio</module>
+                                <module>java.logging</module>
+                                <module>java.management</module>
+                                <module>java.naming</module>
+                                <module>java.security.jgss</module>
+                                <module>java.security.sasl</module>
+                                <module>java.sql</module>
+                                <module>java.transaction.xa</module>
+                                <module>java.xml</module>
+                                <module>jdk.unsupported</module>
                             </modules>
+                            <includeJars>true</includeJars>
                             <launcher>
                                 <name>helloWorld</name>
-                                <module>com.example</module>
+                                <mainClass>com.example.HelloWorldServer</mainClass>
                             </launcher>
-                            <compression>2</compression>
-                            <stripDebug>true</stripDebug>
                             <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/jlink-image/jars</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

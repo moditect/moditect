@@ -16,6 +16,7 @@
 package org.moditect.mavenplugin.image;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.moditect.commands.CreateRuntimeImage;
@@ -43,6 +45,9 @@ import org.moditect.mavenplugin.util.MojoLog;
  */
 @Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE)
 public class CreateRuntimeImageMojo extends AbstractMojo {
+
+    @Parameter(defaultValue = "${project}", readonly = true)
+    protected MavenProject project;
 
     @Component
     private ToolchainManager toolchainManager;
@@ -61,6 +66,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Parameter(required = true)
     private List<String> modules;
+
+    @Parameter
+    private boolean includeJars;
 
     @Parameter
     private Launcher launcher;
@@ -108,22 +116,29 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
         effectiveModulePath.add( jmodsDir );
 
-        new CreateRuntimeImage(
-                effectiveModulePath,
-                modules,
-                launcher != null ? launcher.getName() : null,
-                launcher != null ? launcher.getModule() : null,
-                outputDirectory.toPath(),
-                compression,
-                stripDebug,
-                ignoreSigningInformation,
-                getExcludeResourcesPatterns(),
-                new MojoLog( getLog() ),
-                noHeaderFiles,
-                noManPages,
-                bindServices
-        )
-                .run();
+        CreateRuntimeImage createRuntimeImage = new CreateRuntimeImage(
+            effectiveModulePath,
+            modules,
+            includeJars,
+            project.getArtifact().getFile().toPath(),
+            launcher != null ? launcher.getName() : null,
+            launcher != null ? launcher.getModule() : null,
+            outputDirectory.toPath(),
+            compression,
+            stripDebug,
+            ignoreSigningInformation,
+            getExcludeResourcesPatterns(),
+            new MojoLog(getLog()),
+            noHeaderFiles,
+            noManPages,
+            bindServices
+        );
+        try {
+            createRuntimeImage.run();
+        } catch (IOException ex) {
+            getLog().error(ex);
+            throw new MojoExecutionException("Error creating runtime image", ex);
+        }
     }
 
     /**
