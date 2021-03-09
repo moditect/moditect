@@ -33,17 +33,21 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.moditect.commands.CreateRuntimeImage;
 import org.moditect.mavenplugin.image.model.Launcher;
 import org.moditect.mavenplugin.util.MojoLog;
+import org.moditect.model.JarInclusionPolicy;
 
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE)
+@Mojo(name = "create-runtime-image",
+      defaultPhase = LifecyclePhase.PACKAGE,
+      requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -68,7 +72,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private List<String> modules;
 
     @Parameter
-    private boolean includeJars;
+    private JarInclusionPolicy jarInclusionPolicy;
 
     @Parameter
     private Launcher launcher;
@@ -119,7 +123,8 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
         CreateRuntimeImage createRuntimeImage = new CreateRuntimeImage(
             effectiveModulePath,
             modules,
-            includeJars,
+            jarInclusionPolicy,
+            getDirectAndTransitiveDependencies(),
             project.getArtifact().getFile().toPath(),
             launcher != null ? launcher.getName() : null,
             launcher != null ? launcher.getModule() : null,
@@ -139,6 +144,13 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
             getLog().error(ex);
             throw new MojoExecutionException("Error creating runtime image", ex);
         }
+    }
+
+    private Set<Path> getDirectAndTransitiveDependencies() {
+        return project.getArtifacts()
+                .stream()
+                .map(a -> a.getFile().toPath())
+                .collect(Collectors.toSet());
     }
 
     /**
