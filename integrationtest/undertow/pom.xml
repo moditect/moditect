@@ -100,28 +100,12 @@
                                 <module>java.xml</module>
                                 <module>jdk.unsupported</module>
                             </modules>
-                            <includeJars>true</includeJars>
+                            <jarInclusionPolicy>APP_WITH_DEPENDENCIES</jarInclusionPolicy>
                             <launcher>
                                 <name>helloWorld</name>
                                 <mainClass>com.example.HelloWorldServer</mainClass>
                             </launcher>
                             <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/jlink-image/jars</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

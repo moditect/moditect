@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.moditect.internal.command.ProcessExecutor;
+import org.moditect.model.JarInclusionPolicy;
 import org.moditect.spi.log.Log;
 
 /**
@@ -36,9 +36,12 @@ import org.moditect.spi.log.Log;
  */
 public class CreateRuntimeImage {
 
+    private static final String DEPENDENCIES_DIRECTORY = "jars";
+
     private final Set<Path> modulePath;
     private final List<String> modules;
-    private final boolean includeJars;
+    private final JarInclusionPolicy jarInclusionPolicy;
+    private final Set<Path> dependencies;
     private final Path projectJar;
     private final Path outputDirectory;
     private boolean ignoreSigningInformation;
@@ -51,14 +54,15 @@ public class CreateRuntimeImage {
     private final List<String> excludeResourcesPatterns;
     private final boolean bindServices;
 
-    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, boolean includeJars, Path projectJar,
-                              String launcherName, String launcherModule,
+    public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, JarInclusionPolicy jarInclusionPolicy,
+                              Set<Path> dependencies, Path projectJar, String launcherName, String launcherModule,
                               Path outputDirectory, Integer compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
                               boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
         this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
         this.modules = getModules( modules );
-        this.includeJars = includeJars;
+        this.jarInclusionPolicy = jarInclusionPolicy;
+        this.dependencies = dependencies;
         this.projectJar = projectJar;
         this.outputDirectory = outputDirectory;
         this.ignoreSigningInformation = ignoreSigningInformation;
@@ -82,16 +86,39 @@ public class CreateRuntimeImage {
 
     public void run() throws IOException {
         runJlink();
-        if (includeJars)
-            copyJars();
         log.info("Done creating image");
+        copyJars();
     }
 
     private void copyJars() throws IOException {
-        log.info("Copying project JAR");
-        Path jarDirectory = outputDirectory.resolve("jars");
+        Path jarDirectory = outputDirectory.resolve(DEPENDENCIES_DIRECTORY);
         Files.createDirectories(jarDirectory);
-        Files.copy(projectJar, jarDirectory.resolve(projectJar.getFileName()));
+
+        if (jarInclusionPolicy.includeAppJar()) {
+            copyAppJar(jarDirectory);
+        }
+        if (jarInclusionPolicy.includeDependencies()) {
+            copyDependencyJars(jarDirectory);
+        }
+    }
+
+    private void copyAppJar(Path jarDirectory) throws IOException {
+        log.info("Copying project JAR");
+        Path target = jarDirectory.resolve(projectJar.getFileName());
+        Files.copy(projectJar, target);
+        log.debug(String.format("Done copying app JAR %s to %s", projectJar, target));
+    }
+
+    private void copyDependencyJars(Path jarDirectory) throws IOException {
+        log.info("Copying project dependencies");
+
+        for (Path dependency : dependencies) {
+            Path target = jarDirectory.resolve(dependency.getFileName());
+            Files.copy(dependency, target);
+            log.debug(String.format("Done copying dependency %s to %s", dependency, target));
+        }
+
+        log.info("Done copying project dependencies");
     }
 
     private void runJlink() throws AssertionError {
