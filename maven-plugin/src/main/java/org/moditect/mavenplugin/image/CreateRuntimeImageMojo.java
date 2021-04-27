@@ -40,6 +40,7 @@ import org.apache.maven.toolchain.ToolchainManager;
 import org.moditect.commands.CreateRuntimeImage;
 import org.moditect.mavenplugin.image.model.Launcher;
 import org.moditect.mavenplugin.util.MojoLog;
+import org.moditect.mavenplugin.util.DependencyHelper;
 import org.moditect.model.JarInclusionPolicy;
 
 /**
@@ -111,7 +112,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private boolean bindServices;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
@@ -124,7 +125,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
             effectiveModulePath,
             modules,
             jarInclusionPolicy,
-            getDirectAndTransitiveDependencies(),
+            DependencyHelper.getDirectAndTransitiveDependencies(project),
             project.getArtifact().getFile().toPath(),
             launcher != null ? launcher.getName() : null,
             launcher != null ? launcher.getModule() : null,
@@ -144,13 +145,6 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
             getLog().error(ex);
             throw new MojoExecutionException("Error creating runtime image", ex);
         }
-    }
-
-    private Set<Path> getDirectAndTransitiveDependencies() {
-        return project.getArtifacts()
-                .stream()
-                .map(a -> a.getFile().toPath())
-                .collect(Collectors.toSet());
     }
 
     /**
