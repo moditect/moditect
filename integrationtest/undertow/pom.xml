@@ -29,6 +29,10 @@
     <packaging>jar</packaging>
     <name>ModiTect Integration Test - Undertow</name>
 
+    <properties>
+        <moditect.jvmVersion>9</moditect.jvmVersion>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
