@@ -17,7 +17,6 @@ package org.moditect.mavenplugin.modulelist;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -25,7 +24,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.moditect.commands.GenerateModuleList;
 import org.moditect.mavenplugin.util.DependencyHelper;
+import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.Version;
+
+import java.io.File;
 
 @Mojo(name = "list-application-image-modules",
 		defaultPhase = LifecyclePhase.PACKAGE,
@@ -42,9 +44,11 @@ public class GenerateModuleListMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException {
 		GenerateModuleList generateModuleList = new GenerateModuleList(
+				new File(project.getBuild().getOutputDirectory()).toPath(),
+				// project.getArtifact().getFile().toPath(),
+				DependencyHelper.getDirectAndTransitiveDependencies(project),
 				determineJvmVersion(),
-				DependencyHelper.getDirectAndTransitiveDependencies(project)
-		);
+				new MojoLog(getLog()));
 		try {
 			generateModuleList.run();
 		} catch (RuntimeException ex) {
