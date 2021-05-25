@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta2</version>
+    <version>1.0.0.CR1</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -387,6 +387,18 @@ to the runtime image.
 * `noManPages`: No man pages will be added
 * `noHeaderFiles`: No native header files will be added
 * `bindServices`: Link service provider modules and their dependencies
+* `jarInclusionPolicy`: Whether to add the application JAR and optionally its dependencies
+to the runtime image, under the _jars_ directory, allowing to run a classpath-based
+application on a modular runtime image; allowed values are `NONE`, `APP`, and `APP_WITH_DEPENDENCIES`.
+
+In order to identify the JDK images which should go into a custom runtime image for a classpath-based application,
+you can run the following goal:
+
+```
+list-application-image-modules
+```
+
+This will run the _jdeps_ command under the hood, listing all JDK modules required by the application and its dependencies.
 
 Once the image has been created, it can be executed by running:
 
