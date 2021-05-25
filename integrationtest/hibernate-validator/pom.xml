@@ -30,7 +30,7 @@
     <name>ModiTect Integration Test - Hibernate Validator</name>
 
     <properties>
-        <hibernate.validator.version>6.0.13.Final</hibernate.validator.version>
+        <hibernate.validator.version>6.0.18.Final</hibernate.validator.version>
         <bean.validation.version>2.0.1.Final</bean.validation.version>
         <jboss.logging.version>3.3.2.Final</jboss.logging.version>
         <classmate.version>1.3.4</classmate.version>
