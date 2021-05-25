@@ -17,8 +17,11 @@ package org.moditect.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,9 +88,34 @@ public class CreateRuntimeImage {
     }
 
     public void run() throws IOException {
+        deleteImageFolder();
         runJlink();
         log.info("Done creating image");
         copyJars();
+    }
+
+    private void deleteImageFolder() throws IOException {
+        if (!Files.exists(outputDirectory)) {
+            return;
+        }
+
+        log.info("Deleting image directory " + outputDirectory);
+
+        Files.walkFileTree(outputDirectory, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                if (exc != null)
+                    throw exc;
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     private void copyJars() throws IOException {
