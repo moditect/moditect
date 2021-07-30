@@ -16,10 +16,18 @@
      limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.moditect</groupId>
+    <parent>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-org-parent</artifactId>
+        <version>1.0.0.Final</version>
+        <relativePath/>
+    </parent>
+
     <artifactId>moditect-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -30,43 +38,20 @@
     <inceptionYear>2017</inceptionYear>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.identifier>moditect</project.identifier>
+        <project.repository>moditect/moditect</project.repository>
+        <local.repository.path>/tmp/repository</local.repository.path>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>gunnarmorling</id>
-            <name>Gunnar Morling</name>
-            <email>gunnar.morling@googlemail.com</email>
-            <url>http://www.gunnarmorling.de/</url>
-        </developer>
-    </developers>
-
     <scm>
-        <connection>scm:git:https://github.com/moditect/moditect.git</connection>
-        <developerConnection>scm:git:https://github.com/moditect/moditect.git</developerConnection>
-        <url>https://github.com/moditect/moditect/</url>
+        <connection>scm:git:${repository.url}</connection>
+        <developerConnection>scm:git:${repository.url}</developerConnection>
+        <url>${repository.url}</url>
         <tag>HEAD</tag>
     </scm>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -96,6 +81,16 @@
                 <artifactId>assertj-core</artifactId>
                 <version>3.8.0</version>
             </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.13.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.30</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -103,85 +98,19 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>3.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.8</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                    <version>3.6.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                    <configuration>
-                        <deployAtEnd>true</deployAtEnd>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.5</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M1</version>
-                    <configuration>
-                        <tagNameFormat>@{project.version}</tagNameFormat>
-                        <scmReleaseCommitComment>Preparing @{releaseLabel} release</scmReleaseCommitComment>
-                        <scmDevelopmentCommitComment>Preparing next development iteration</scmDevelopmentCommitComment>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <useReleaseProfile>false</useReleaseProfile>
-                        <releaseProfiles>release</releaseProfiles>
-                        <goals>deploy</goals>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.6.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.2.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>${project.groupId}</groupId>
@@ -194,9 +123,17 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <header>${basedir}/../etc/license.txt</header>
+                <configuration combine.self="override">
+                    <header>${rootdir}/etc/license.txt</header>
                     <strictCheck>true</strictCheck>
+                    <excludes>
+                        <exclude>README.md</exclude>
+                        <exclude>LICENSE.txt</exclude>
+                        <exclude>mvnw</exclude>
+                        <exclude>mvnw.cmd</exclude>
+                        <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+                        <exclude>.mvn/wrapper/MavenWrapperDownloader.java</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -211,43 +148,37 @@
 
     <profiles>
         <profile>
-            <id>release</id>
+            <id>jreleaser</id>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
+                        <groupId>org.jreleaser</groupId>
+                        <artifactId>jreleaser-maven-plugin</artifactId>
+                        <version>0.5.0</version>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <gitRootSearch>true</gitRootSearch>
+                            <jreleaser>
+                                <project>
+                                    <name>ModiTect</name>
+                                </project>
+                                <release>
+                                    <github>
+                                        <skipTag>true</skipTag>
+                                        <changelog>
+                                            <formatted>ALWAYS</formatted>
+                                        </changelog>
+                                    </github>
+                                </release>
+                            </jreleaser>
+                        </configuration>
                         <executions>
                             <execution>
-                                <id>attach-sources</id>
+                                <id>create-release</id>
                                 <goals>
-                                    <goal>jar-no-fork</goal>
+                                    <goal>release</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
+                                <phase>initialize</phase>
                             </execution>
                         </executions>
                     </plugin>

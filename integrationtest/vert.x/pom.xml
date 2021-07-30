@@ -84,13 +84,6 @@
 
         <plugins>
             <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <header>${basedir}/../../etc/license.txt</header>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>moditect-maven-plugin</artifactId>
                 <executions>

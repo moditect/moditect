@@ -19,8 +19,9 @@
      limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -42,6 +43,20 @@
         <module>parent</module>
         <module>core</module>
         <module>maven-plugin</module>
-        <module>integrationtest</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>test</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>integrationtest</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
