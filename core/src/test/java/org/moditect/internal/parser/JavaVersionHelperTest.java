@@ -19,13 +19,13 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JavaVersionParseTest {
+public class JavaVersionHelperTest {
 
-    private JavaVersionParser testTarget = new JavaVersionParser();
+    private JavaVersionHelper testTarget = new JavaVersionHelper();
 
     @Test
     public void current() {
-        JavaVersionParser.Version version = testTarget.javaVersion();
+        JavaVersionHelper.Version version = testTarget.javaVersion();
         assertThat(version.major()).isPositive();
         assertThat(version.minor()).isNotNull();
         assertThat(version.mini()).isNotNull();
@@ -33,7 +33,7 @@ public class JavaVersionParseTest {
 
     @Test
     public void simple() {
-        JavaVersionParser.Version version = testTarget.javaVersion("11.0.10");
+        JavaVersionHelper.Version version = testTarget.javaVersion("11.0.10");
         assertThat(version.major()).isEqualTo(11);
         assertThat(version.minor()).isEqualTo(0);
         assertThat(version.mini()).isEqualTo(10);
@@ -41,13 +41,13 @@ public class JavaVersionParseTest {
 
     @Test
     public void incomplete() {
-        JavaVersionParser.Version version = testTarget.javaVersion("11");
+        JavaVersionHelper.Version version = testTarget.javaVersion("11");
         assertThat(version).isNull();
     }
 
     @Test
     public void oldStyle() {
-        JavaVersionParser.Version version = testTarget.javaVersion("1.6.0_23");
+        JavaVersionHelper.Version version = testTarget.javaVersion("1.6.0_23");
         assertThat(version.major()).isEqualTo(1);
         assertThat(version.minor()).isEqualTo(6);
         assertThat(version.mini()).isZero();
@@ -55,7 +55,7 @@ public class JavaVersionParseTest {
 
     @Test
     public void otherStuff() {
-        JavaVersionParser.Version version = testTarget.javaVersion("1.6.0_23-otherStuff");
+        JavaVersionHelper.Version version = testTarget.javaVersion("1.6.0_23-otherStuff");
         assertThat(version.major()).isEqualTo(1);
         assertThat(version.minor()).isEqualTo(6);
         assertThat(version.mini()).isZero();

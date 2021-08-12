@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
+import org.moditect.internal.parser.JavaVersionHelper;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.model.GeneratedModuleInfo;
@@ -381,13 +382,14 @@ public class GenerateModuleInfo {
 
     private ModuleDeclaration parseGeneratedModuleInfo() {
         Path moduleDir = workingDirectory.resolve( autoModuleNameForInputJar );
-        int javaMajorVersion = Integer.parseInt(
-                System.getProperty("java.specification.version").replace("-ea", "").split("\\.")[0]
-        );
-        if (javaMajorVersion >= 14) {
+        if (JavaVersionHelper.resolveWithVersionIfMultiRelease(log)) {
             int multiReleaseIdx = jdepsExtraArgs.indexOf("--multi-release");
-            if (multiReleaseIdx >= 0)
+            if (multiReleaseIdx >= 0) {
+                log.debug("Resolve with version: multi release is set");
                 moduleDir = moduleDir.resolve("versions").resolve(jdepsExtraArgs.get(multiReleaseIdx + 1));
+            } else {
+                log.debug("Resolve without version: multi release not set");
+            }
         }
         Path moduleInfo = moduleDir.resolve( "module-info.java" );
 

@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright 2017 - 2018 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,26 @@ import java.util.regex.Pattern;
  *
  * @author Fabio Massimo Ercoli
  */
-public final class JavaVersionParser {
+public final class JavaVersionHelper {
+
+    public static boolean resolveWithVersionIfMultiRelease(Log log) {
+        Version version = new JavaVersionHelper(log).javaVersion();
+        if (version == null) {
+            return false;
+        }
+
+        if (version.major >= 14) {
+            log.debug("Detected JDK 14+");
+            return true;
+        }
+
+        // See https://github.com/moditect/moditect/issues/141
+        if (version.major == 11 && version.minor == 0 && version.mini >= 11) {
+            log.debug("Detected JDK 11.0.11+");
+            return true;
+        }
+        return false;
+    }
 
     private static final String VERSION_REGEXP = "^(\\d+)\\.(\\d+)\\.(\\d+).*";
     private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEXP);
@@ -34,16 +53,21 @@ public final class JavaVersionParser {
 
     private final Log log;
 
-    public JavaVersionParser(Log log) {
-        this.log = log;
-    }
-
-    JavaVersionParser() {
+    JavaVersionHelper() {
         this.log = null;
     }
 
-    public Version javaVersion() {
-        return javaVersion(System.getProperty(JAVA_VERSION_PROPERTY_NAME));
+    private JavaVersionHelper(Log log) {
+        this.log = log;
+    }
+
+    Version javaVersion() {
+        String versionString = System.getProperty(JAVA_VERSION_PROPERTY_NAME);
+        if (log != null) {
+            log.debug(JAVA_VERSION_PROPERTY_NAME + " -> " + versionString);
+        }
+
+        return javaVersion(versionString);
     }
 
     Version javaVersion(String versionString) {
@@ -57,9 +81,15 @@ public final class JavaVersionParser {
         }
 
         try {
-            return new Version(Integer.parseInt(matcher.group(1)),
+            Version version = new Version(Integer.parseInt(matcher.group(1)),
                     Integer.parseInt(matcher.group(2)),
                     Integer.parseInt(matcher.group(3)));
+
+            if (log != null) {
+                log.debug("parsed.version -> " + version);
+            }
+
+            return version;
         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
             if (log != null) {
                 log.error("The java version " + versionString + " has an invalid format. " + ex.getMessage());
@@ -80,14 +110,19 @@ public final class JavaVersionParser {
             this.mini = mini;
         }
 
-        public int major() {
+        int major() {
             return major;
         }
-        public int minor() {
+        int minor() {
             return minor;
         }
-        public int mini() {
+        int mini() {
             return mini;
+        }
+
+        @Override
+        public String toString() {
+            return major + "." + minor + "." + mini;
         }
     }
 }
