@@ -21,31 +21,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Helper to extract and parse the Java version.
- * Alternatively from Java 9 it is possible to use the API java.lang.Runtime#version().
+ * Helper to extract and parse the current Java version to check if multi release path should be used or not.
  *
  * @author Fabio Massimo Ercoli
  */
 public final class JavaVersionHelper {
-
-    public static boolean resolveWithVersionIfMultiRelease(Log log) {
-        Version version = new JavaVersionHelper(log).javaVersion();
-        if (version == null) {
-            return false;
-        }
-
-        if (version.major >= 14) {
-            log.debug("Detected JDK 14+");
-            return true;
-        }
-
-        // See https://github.com/moditect/moditect/issues/141
-        if (version.major == 11 && version.minor == 0 && version.mini >= 11) {
-            log.debug("Detected JDK 11.0.11+");
-            return true;
-        }
-        return false;
-    }
 
     private static final String VERSION_REGEXP = "^(\\d+)\\.(\\d+)\\.(\\d+).*";
     private static final Pattern VERSION_PATTERN = Pattern.compile(VERSION_REGEXP);
@@ -57,15 +37,32 @@ public final class JavaVersionHelper {
         this.log = null;
     }
 
-    private JavaVersionHelper(Log log) {
+    public JavaVersionHelper(Log log) {
         this.log = log;
+    }
+
+    public boolean resolveWithVersionIfMultiRelease() {
+        Version version = javaVersion();
+        if (version == null) {
+            return false;
+        }
+
+        if (version.major >= 14) {
+            debug("Detected JDK 14+");
+            return true;
+        }
+
+        // See https://github.com/moditect/moditect/issues/141
+        if (version.major == 11 && version.minor == 0 && version.mini >= 11) {
+            debug("Detected JDK 11.0.11+");
+            return true;
+        }
+        return false;
     }
 
     Version javaVersion() {
         String versionString = System.getProperty(JAVA_VERSION_PROPERTY_NAME);
-        if (log != null) {
-            log.debug(JAVA_VERSION_PROPERTY_NAME + " -> " + versionString);
-        }
+        debug(JAVA_VERSION_PROPERTY_NAME + " -> " + versionString);
 
         return javaVersion(versionString);
     }
@@ -73,10 +70,7 @@ public final class JavaVersionHelper {
     Version javaVersion(String versionString) {
         Matcher matcher = VERSION_PATTERN.matcher(versionString);
         if (!matcher.matches()) {
-            if (log != null) {
-                log.warn("The java version " + versionString + " cannot be parsed as " + VERSION_REGEXP);
-            }
-
+            warn("The java version " + versionString + " cannot be parsed as " + VERSION_REGEXP);
             return null;
         }
 
@@ -85,17 +79,29 @@ public final class JavaVersionHelper {
                     Integer.parseInt(matcher.group(2)),
                     Integer.parseInt(matcher.group(3)));
 
-            if (log != null) {
-                log.debug("parsed.version -> " + version);
-            }
-
+            debug("parsed.version -> " + version);
             return version;
         } catch (IndexOutOfBoundsException | NumberFormatException ex) {
-            if (log != null) {
-                log.error("The java version " + versionString + " has an invalid format. " + ex.getMessage());
-            }
-
+            error("The java version " + versionString + " has an invalid format. " + ex.getMessage());
             return null;
+        }
+    }
+
+    private void debug(String message) {
+        if (log != null) {
+            log.debug(message);
+        }
+    }
+
+    private void warn(String message) {
+        if (log != null) {
+            log.warn(message);
+        }
+    }
+
+    private void error(String message) {
+        if (log != null) {
+            log.error(message);
         }
     }
 
