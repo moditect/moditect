@@ -29,9 +29,9 @@ public class PackageNamePattern {
         EXCLUSIVE;
     }
 
-    // TODO multiple TOs
     private static final Pattern INCLUSIVE_PATTERN = Pattern.compile( "(.*?)((\\s*to\\s)(.*))?" );
     private static final Pattern EXCLUSIVE_PATTERN = Pattern.compile( "(!)(.*?)" );
+    private static final Pattern MODULES_PATTERN = Pattern.compile( "\\s*,\\s*" );
 
     private final Kind kind;
     private final Pattern pattern;
@@ -65,9 +65,13 @@ public class PackageNamePattern {
                 throw new IllegalArgumentException( "Invalid inclusive pattern: " + pattern );
             }
             else {
-                return inclusive( matcher.group( 1 ), matcher.group( 2 ) != null ? Arrays.asList( matcher.group( 4 ) ) : Collections.emptyList() );
+                return inclusive( matcher.group( 1 ), matcher.group( 2 ) != null ? modules(matcher.group( 4 )) : Collections.emptyList() );
             }
         }
+    }
+
+    private static List<String> modules(String modules) {
+        return Arrays.asList(MODULES_PATTERN.split(modules));
     }
 
     private static PackageNamePattern inclusive(String pattern, List<String> targetModules) {
