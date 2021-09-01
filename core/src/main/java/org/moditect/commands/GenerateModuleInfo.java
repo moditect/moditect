@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
+import org.moditect.internal.parser.JavaVersionHelper;
+import org.moditect.internal.parser.JdepsExtraArgsExtractor;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
 import org.moditect.model.GeneratedModuleInfo;
@@ -381,13 +383,9 @@ public class GenerateModuleInfo {
 
     private ModuleDeclaration parseGeneratedModuleInfo() {
         Path moduleDir = workingDirectory.resolve( autoModuleNameForInputJar );
-        int javaMajorVersion = Integer.parseInt(
-                System.getProperty("java.specification.version").replace("-ea", "").split("\\.")[0]
-        );
-        if (javaMajorVersion >= 14) {
-            int multiReleaseIdx = jdepsExtraArgs.indexOf("--multi-release");
-            if (multiReleaseIdx >= 0)
-                moduleDir = moduleDir.resolve("versions").resolve(jdepsExtraArgs.get(multiReleaseIdx + 1));
+        Optional<Integer> versionToResolve = resolveWithVersion(jdepsExtraArgs, log);
+        if (versionToResolve.isPresent()) {
+            moduleDir = moduleDir.resolve("versions").resolve(versionToResolve.get().toString());
         }
         Path moduleInfo = moduleDir.resolve( "module-info.java" );
 
@@ -437,5 +435,20 @@ public class GenerateModuleInfo {
         }
 
         return dir;
+    }
+
+    public static Optional<Integer> resolveWithVersion(List<String> jdepsExtraArgs, Log log) {
+        if (!new JavaVersionHelper(log).resolveWithVersionIfMultiRelease()) {
+            log.debug("Java version does not need to check if " + JdepsExtraArgsExtractor.MULTI_RELEASE_ARGUMENT + " is set");
+            return Optional.empty();
+        }
+
+        Optional<Integer> result = new JdepsExtraArgsExtractor(log).extractVersion(jdepsExtraArgs);
+        if (result.isPresent()) {
+            log.debug("Resolve with version: multi release is set to " + result.get());
+        } else {
+            log.debug("Resolve without version: multi release not set");
+        }
+        return result;
     }
 }
