@@ -84,7 +84,9 @@ jobs:
           VERSION=${{ github.event.inputs.version }}
           echo "Releasing $VERSION from $BRANCH branch"
           git checkout $BRANCH
-          ./mvnw -B versions:set versions:commit -DnewVersion=1.0.0.RC2 -Dversion.versions.plugin=2.7 -DgenerateBackupPoms=false -f parent/pom.xml
+          ./mvnw -B versions:set -DnewVersion=$VERSION -f parent/pom.xml -pl :moditect-parent -Dversion.versions.plugin=2.7 -DgenerateBackupPoms=false
+          ./mvnw -B versions:update-child-modules
+          ./mvnw -B versions:commit
           git config --global user.email "moditect-release-bot@moditect.org"
           git config --global user.name "moditect-release-bot"
           git commit -a -m "Releasing version $VERSION"
