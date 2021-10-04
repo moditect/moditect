@@ -154,7 +154,7 @@
                     <plugin>
                         <groupId>org.jreleaser</groupId>
                         <artifactId>jreleaser-maven-plugin</artifactId>
-                        <version>0.5.0</version>
+                        <version>0.7.0</version>
                         <inherited>false</inherited>
                         <configuration>
                             <gitRootSearch>true</gitRootSearch>
@@ -164,9 +164,64 @@
                                 </project>
                                 <release>
                                     <github>
+                                        <tagName>{{projectVersion}}</tagName>
+                                        <releaseName>{{projectVersion}}</releaseName>
+                                        <overwrite>true</overwrite>
                                         <skipTag>true</skipTag>
                                         <changelog>
                                             <formatted>ALWAYS</formatted>
+                                            <format>- {{commitShortHash}} {{commitTitle}}</format>
+                                            <contributors>
+                                                <format>- {{contributorName}}</format>
+                                            </contributors>
+                                            <labelers>
+                                                <labeler>
+                                                    <label>dependencies</label>
+                                                    <title>Bump</title>
+                                                </labeler>
+                                                <labeler>
+                                                    <label>issue</label>
+                                                    <title>regex:.*#[0-9].*</title>
+                                                </labeler>
+                                                <labeler>
+                                                    <label>merge_pull</label>
+                                                    <title>Merge pull</title>
+                                                </labeler>
+                                                <labeler>
+                                                    <label>merge_branch</label>
+                                                    <title>Merge branch</title>
+                                                </labeler>
+                                                <labeler>
+                                                    <label>task_prep</label>
+                                                    <title>Preparing</title>
+                                                </labeler>
+                                                <labeler>
+                                                    <label>task_rel</label>
+                                                    <title>Releasing</title>
+                                                </labeler>
+                                            </labelers>
+                                            <categories>
+                                                <category>
+                                                    <title>Merge</title>
+                                                    <labels>merge_pull,merge_branch</labels>
+                                                </category>
+                                                <category>
+                                                    <title>✅ Issues</title>
+                                                    <labels>issue</labels>
+                                                </category>
+                                                <category>
+                                                    <title>🧰 Tasks</title>
+                                                    <labels>task_prep,task_rel</labels>
+                                                </category>
+                                                <category>
+                                                    <title>⚙️  Dependencies</title>
+                                                    <labels>dependencies</labels>
+                                                </category>
+                                            </categories>
+                                            <hide>
+                                                <categories>Merge</categories>
+                                                <contributors>GitHub,dependabot</contributors>
+                                            </hide>
                                         </changelog>
                                     </github>
                                 </release>
