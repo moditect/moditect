@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
-import org.moditect.internal.parser.JavaVersionHelper;
 import org.moditect.internal.parser.JdepsExtraArgsExtractor;
 import org.moditect.model.DependencePattern;
 import org.moditect.model.DependencyDescriptor;
@@ -383,11 +382,18 @@ public class GenerateModuleInfo {
 
     private ModuleDeclaration parseGeneratedModuleInfo() {
         Path moduleDir = workingDirectory.resolve( autoModuleNameForInputJar );
-        Optional<Integer> versionToResolve = resolveWithVersion(jdepsExtraArgs, log);
-        if (versionToResolve.isPresent()) {
-            moduleDir = moduleDir.resolve("versions").resolve(versionToResolve.get().toString());
+        Path moduleInfo = moduleDir.resolve("module-info.java");
+
+        // JDK 11.0.11+ and 14+ put module-info.java in versions/<some-version>
+        // so we check for that first.
+        Optional<Integer> multiReleaseVersion = new JdepsExtraArgsExtractor(log).extractVersion(jdepsExtraArgs);
+        if (multiReleaseVersion.isPresent()) {
+            Path versionsModuleInfo = moduleDir.resolve("versions").resolve(multiReleaseVersion.get().toString())
+                    .resolve("module-info.java");
+            if (Files.exists(versionsModuleInfo)) {
+                moduleInfo = versionsModuleInfo;
+            }
         }
-        Path moduleInfo = moduleDir.resolve( "module-info.java" );
 
         return ModuleInfoCompiler.parseModuleInfo( moduleInfo );
     }
@@ -435,20 +441,5 @@ public class GenerateModuleInfo {
         }
 
         return dir;
-    }
-
-    public static Optional<Integer> resolveWithVersion(List<String> jdepsExtraArgs, Log log) {
-        if (!new JavaVersionHelper(log).resolveWithVersionIfMultiRelease()) {
-            log.debug("Java version does not need to check if " + JdepsExtraArgsExtractor.MULTI_RELEASE_ARGUMENT + " is set");
-            return Optional.empty();
-        }
-
-        Optional<Integer> result = new JdepsExtraArgsExtractor(log).extractVersion(jdepsExtraArgs);
-        if (result.isPresent()) {
-            log.debug("Resolve with version: multi release is set to " + result.get());
-        } else {
-            log.debug("Resolve without version: multi release not set");
-        }
-        return result;
     }
 }
