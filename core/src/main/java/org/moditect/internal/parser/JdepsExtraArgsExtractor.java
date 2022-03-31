@@ -19,6 +19,7 @@ import org.moditect.spi.log.Log;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarFile;
 
 public final class JdepsExtraArgsExtractor {
 
@@ -71,6 +72,13 @@ public final class JdepsExtraArgsExtractor {
     }
 
     private Optional<Integer> parseVersionNumber(String versionString) {
+        if ("base".equals(versionString)) {
+            // "base" basically means "put the file at the root instead of inside versions/<some-version>"
+            // See https://github.com/openjdk/jdk/blob/5740a3b6e635456b34b4f31d0f1e84d3e746b796/src/jdk.jdeps/share/classes/com/sun/tools/jdeps/JdepsTask.java#L274-L275
+            // See https://github.com/openjdk/jdk/blob/5740a3b6e635456b34b4f31d0f1e84d3e746b796/src/java.base/share/classes/java/util/jar/JarFile.java#L179
+            // See https://github.com/openjdk/jdk/blob/5740a3b6e635456b34b4f31d0f1e84d3e746b796/src/java.base/share/classes/java/util/jar/JarFile.java#L604
+            return Optional.empty();
+        }
         try {
             return Optional.of(Integer.parseInt(versionString));
         } catch (NumberFormatException ex) {
