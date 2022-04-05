@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.CR1</version>
+    <version>1.0.0.RC2</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -186,7 +186,8 @@ as JVM parameters like this:
 mvn moditect:generate-module-info \
     -Dmoditect.artifact=com.example:example-core:1.0.0.Final \
     -Dmoditect.moduleName=com.example.core \
-    -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final \ -Dmoditect.exportExcludes=com\.example\.core\.internal\..* \
+    -Dmoditect.additionalDependencies=com.example:example-extended:1.0.0.Final \
+    -Dmoditect.exportExcludes=com\.example\.core\.internal\..* \
     -Dmoditect.addServiceUses=true
 ```
 
@@ -200,7 +201,7 @@ the _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta2</version>
+    <version>1.0.0.RC2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -261,7 +262,7 @@ _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta2</version>
+    <version>1.0.0.RC2</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -330,7 +331,7 @@ _create-runtime-image_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.Beta2</version>
+    <version>1.0.0.RC2</version>
     <executions>
         <execution>
             <id>create-runtime-image</id>
@@ -422,17 +423,21 @@ shows a more complete example. It adds module descriptors for
 the Undertow web server based on Java 9 modules.
 
 Run
-
-    cd integrationtest/undertow
-    mvn clean install
-
+```
+cd integrationtest/undertow
+mvn clean install
+```
 to build the example. You then can start Undertow by executing
 
-    java --module-path target/modules --module com.example
+```
+java --module-path target/modules --module com.example
+```
 
 Alternatively, you can run the modular runtime image created by the example:
 
-    ./target/jlink-image/bin/helloWorld
+```
+./target/jlink-image/bin/helloWorld
+```
 
 Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
 in your browser for the canonical "Hello World" example.
@@ -446,14 +451,18 @@ image with a "hello world" verticle.
 
 Execute
 
-    cd integrationtest/vert.x
-    mvn clean install -Pjlink
+```
+cd integrationtest/vert.x
+mvn clean install -Pjlink
+```
 
 to build the example.
 
 You can then run the modular runtime image like so:
 
-    ./target/jlink-image/bin/helloWorld
+```
+./target/jlink-image/bin/helloWorld
+```
 
 Then visit [http://localhost:8080/?name=YourName](http://localhost:8080/?name=YourName)
 in your browser for the canonical "Hello World" example.
@@ -466,24 +475,32 @@ E.g. _jackson-databind_ pulls in _java.sql_ unconditionally which could be avoid
 
 The Vert.x example can also be run on Docker. To do so, run the build with the "docker-base" profile:
 
-    mvn clean install -Pdocker-base
+```
+mvn clean install -Pdocker-base
+```
 
 This will create an image named _moditect/vertx-helloworld-base_ which contains the jlink image.
 To run that image execute
 
-    docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld-base
+```
+docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld-base
+```
 
-Changes to the application will require to rebuild the entire jlink image which actually isn't needed if just the app itself
+Changes to the application will require to rebuild the entire `jlink` image which actually isn't needed if just the app itself
 changed but not its dependencies (used JDK modules or 3rd-party modules).
 Therefore another image can be build using the "docker" profile:
 
-    mvn clean install -Pdocker
+```
+mvn clean install -Pdocker
+```
 
-This will create an image named _moditect/vertx-helloworld which extends the base image and just adds the application module (_com.example_) on the upgrade module path.
+This will create an image named _moditect/vertx-helloworld_ which extends the base image and just adds the application module (_com.example_) on the upgrade module path.
 Hence that image is very quick to be built (and distributed) once the base image is in place.
 To run that image execute
 
-    docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld
+```
+docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld
+```
 
 ## Status
 
