@@ -85,20 +85,20 @@ _generate-module-info_ goal as follows:
                                 !com.excluded.dependency;
                                 *;
                             </requires>
-							<opens>
-								com.example.core.internal.controller to javafx.fxml;
-							</opens>
-							<opensResources>
-								com.example.resource;
-								com.example.resource.icon;
-								com.example.resource.sound;
-							</opensResources>
+                            <opens>
+                                com.example.core.internal.controller to javafx.fxml;
+                            </opens>
+                            <opensResources>
+                                com.example.resource;
+                                com.example.resource.icon;
+                                com.example.resource.sound;
+                            </opensResources>
                             <uses>
                                  com.example.SomeService;
                             </uses>
-							<provides>
-								com.example.SomeService with com.example.SomeServiceImpl1,com.example.SomeServiceImpl2;
-							</provides>
+                            <provides>
+                                com.example.SomeService with com.example.SomeServiceImpl1,com.example.SomeServiceImpl2;
+                            </provides>
                             <addServiceUses>true</addServiceUses>
                         </moduleInfo>
                     </module>
