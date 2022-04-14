@@ -18,6 +18,7 @@ package org.moditect.commands;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -372,10 +373,20 @@ public class GenerateModuleInfo {
         command.add( inputJar.toString() );
 
         log.debug( "Running jdeps " + String.join(  " ", command ) );
-        int result = jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
 
+        // Print error to a buffer stream
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        PrintStream errorStream = new PrintStream(buffer);
+
+        int result = jdeps.run( System.out, errorStream, command.toArray( new String[0] ) );
         if (result != 0) {
-            throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(  " ", command ) );
+            String error = buffer.toString();
+            // Print to System.err
+            System.err.println(error);
+            // Take the first line as error info
+            String errorInfo = error.split("\n", 2)[0];
+
+            throw new IllegalStateException("Invocation of jdeps failed: " + errorInfo + ", CommandLine: jdeps " + String.join(  " ", command ) );
         }
 
         return optionalityPerModule;
