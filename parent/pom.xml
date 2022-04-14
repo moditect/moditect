@@ -41,7 +41,7 @@
         <project.identifier>moditect</project.identifier>
         <project.repository>moditect/moditect</project.repository>
         <local.repository.path>/tmp/repository</local.repository.path>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
