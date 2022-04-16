@@ -20,14 +20,13 @@ import java.io.PrintWriter;
 import org.moditect.spi.log.Log;
 
 /**
- * Wraps Moditect {@link Log} with a {@link PrintWriter} in order to pass {@code
- * jdeps} command output to it.
+ * Wraps Moditect {@link Log} with a {@link PrintWriter} in order to pass
+ * {@code jdeps} command output to it.
  *
  * @author Aleks Seovic  2022.04.15
  */
 public class LogWriter
-        extends PrintWriter
-    {
+        extends PrintWriter {
     private static final String ERROR_PREFIX   = "Error:";
     private static final String WARNING_PREFIX = "Warning:";
 
@@ -39,12 +38,10 @@ public class LogWriter
      *
      * @param log the log to write to
      */
-    public LogWriter(Log log)
-        {
+    public LogWriter(Log log) {
         super(System.out);
-
         this.log = log;
-        }
+    }
 
     /**
      * Prints a String and then terminates the line.  This method behaves as
@@ -52,19 +49,15 @@ public class LogWriter
      *
      * @param sText the {@code String} value to be printed
      */
-    public void println(String sText)
-        {
-        if (sText.startsWith(ERROR_PREFIX))
-            {
+    public void println(String sText) {
+        if (sText.startsWith(ERROR_PREFIX)) {
             log.error(sText.substring(ERROR_PREFIX.length() + 1));
-            }
-        else if (sText.startsWith(WARNING_PREFIX))
-            {
+        }
+        else if (sText.startsWith(WARNING_PREFIX)) {
             log.warn(sText.substring(WARNING_PREFIX.length() + 1));
-            }
-        else
-            {
+        }
+        else {
             log.info(sText);
-            }
         }
     }
+}
