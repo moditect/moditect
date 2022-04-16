@@ -41,6 +41,7 @@ import java.util.spi.ToolProvider;
 import java.util.stream.Collectors;
 
 import org.moditect.internal.analyzer.ServiceLoaderUseScanner;
+import org.moditect.internal.command.LogWriter;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.internal.parser.JdepsExtraArgsExtractor;
 import org.moditect.model.DependencePattern;
@@ -370,8 +371,10 @@ public class GenerateModuleInfo {
         command.addAll( jdepsExtraArgs );
         command.add( inputJar.toString() );
 
-        log.debug( "Running jdeps " + String.join(  " ", command ) );
-        int result = jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
+        log.info( "Running jdeps " + String.join(  " ", command ) );
+        LogWriter out = new LogWriter(log);
+
+        int result = jdeps.run( out, out, command.toArray( new String[0] ) );
 
         if (result != 0) {
             throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(  " ", command ) );
