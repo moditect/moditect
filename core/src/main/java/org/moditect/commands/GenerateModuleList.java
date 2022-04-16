@@ -15,6 +15,7 @@
  */
 package org.moditect.commands;
 
+import org.moditect.internal.command.LogWriter;
 import org.moditect.model.Version;
 import org.moditect.spi.log.Log;
 
@@ -76,7 +77,8 @@ public class GenerateModuleList {
 
 		log.debug( "Running jdeps " + String.join( " ", command ) );
 
-		int result = jdeps.run( System.out, System.err, command.toArray( new String[0] ) );
+		LogWriter logWriter = new LogWriter(log);
+		int result = jdeps.run( logWriter, logWriter, command.toArray( new String[0] ) );
 		if (result != 0) {
 			throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(  " ", command ) );
 		}
