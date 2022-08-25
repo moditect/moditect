@@ -58,12 +58,12 @@ public class ServiceLoaderUseScanner {
 
         try ( InputStream classFile = jarFile.getInputStream( je ) ) {
             new ClassReader( classFile ).accept(
-                    new ClassVisitor( Opcodes.ASM7 ) {
+                    new ClassVisitor( Opcodes.ASM9 ) {
 
                         @Override
                         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 
-                            return new MethodVisitor(Opcodes.ASM7) {
+                            return new MethodVisitor(Opcodes.ASM9) {
 
                                 private Type lastType;
 
@@ -85,7 +85,7 @@ public class ServiceLoaderUseScanner {
                                     if ( cst instanceof Type ) {
                                         lastType = (Type) cst;
                                     }
-                                };
+                                }
                             };
                         }
                     },
