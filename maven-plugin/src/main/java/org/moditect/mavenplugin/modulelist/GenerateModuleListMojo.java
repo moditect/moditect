@@ -31,7 +31,8 @@ import java.io.File;
 
 @Mojo(name = "list-application-image-modules",
 		defaultPhase = LifecyclePhase.PACKAGE,
-		requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME
+		requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
+		threadSafe = true
 )
 public class GenerateModuleListMojo extends AbstractMojo {
 

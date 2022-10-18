@@ -56,7 +56,7 @@ import org.moditect.model.GeneratedModuleInfo;
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class AddModuleInfoMojo extends AbstractMojo {
 
     @Component
