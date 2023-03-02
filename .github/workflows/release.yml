@@ -22,38 +22,75 @@ on:
       version:
         description: 'Release version'
         required: true
+      next:
+        description: 'Next version'
+        required: false
+
+env:
+  JAVA_VERSION: '11'
+  JAVA_DISTRO: 'zulu'
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      HEAD: ${{ steps.version.outputs.HEAD }}
+      RELEASE_VERSION: ${{ steps.version.outputs.RELEASE_VERSION }}
+      PLAIN_VERSION: ${{ steps.version.outputs.PLAIN_VERSION }}
+      NEXT_VERSION: ${{ steps.version.outputs.NEXT_VERSION }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
+          cache: maven
+
+      - name: Set release version
+        id: version
+        run: |
+          RELEASE_VERSION=${{ github.event.inputs.version }}
+          NEXT_VERSION=${{ github.event.inputs.next }}
+          PLAIN_VERSION=`echo ${RELEASE_VERSION} | awk 'match($0, /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)/) { print substr($0, RSTART, RLENGTH); }'`
+          COMPUTED_NEXT_VERSION="${PLAIN_VERSION}-SNAPSHOT"
+          if [ -z $NEXT_VERSION ]
+          then
+            NEXT_VERSION=$COMPUTED_NEXT_VERSION
+          fi
+          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$RELEASE_VERSION
+          git config --global user.email "moditect-release-bot@moditect.org"
+          git config --global user.name "moditect-release-bot"
+          git commit -a -m "Releasing version $VERSION"
+          git push origin HEAD:main
+          HEAD=$(git rev-parse HEAD)
+          echo "HEAD=$HEAD" >> $GITHUB_OUTPUT
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "PLAIN_VERSION=$PLAIN_VERSION" >> $GITHUB_OUTPUT
+
   release:
+    needs: [ version ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ needs.version.outputs.HEAD }}
           fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
-          java-version: 11
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
+          cache: maven
           server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-          cache: maven
-
-      - name: Version
-        run: |
-          VERSION=${{ github.event.inputs.version }}
-          echo "Updating POMs to version $VERSION"
-          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$VERSION
-          echo $VERSION > VERSION
-          git config --global user.email "moditect-release-bot@moditect.org"
-          git config --global user.name "moditect-release-bot"
-          git commit -a -m "Releasing version $VERSION"
-          git push origin main
 
       - name: Release to Maven Central
         env:
@@ -80,3 +117,13 @@ jobs:
           path: |
             parent/target/jreleaser/trace.log
             parent/target/jreleaser/output.properties
+
+      - name: Set next version
+        env:
+          NEXT_VERSION: ${{ needs.version.outputs.NEXT_VERSION }}
+        run: |
+          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$NEXT_VERSION
+          git config --global user.email "moditect-release-bot@moditect.org"
+          git config --global user.name "moditect-release-bot"
+          git commit -a -m "Next version $NEXT_VERSION"
+          git push origin HEAD:main
