@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
@@ -67,6 +71,10 @@ import org.moditect.model.GeneratedModuleInfo;
 @Mojo(name = "add-module-info", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class AddModuleInfoMojo extends AbstractMojo {
 
+    private static final String MODULE_INFO_CLASS = "module-info.class";
+
+    private static final Pattern VERSIONED_MODULE_INFO = Pattern.compile( "META-INF/versions/\\d+/" + MODULE_INFO_CLASS );
+
     @Component
     private RepositorySystem repoSystem;
 
@@ -102,6 +110,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
 
     @Parameter(property = "moditect.skip", defaultValue = "false")
     private boolean skip;
+
+    @Parameter(property = "moditect.failOnWarning", defaultValue = "true")
+    private boolean failOnWarning;
 
     @Parameter
     private MainModuleConfiguration module;
@@ -153,6 +164,16 @@ public class AddModuleInfoMojo extends AbstractMojo {
         if ( modules != null ) {
             for ( ModuleConfiguration moduleConfiguration : modules ) {
                 Path inputFile = getInputFile( moduleConfiguration, artifactResolutionHelper );
+                if ( isModularJar( inputFile ) ) {
+                    String message = "File " + inputFile.getFileName() + " is already modular";
+                    if ( failOnWarning ) {
+                        throw new MojoExecutionException( message );
+                    } else {
+                        getLog().warn( message );
+                        continue;
+                    }
+                }
+
                 String moduleInfoSource = getModuleInfoSource( inputFile, moduleConfiguration, moduleInfoGenerator, assignedNamesByModule, modularizedJars );
 
                 AddModuleInfo addModuleInfo = new AddModuleInfo(
@@ -182,6 +203,16 @@ public class AddModuleInfoMojo extends AbstractMojo {
                 throw new MojoExecutionException( "Couldn't find file " + inputJar + ". Run this goal for the project's JAR only after the maven-jar-plugin." );
             }
 
+            if ( isModularJar( inputJar ) ) {
+                String message = "File " + inputJar.getFileName() + " is already modular";
+                if ( failOnWarning ) {
+                    throw new MojoExecutionException( message );
+                } else {
+                    getLog().warn( message );
+                    return;
+                }
+            }
+
             AddModuleInfo addModuleInfo = new AddModuleInfo(
                     getModuleInfoSource( inputJar, module, moduleInfoGenerator, assignedNamesByModule, modularizedJars ),
                     module.getMainClass(),
@@ -200,6 +231,27 @@ public class AddModuleInfoMojo extends AbstractMojo {
                 throw new RuntimeException( "Couldn't replace " + inputJar + " with modularized version", e );
             }
         }
+    }
+
+    /**
+     * Determines if the given JAR is already modular that is,
+     * it contains either a "module-info.class" entry or at least
+     * one "/META-INF/version/\\d+/module-info.class" entry.
+     */
+    private boolean isModularJar(Path jarPath) {
+        try( JarFile jarFile = new JarFile( jarPath.toFile() ) ) {
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while ( entries.hasMoreElements() ) {
+                JarEntry entry = entries.nextElement();
+                String entryName = entry.getName();
+                if ( entryName.equals( MODULE_INFO_CLASS ) || VERSIONED_MODULE_INFO.matcher( entryName ).matches() ) {
+                    return true;
+                }
+            }
+        } catch ( IOException ioe ) {
+            throw new IllegalStateException( "Unexpected error when reading " + jarPath.getFileName() );
+        }
+        return false;
     }
 
     /**
