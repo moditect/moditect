@@ -30,6 +30,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.AndArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ExclusionArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,9 +44,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
+
 import org.moditect.commands.AddModuleInfo;
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 import org.moditect.mavenplugin.add.model.MainModuleConfiguration;
@@ -102,6 +109,9 @@ public class AddModuleInfoMojo extends AbstractMojo {
     private List<ModuleConfiguration> modules;
 
     @Parameter
+    private List<Exclusion> exclusions;
+
+    @Parameter
     private List<String> jdepsExtraArgs;
 
     @Override
@@ -117,7 +127,13 @@ public class AddModuleInfoMojo extends AbstractMojo {
     		getLog().debug("Mojo 'add-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
     		return;
     	}
-    	
+
+        if (exclusions != null) {
+            ArtifactFilter scopeFilter     = new ScopeArtifactFilter("compile+runtime");
+            ArtifactFilter exclusionFilter = new ExclusionArtifactFilter(exclusions);
+            project.setArtifactFilter(new AndArtifactFilter(List.of(scopeFilter, exclusionFilter)));
+        }
+
         Path outputPath = outputDirectory.toPath();
 
         createDirectories();
