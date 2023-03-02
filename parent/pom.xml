@@ -154,20 +154,26 @@
                     <plugin>
                         <groupId>org.jreleaser</groupId>
                         <artifactId>jreleaser-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>1.5.0</version>
                         <inherited>false</inherited>
                         <configuration>
                             <gitRootSearch>true</gitRootSearch>
                             <jreleaser>
                                 <project>
                                     <name>ModiTect</name>
+                                    <links>
+                                        <homepage>https://github.com/moditect/moditect</homepage>
+                                        <documentation>https://github.com/moditect/moditect</documentation>
+                                    </links>
                                 </project>
                                 <release>
                                     <github>
                                         <tagName>{{projectVersion}}</tagName>
                                         <releaseName>{{projectVersion}}</releaseName>
                                         <overwrite>true</overwrite>
-                                        <skipTag>true</skipTag>
+                                        <issues>
+                                            <enabled>true</enabled>
+                                        </issues>
                                         <changelog>
                                             <formatted>ALWAYS</formatted>
                                             <format>- {{commitShortHash}} {{commitTitle}}</format>
@@ -227,15 +233,6 @@
                                 </release>
                             </jreleaser>
                         </configuration>
-                        <executions>
-                            <execution>
-                                <id>create-release</id>
-                                <goals>
-                                    <goal>release</goal>
-                                </goals>
-                                <phase>initialize</phase>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
