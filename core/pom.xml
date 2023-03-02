@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.60</version>
+            <version>1.82</version>
         </dependency>
 
         <!-- Test -->
