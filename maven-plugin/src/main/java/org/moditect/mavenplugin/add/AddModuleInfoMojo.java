@@ -160,7 +160,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
 
         if ( module != null ) {
-            Path inputJar = buildDirectory.toPath().resolve( artifactId + "-" + version + ".jar" );
+            Path inputJar = buildDirectory.toPath().resolve( project.getModel().getBuild().getFinalName() + ".jar" );
             if ( !Files.exists( inputJar ) ) {
                 throw new MojoExecutionException( "Couldn't find file " + inputJar + ". Run this goal for the project's JAR only after the maven-jar-plugin." );
             }
