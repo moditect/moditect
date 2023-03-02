@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +132,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
         if (exclusions != null) {
             ArtifactFilter scopeFilter     = new ScopeArtifactFilter("compile+runtime");
             ArtifactFilter exclusionFilter = new ExclusionArtifactFilter(exclusions);
-            project.setArtifactFilter(new AndArtifactFilter(List.of(scopeFilter, exclusionFilter)));
+            project.setArtifactFilter(new AndArtifactFilter(Arrays.asList(scopeFilter, exclusionFilter)));
         }
 
         Path outputPath = outputDirectory.toPath();
