@@ -17,32 +17,23 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
 
 jobs:
   release:
-    name: Release
     runs-on: ubuntu-latest
-
     steps:
-      - name: Version
-        id: version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/v/}
-
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Cache Maven
-        uses: actions/cache@v2
+        uses: actions/checkout@v3
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          fetch-depth: 0
 
       - name: Setup Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 11
@@ -51,15 +42,27 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          cache: maven
 
-      - name: Release
+      - name: Version
+        run: |
+          VERSION=${{ github.event.inputs.version }}
+          echo "Updating POMs to version $VERSION"
+          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$VERSION
+          echo $VERSION > VERSION
+          git config --global user.email "moditect-release-bot@moditect.org"
+          git config --global user.name "moditect-release-bot"
+          git commit -a -m "Releasing version $VERSION"
+          git push origin main
+
+      - name: Release to Maven Central
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_CENTRAL_TOKEN: ${{ secrets.SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           export GPG_TTY=$(tty)
-          ./mvnw --no-transfer-progress -B --file pom.xml \
+          ./mvnw -ntp -B --file pom.xml \
             -Drepository.url=https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
             -Dmaven.site.skip=true -Drelease=true deploy
 
@@ -67,4 +70,13 @@ jobs:
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./mvnw -B --file pom.xml -Pjreleaser initialize
+          ./mvnw -B --file pom.xml -pl :moditect-parent -Pjreleaser jreleaser:release
+
+      - name: JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jreleaser-release
+          path: |
+            parent/target/jreleaser/trace.log
+            parent/target/jreleaser/output.properties
