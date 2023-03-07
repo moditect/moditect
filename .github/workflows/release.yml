@@ -59,7 +59,7 @@ jobs:
           then
             NEXT_VERSION=$COMPUTED_NEXT_VERSION
           fi
-          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$RELEASE_VERSION
+          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$RELEASE_VERSION -pl :moditect-parent
           git config --global user.email "moditect-release-bot@moditect.org"
           git config --global user.name "moditect-release-bot"
           git commit -a -m "Releasing version $VERSION"
@@ -122,7 +122,7 @@ jobs:
         env:
           NEXT_VERSION: ${{ needs.version.outputs.NEXT_VERSION }}
         run: |
-          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$NEXT_VERSION
+          ./mvnw -ntp -B versions:set versions:commit -DnewVersion=$NEXT_VERSION -pl :moditect-parent
           git config --global user.email "moditect-release-bot@moditect.org"
           git config --global user.name "moditect-release-bot"
           git commit -a -m "Next version $NEXT_VERSION"
