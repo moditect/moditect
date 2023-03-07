@@ -211,6 +211,7 @@ the _add-module-info_ goal as follows:
             </goals>
             <configuration>
                 <jvmVersion>11</jvmVersion>
+                <failOnWarning>false</failOnWarning>
                 <module>
                     <moduleInfo>
                         <name>com.example</name>
@@ -241,7 +242,9 @@ The special value `base` (the default) can be used to add the descriptor to the 
 Putting the descriptor under `META-INF/versions` can help to increase compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
 (as chances are lower that such tool will look for class files under `META-INF/versions/...`).
 
-The (optional) `exclusions` option may be used to filter out any `compile` or `runtime` dependencies that should not be used, as it might be the case when shading internal dependencies.
+The optional `failOnWarning` option prevents the build from failing when set to `false`. The default is to fail.
+
+The optional `exclusions` option may be used to filter out any `compile` or `runtime` dependencies that should not be used, as it might be the case when shading internal dependencies.
 
 The `jdepsExtraArgs` option can be used to specify a list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor".
 
