@@ -99,7 +99,8 @@ public class AddModuleInfoTest {
                 Paths.get( "target", "generated-test-resources", "example.jar" ),
                 Paths.get( "target", "generated-test-modules" ),
                 "9",
-                false
+                false,
+            null
         )
         .run();
 
@@ -144,7 +145,8 @@ public class AddModuleInfoTest {
             Paths.get( "target", "generated-test-resources", "example.jar" ),
             Paths.get( "target", "generated-test-modules" ),
             null,
-            false
+            false,
+            null
         )
         .run();
 

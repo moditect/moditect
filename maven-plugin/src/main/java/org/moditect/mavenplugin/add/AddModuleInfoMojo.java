@@ -20,6 +20,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -108,6 +113,15 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter(property = "overwriteExistingFiles", defaultValue = "false")
     private boolean overwriteExistingFiles;
 
+    /**
+     * Timestamp for reproducible output archive entries, either formatted as ISO 8601 extended offset date-time
+     * (e.g. in UTC such as '2011-12-03T10:15:30Z' or with an offset '2019-10-05T20:37:42+06:00'),
+     * or as an int representing seconds since the epoch
+     * (like <a href="https://reproducible-builds.org/docs/source-date-epoch/">SOURCE_DATE_EPOCH</a>).
+     */
+    @Parameter(defaultValue = "${project.build.outputTimestamp}")
+    private String outputTimestamp;
+
     @Parameter(property = "moditect.skip", defaultValue = "false")
     private boolean skip;
 
@@ -183,7 +197,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     inputFile,
                     outputPath,
                     jvmVersion,
-                    overwriteExistingFiles
+                    overwriteExistingFiles,
+                    InstantConverter.convert(outputTimestamp)
                 );
 
                 addModuleInfo.run();
@@ -220,7 +235,8 @@ public class AddModuleInfoMojo extends AbstractMojo {
                     inputJar,
                     outputPath,
                     jvmVersion,
-                    overwriteExistingFiles
+                    overwriteExistingFiles,
+                    InstantConverter.convert(outputTimestamp)
             );
             addModuleInfo.run();
 
@@ -484,5 +500,48 @@ public class AddModuleInfoMojo extends AbstractMojo {
         }
 
         return null;
+    }
+
+
+    private static class InstantConverter {
+
+        private static final Instant DATE_MIN = Instant.parse( "1980-01-01T00:00:02Z" );
+        private static final Instant DATE_MAX = Instant.parse( "2099-12-31T23:59:59Z" );
+
+        public static Instant convert(String value) {
+            if ( value == null ) {
+                return null;
+            }
+
+            // Number representing seconds since the epoch
+            if ( !value.isEmpty() && isNumeric( value ) ) {
+                return Instant.ofEpochSecond( Long.parseLong( value.trim() ) );
+            }
+
+            try {
+                // Parse the date in UTC such as '2011-12-03T10:15:30Z' or with an offset '2019-10-05T20:37:42+06:00'.
+                final Instant date = OffsetDateTime.parse( value )
+                    .withOffsetSameInstant( ZoneOffset.UTC ).truncatedTo( ChronoUnit.SECONDS ).toInstant();
+
+                if ( date.isBefore( DATE_MIN ) || date.isAfter( DATE_MAX ) ) {
+                    throw new IllegalArgumentException( "'" + date + "' is not within the valid range "
+                        + DATE_MIN + " to " + DATE_MAX );
+                }
+                return date;
+            }
+            catch ( DateTimeParseException pe ) {
+                throw new IllegalArgumentException( "Invalid project.build.outputTimestamp value '" + value + "'",
+                    pe );
+            }
+        }
+
+        private static boolean isNumeric( String str ) {
+            try {
+                Long.parseLong( str.trim() );
+                return true;
+            } catch( NumberFormatException e ) {
+                return false;
+            }
+        }
     }
 }
