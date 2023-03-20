@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -49,8 +51,9 @@ public class AddModuleInfo {
     private final Path outputDirectory;
     private final Integer jvmVersion;
     private final boolean overwriteExistingFiles;
+    private final Instant timestamp;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, String jvmVersion, boolean overwriteExistingFiles) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, String jvmVersion, boolean overwriteExistingFiles, Instant timestamp) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
         this.version = version;
@@ -58,7 +61,7 @@ public class AddModuleInfo {
         this.outputDirectory = outputDirectory;
 
         // #67 It'd be nice to use META-INF/services/9 by default to avoid conflicts with legacy
-        // classpath scanners, but this causes isses with subsequent jdeps invocations if there
+        // classpath scanners, but this causes issues with subsequent jdeps invocations if there
         // are MR-JARs and non-MR JARs passed to it due to https://bugs.openjdk.java.net/browse/JDK-8207162
         if (jvmVersion == null || jvmVersion.equals(NO_JVM_VERSION)) {
             this.jvmVersion = null;
@@ -75,6 +78,7 @@ public class AddModuleInfo {
             }
         }
         this.overwriteExistingFiles = overwriteExistingFiles;
+        this.timestamp = timestamp;
     }
 
     public void run() {
@@ -105,14 +109,16 @@ public class AddModuleInfo {
 
         Map<String, String> env = new HashMap<>();
         env.put( "create", "true" );
-        URI uri = URI.create( "jar:" + outputJar.toUri().toString() );
+        URI uri = URI.create( "jar:" + outputJar.toUri() );
 
        try (FileSystem zipfs = FileSystems.newFileSystem( uri, env ) ) {
            if (jvmVersion == null) {
-               Files.write( zipfs.getPath( "module-info.class" ), clazz,
+               Path path = zipfs.getPath("module-info.class");
+               Files.write(path, clazz,
                  StandardOpenOption.CREATE,
                  StandardOpenOption.WRITE,
                  StandardOpenOption.TRUNCATE_EXISTING );
+               Files.setLastModifiedTime( path, toFileTime(timestamp) );
            }
            else {
                Path path = zipfs.getPath( "META-INF/versions", jvmVersion.toString(), "module-info.class" );
@@ -121,6 +127,13 @@ public class AddModuleInfo {
                  StandardOpenOption.CREATE,
                  StandardOpenOption.WRITE,
                  StandardOpenOption.TRUNCATE_EXISTING );
+               FileTime lastModifiedTime = toFileTime( timestamp );
+               // module-info.class
+               Files.setLastModifiedTime( path, lastModifiedTime );
+               // jvmVersion
+               Files.setLastModifiedTime( path.getParent(), lastModifiedTime );
+               // versions
+               Files.setLastModifiedTime( path.getParent().getParent(), lastModifiedTime );
 
                Path manifestPath = zipfs.getPath( "META-INF/MANIFEST.MF" );
                Manifest manifest;
@@ -136,10 +149,15 @@ public class AddModuleInfo {
                try (OutputStream manifestOs = Files.newOutputStream( manifestPath, StandardOpenOption.TRUNCATE_EXISTING )) {
                    manifest.write( manifestOs );
                }
+               Files.setLastModifiedTime( manifestPath, lastModifiedTime );
            }
        }
        catch(IOException e) {
             throw new RuntimeException( "Couldn't add module-info.class to JAR", e );
         }
+    }
+
+    private FileTime toFileTime( Instant timestamp ) {
+        return FileTime.from( timestamp != null ? timestamp : Instant.now() );
     }
 }

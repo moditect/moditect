@@ -212,6 +212,7 @@ the _add-module-info_ goal as follows:
             <configuration>
                 <jvmVersion>11</jvmVersion>
                 <failOnWarning>false</failOnWarning>
+                <outputTimestamp>1980-01-01T00:00:02Z</outputTimestamp>
                 <module>
                     <moduleInfo>
                         <name>com.example</name>
@@ -241,6 +242,11 @@ The value must be `9` or greater.
 The special value `base` (the default) can be used to add the descriptor to the root of the final JAR.
 Putting the descriptor under `META-INF/versions` can help to increase compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
 (as chances are lower that such tool will look for class files under `META-INF/versions/...`).
+
+The optional `outputTimestamp` element may be used to create reproducible output archive entries, either formatted as 
+ISO 8601 extended offset date-time (e.g. in UTC such as '2011-12-03T10:15:30Z' or with an offset '2019-10-05T20:37:42+06:00'),
+or as an int representing seconds since the epoch. As an alternative you may set `${project.build.outputTimestamp}` which also
+matches the user property used by other Maven plugins such as `maven-jar-plugin`.
 
 The optional `failOnWarning` option prevents the build from failing when set to `false`. The default is to fail.
 
