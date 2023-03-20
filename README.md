@@ -1,6 +1,6 @@
 # ModiTect - Tooling for the Java Module System
 
-Version 1.0.0.RC2 - 2021-10-04
+Version 1.0.0.RC3 - 2023-03-07
 
 The ModiTect project aims at providing productivity tools for working with
 the Java module system ("Jigsaw").
@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.RC3</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -201,7 +201,7 @@ the _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.RC3</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -273,7 +273,7 @@ _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.RC3</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -342,7 +342,7 @@ _create-runtime-image_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.RC3</version>
     <executions>
         <execution>
             <id>create-runtime-image</id>
