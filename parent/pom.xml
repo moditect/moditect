@@ -58,6 +58,7 @@
         <version.source.plugin>3.2.1</version.source.plugin>
         <version.surefire.plugin>3.0.0-M4</version.surefire.plugin>
         <version.versions.plugin>2.15.0</version.versions.plugin>
+        <project.build.outputTimestamp>2023-03-22T20:42:32Z</project.build.outputTimestamp>
     </properties>
 
     <scm>
