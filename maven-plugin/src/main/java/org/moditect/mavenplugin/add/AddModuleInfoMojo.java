@@ -98,7 +98,7 @@ public class AddModuleInfoMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.version}", readonly = true, required = true)
     private String version;
 
-    @Parameter(property = "moditect.jvmVersion", readonly = true)
+    @Parameter(property = "moditect.jvmVersion")
     private String jvmVersion;
 
     @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
