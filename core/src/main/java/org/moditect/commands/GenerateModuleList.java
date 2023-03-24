@@ -15,10 +15,6 @@
  */
 package org.moditect.commands;
 
-import org.moditect.internal.command.LogWriter;
-import org.moditect.model.Version;
-import org.moditect.spi.log.Log;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -29,59 +25,63 @@ import java.util.Set;
 import java.util.spi.ToolProvider;
 import java.util.stream.Collectors;
 
+import org.moditect.internal.command.LogWriter;
+import org.moditect.model.Version;
+import org.moditect.spi.log.Log;
+
 public class GenerateModuleList {
 
-	private final Path projectJar;
-	private final Set<Path> dependencies;
-	private final Version jvmVersion;
-	private final Log log;
+    private final Path projectJar;
+    private final Set<Path> dependencies;
+    private final Version jvmVersion;
+    private final Log log;
 
-	private final ToolProvider jdeps;
+    private final ToolProvider jdeps;
 
-	public GenerateModuleList(Path projectJar, Set<Path> dependencies, Version jvmVersion, Log log) {
-		this.projectJar = projectJar;
-		this.dependencies = dependencies;
-		this.jvmVersion = jvmVersion;
-		this.log = log;
+    public GenerateModuleList(Path projectJar, Set<Path> dependencies, Version jvmVersion, Log log) {
+        this.projectJar = projectJar;
+        this.dependencies = dependencies;
+        this.jvmVersion = jvmVersion;
+        this.log = log;
 
-		this.jdeps = ToolProvider
-				.findFirst( "jdeps" )
-				.orElseThrow(() -> new RuntimeException("jdeps tool not found"));
-	}
+        this.jdeps = ToolProvider
+                .findFirst("jdeps")
+                .orElseThrow(() -> new RuntimeException("jdeps tool not found"));
+    }
 
-	public void run() {
-		ByteArrayOutputStream outStream    = new ByteArrayOutputStream();
-		PrintStream out = new PrintStream(outStream);
-		jdeps.run(out , System.err, "--version");
-		out.close();
-		int jdepsVersion = Runtime.Version
-				.parse(outStream.toString().strip())
-				.feature();
-		if (jdepsVersion < 12) {
-			log.error("The jdeps option this plugin uses to list JDK modules only works flawlessly on JDK 12+, so please use that to run this goal.");
-			return;
-		}
+    public void run() {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(outStream);
+        jdeps.run(out, System.err, "--version");
+        out.close();
+        int jdepsVersion = Runtime.Version
+                .parse(outStream.toString().strip())
+                .feature();
+        if (jdepsVersion < 12) {
+            log.error("The jdeps option this plugin uses to list JDK modules only works flawlessly on JDK 12+, so please use that to run this goal.");
+            return;
+        }
 
-		List<String> command = new ArrayList<>();
-		command.add("--print-module-deps");
-		command.add("--ignore-missing-deps");
-		command.add("--multi-release");
-		command.add(String.valueOf(jvmVersion.feature()));
-		command.add("--class-path");
-		String classPath = dependencies.stream()
-				.map(Path::toAbsolutePath)
-				.map(Path::toString)
-				.collect(Collectors.joining(File.pathSeparator));
-		command.add(classPath);
-		command.add(projectJar.toAbsolutePath().toString());
+        List<String> command = new ArrayList<>();
+        command.add("--print-module-deps");
+        command.add("--ignore-missing-deps");
+        command.add("--multi-release");
+        command.add(String.valueOf(jvmVersion.feature()));
+        command.add("--class-path");
+        String classPath = dependencies.stream()
+                .map(Path::toAbsolutePath)
+                .map(Path::toString)
+                .collect(Collectors.joining(File.pathSeparator));
+        command.add(classPath);
+        command.add(projectJar.toAbsolutePath().toString());
 
-		log.debug( "Running jdeps " + String.join( " ", command ) );
+        log.debug("Running jdeps " + String.join(" ", command));
 
-		LogWriter logWriter = new LogWriter(log);
-		int result = jdeps.run( logWriter, logWriter, command.toArray( new String[0] ) );
-		if (result != 0) {
-			throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(  " ", command ) );
-		}
-	}
+        LogWriter logWriter = new LogWriter(log);
+        int result = jdeps.run(logWriter, logWriter, command.toArray(new String[0]));
+        if (result != 0) {
+            throw new IllegalStateException("Invocation of jdeps failed: jdeps " + String.join(" ", command));
+        }
+    }
 
 }

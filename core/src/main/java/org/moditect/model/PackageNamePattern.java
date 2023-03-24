@@ -29,43 +29,43 @@ public class PackageNamePattern {
         EXCLUSIVE;
     }
 
-    private static final Pattern INCLUSIVE_PATTERN = Pattern.compile( "(.*?)((\\s*to\\s)(.*))?" );
-    private static final Pattern EXCLUSIVE_PATTERN = Pattern.compile( "(!)(.*?)" );
-    private static final Pattern MODULES_PATTERN = Pattern.compile( "\\s*,\\s*" );
+    private static final Pattern INCLUSIVE_PATTERN = Pattern.compile("(.*?)((\\s*to\\s)(.*))?");
+    private static final Pattern EXCLUSIVE_PATTERN = Pattern.compile("(!)(.*?)");
+    private static final Pattern MODULES_PATTERN = Pattern.compile("\\s*,\\s*");
 
     private final Kind kind;
     private final Pattern pattern;
     private final List<String> targetModules;
 
     public static List<PackageNamePattern> parsePatterns(String patterns) {
-        if ( patterns == null ) {
+        if (patterns == null) {
             return Collections.emptyList();
         }
 
-        return Arrays.stream( patterns.trim().split(";") )
-            .map( PackageNamePattern::parsePattern )
-            .collect( Collectors.toList() );
+        return Arrays.stream(patterns.trim().split(";"))
+                .map(PackageNamePattern::parsePattern)
+                .collect(Collectors.toList());
     }
 
     public static PackageNamePattern parsePattern(String pattern) {
         pattern = pattern.trim();
 
-        if ( pattern.startsWith( "!") ) {
-            Matcher matcher = EXCLUSIVE_PATTERN.matcher( pattern );
-            if ( !matcher.matches() ) {
-                throw new IllegalArgumentException( "Invalid exclusive pattern: " + pattern );
+        if (pattern.startsWith("!")) {
+            Matcher matcher = EXCLUSIVE_PATTERN.matcher(pattern);
+            if (!matcher.matches()) {
+                throw new IllegalArgumentException("Invalid exclusive pattern: " + pattern);
             }
             else {
-                return exclusive( matcher.group( 2 ) );
+                return exclusive(matcher.group(2));
             }
         }
         else {
-            Matcher matcher = INCLUSIVE_PATTERN.matcher( pattern );
-            if ( !matcher.matches() ) {
-                throw new IllegalArgumentException( "Invalid inclusive pattern: " + pattern );
+            Matcher matcher = INCLUSIVE_PATTERN.matcher(pattern);
+            if (!matcher.matches()) {
+                throw new IllegalArgumentException("Invalid inclusive pattern: " + pattern);
             }
             else {
-                return inclusive( matcher.group( 1 ), matcher.group( 2 ) != null ? modules(matcher.group( 4 )) : Collections.emptyList() );
+                return inclusive(matcher.group(1), matcher.group(2) != null ? modules(matcher.group(4)) : Collections.emptyList());
             }
         }
     }
@@ -75,21 +75,21 @@ public class PackageNamePattern {
     }
 
     private static PackageNamePattern inclusive(String pattern, List<String> targetModules) {
-        return new PackageNamePattern( Kind.INCLUSIVE, pattern, targetModules );
+        return new PackageNamePattern(Kind.INCLUSIVE, pattern, targetModules);
     }
 
     private static PackageNamePattern exclusive(String pattern) {
-        return new PackageNamePattern( Kind.EXCLUSIVE, pattern, Collections.emptyList() );
+        return new PackageNamePattern(Kind.EXCLUSIVE, pattern, Collections.emptyList());
     }
 
     private PackageNamePattern(Kind kind, String pattern, List<String> targetModules) {
         this.kind = kind;
-        this.pattern = Pattern.compile( pattern.replace( ".", "\\." ).replace( "*", ".*" ) );
+        this.pattern = Pattern.compile(pattern.replace(".", "\\.").replace("*", ".*"));
         this.targetModules = targetModules;
     }
 
-    public boolean matches(String packageName ) {
-        return pattern.matcher( packageName ).matches();
+    public boolean matches(String packageName) {
+        return pattern.matcher(packageName).matches();
     }
 
     public Kind getKind() {

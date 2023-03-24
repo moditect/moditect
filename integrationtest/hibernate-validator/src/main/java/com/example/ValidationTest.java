@@ -28,16 +28,16 @@ import javax.validation.constraints.NotNull;
  */
 public class ValidationTest {
 
-	public static void main(String[] args) {
-		Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-		Set<ConstraintViolation<Customer>> violations = validator.validate( new Customer() );
+    public static void main(String[] args) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<Customer>> violations = validator.validate(new Customer());
 
-		System.out.println( violations );
-	}
+        System.out.println(violations);
+    }
 
-	public static class Customer {
+    public static class Customer {
 
-		@NotNull
-		private String name = null;
-	}
+        @NotNull
+        private String name = null;
+    }
 }

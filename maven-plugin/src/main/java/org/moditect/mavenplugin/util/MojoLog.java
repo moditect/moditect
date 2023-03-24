@@ -32,21 +32,21 @@ public class MojoLog implements Log {
 
     @Override
     public void debug(CharSequence message) {
-        delegate.debug( message );
+        delegate.debug(message);
     }
 
     @Override
     public void info(CharSequence message) {
-        delegate.info( message );
+        delegate.info(message);
     }
 
     @Override
     public void warn(CharSequence message) {
-        delegate.warn( message );
+        delegate.warn(message);
     }
 
     @Override
     public void error(CharSequence message) {
-        delegate.error( message );
+        delegate.error(message);
     }
 }

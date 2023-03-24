@@ -15,10 +15,10 @@
  */
 package org.moditect.internal.parser;
 
-import org.moditect.spi.log.Log;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.moditect.spi.log.Log;
 
 /**
  * Helper to extract and parse the current Java version to check if multi release path should be used or not.
@@ -81,7 +81,8 @@ public final class JavaVersionHelper {
 
             debug("parsed.version -> " + version);
             return version;
-        } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+        }
+        catch (IndexOutOfBoundsException | NumberFormatException ex) {
             error("The java version " + versionString + " has an invalid format. " + ex.getMessage());
             return null;
         }
@@ -119,9 +120,11 @@ public final class JavaVersionHelper {
         int major() {
             return major;
         }
+
         int minor() {
             return minor;
         }
+
         int mini() {
             return mini;
         }

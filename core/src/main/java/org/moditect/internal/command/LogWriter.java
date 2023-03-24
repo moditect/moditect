@@ -27,7 +27,7 @@ import org.moditect.spi.log.Log;
  */
 public class LogWriter
         extends PrintWriter {
-    private static final String ERROR_PREFIX   = "Error:";
+    private static final String ERROR_PREFIX = "Error:";
     private static final String WARNING_PREFIX = "Warning:";
 
     private final Log log;

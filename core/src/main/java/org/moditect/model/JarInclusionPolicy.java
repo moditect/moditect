@@ -16,13 +16,15 @@
 package org.moditect.model;
 
 public enum JarInclusionPolicy {
-	NONE, APP, APP_WITH_DEPENDENCIES;
+    NONE,
+    APP,
+    APP_WITH_DEPENDENCIES;
 
-	public boolean includeAppJar() {
-		return this == APP || this == APP_WITH_DEPENDENCIES;
-	}
+    public boolean includeAppJar() {
+        return this == APP || this == APP_WITH_DEPENDENCIES;
+    }
 
-	public boolean includeDependencies() {
-		return this == APP_WITH_DEPENDENCIES;
-	}
+    public boolean includeDependencies() {
+        return this == APP_WITH_DEPENDENCIES;
+    }
 }
