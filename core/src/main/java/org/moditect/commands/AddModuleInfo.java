@@ -53,7 +53,8 @@ public class AddModuleInfo {
     private final boolean overwriteExistingFiles;
     private final Instant timestamp;
 
-    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, String jvmVersion, boolean overwriteExistingFiles, Instant timestamp) {
+    public AddModuleInfo(String moduleInfoSource, String mainClass, String version, Path inputJar, Path outputDirectory, String jvmVersion,
+                         boolean overwriteExistingFiles, Instant timestamp) {
         this.moduleInfoSource = moduleInfoSource;
         this.mainClass = mainClass;
         this.version = version;
@@ -74,7 +75,7 @@ public class AddModuleInfo {
                 }
             }
             catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid JVM Version: " + jvmVersion + ". Allowed values are 'base' and integer values >= 9." );
+                throw new IllegalArgumentException("Invalid JVM Version: " + jvmVersion + ". Allowed values are 'base' and integer values >= 9.");
             }
         }
         this.overwriteExistingFiles = overwriteExistingFiles;
@@ -82,82 +83,82 @@ public class AddModuleInfo {
     }
 
     public void run() {
-        if ( Files.isDirectory( inputJar ) ) {
-            throw new IllegalArgumentException( "Input JAR must not be a directory" );
+        if (Files.isDirectory(inputJar)) {
+            throw new IllegalArgumentException("Input JAR must not be a directory");
         }
 
-        if ( !Files.exists( outputDirectory ) ) {
-            throw new IllegalArgumentException( "Output directory doesn't exist: "  + outputDirectory);
+        if (!Files.exists(outputDirectory)) {
+            throw new IllegalArgumentException("Output directory doesn't exist: " + outputDirectory);
         }
 
-        Path outputJar = outputDirectory.resolve( inputJar.getFileName() );
+        Path outputJar = outputDirectory.resolve(inputJar.getFileName());
 
-        if ( Files.exists( outputJar ) && !overwriteExistingFiles ) {
+        if (Files.exists(outputJar) && !overwriteExistingFiles) {
             throw new RuntimeException(
-                    "File " + outputJar + " already exists; either set 'overwriteExistingFiles' to true or specify another output directory" );
+                    "File " + outputJar + " already exists; either set 'overwriteExistingFiles' to true or specify another output directory");
         }
 
         try {
             Files.copy(inputJar, outputJar, StandardCopyOption.REPLACE_EXISTING);
         }
-        catch(IOException e) {
-            throw new RuntimeException( "Couldn't copy JAR file", e );
+        catch (IOException e) {
+            throw new RuntimeException("Couldn't copy JAR file", e);
         }
 
-        ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo( moduleInfoSource );
-        byte[] clazz = ModuleInfoCompiler.compileModuleInfo( module, mainClass, version );
+        ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo(moduleInfoSource);
+        byte[] clazz = ModuleInfoCompiler.compileModuleInfo(module, mainClass, version);
 
         Map<String, String> env = new HashMap<>();
-        env.put( "create", "true" );
-        URI uri = URI.create( "jar:" + outputJar.toUri() );
+        env.put("create", "true");
+        URI uri = URI.create("jar:" + outputJar.toUri());
 
-       try (FileSystem zipfs = FileSystems.newFileSystem( uri, env ) ) {
-           if (jvmVersion == null) {
-               Path path = zipfs.getPath("module-info.class");
-               Files.write(path, clazz,
-                 StandardOpenOption.CREATE,
-                 StandardOpenOption.WRITE,
-                 StandardOpenOption.TRUNCATE_EXISTING );
-               Files.setLastModifiedTime( path, toFileTime(timestamp) );
-           }
-           else {
-               Path path = zipfs.getPath( "META-INF/versions", jvmVersion.toString(), "module-info.class" );
-               Files.createDirectories( path.getParent() );
-               Files.write( path, clazz,
-                 StandardOpenOption.CREATE,
-                 StandardOpenOption.WRITE,
-                 StandardOpenOption.TRUNCATE_EXISTING );
-               FileTime lastModifiedTime = toFileTime( timestamp );
-               // module-info.class
-               Files.setLastModifiedTime( path, lastModifiedTime );
-               // jvmVersion
-               Files.setLastModifiedTime( path.getParent(), lastModifiedTime );
-               // versions
-               Files.setLastModifiedTime( path.getParent().getParent(), lastModifiedTime );
+        try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
+            if (jvmVersion == null) {
+                Path path = zipfs.getPath("module-info.class");
+                Files.write(path, clazz,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING);
+                Files.setLastModifiedTime(path, toFileTime(timestamp));
+            }
+            else {
+                Path path = zipfs.getPath("META-INF/versions", jvmVersion.toString(), "module-info.class");
+                Files.createDirectories(path.getParent());
+                Files.write(path, clazz,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.TRUNCATE_EXISTING);
+                FileTime lastModifiedTime = toFileTime(timestamp);
+                // module-info.class
+                Files.setLastModifiedTime(path, lastModifiedTime);
+                // jvmVersion
+                Files.setLastModifiedTime(path.getParent(), lastModifiedTime);
+                // versions
+                Files.setLastModifiedTime(path.getParent().getParent(), lastModifiedTime);
 
-               Path manifestPath = zipfs.getPath( "META-INF/MANIFEST.MF" );
-               Manifest manifest;
-               if ( Files.exists( manifestPath ) ) {
-                   manifest = new Manifest( Files.newInputStream( manifestPath ) );
-               }
-               else {
-                   manifest = new Manifest();
-                   manifest.getMainAttributes().put( Attributes.Name.MANIFEST_VERSION, "1.0" );
-               }
+                Path manifestPath = zipfs.getPath("META-INF/MANIFEST.MF");
+                Manifest manifest;
+                if (Files.exists(manifestPath)) {
+                    manifest = new Manifest(Files.newInputStream(manifestPath));
+                }
+                else {
+                    manifest = new Manifest();
+                    manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+                }
 
-               manifest.getMainAttributes().put( new Attributes.Name("Multi-Release"), "true" );
-               try (OutputStream manifestOs = Files.newOutputStream( manifestPath, StandardOpenOption.TRUNCATE_EXISTING )) {
-                   manifest.write( manifestOs );
-               }
-               Files.setLastModifiedTime( manifestPath, lastModifiedTime );
-           }
-       }
-       catch(IOException e) {
-            throw new RuntimeException( "Couldn't add module-info.class to JAR", e );
+                manifest.getMainAttributes().put(new Attributes.Name("Multi-Release"), "true");
+                try (OutputStream manifestOs = Files.newOutputStream(manifestPath, StandardOpenOption.TRUNCATE_EXISTING)) {
+                    manifest.write(manifestOs);
+                }
+                Files.setLastModifiedTime(manifestPath, lastModifiedTime);
+            }
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Couldn't add module-info.class to JAR", e);
         }
     }
 
-    private FileTime toFileTime( Instant timestamp ) {
-        return FileTime.from( timestamp != null ? timestamp : Instant.now() );
+    private FileTime toFileTime(Instant timestamp) {
+        return FileTime.from(timestamp != null ? timestamp : Instant.now());
     }
 }

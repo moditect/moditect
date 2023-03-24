@@ -107,9 +107,9 @@ public class ModuleConfiguration {
     }
 
     public Artifact getResolvedArtifact() {
-            if ( resolvedArtifact == null ) {
-                throw new IllegalStateException( "Artifact must be resolved first" );
-            }
+        if (resolvedArtifact == null) {
+            throw new IllegalStateException("Artifact must be resolved first");
+        }
 
         return resolvedArtifact;
     }

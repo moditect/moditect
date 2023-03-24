@@ -32,35 +32,35 @@ import java.util.stream.Collectors;
  */
 public class DependencePattern {
 
-    private static final Pattern PATTERN = Pattern.compile( "((.*)\\s+)?(.*?)" );
+    private static final Pattern PATTERN = Pattern.compile("((.*)\\s+)?(.*?)");
 
     private final boolean inclusive;
     private final Pattern pattern;
     private final Set<String> modifiers;
 
     public static List<DependencePattern> parsePatterns(String patterns) {
-        if ( patterns == null ) {
+        if (patterns == null) {
             return Collections.emptyList();
         }
 
-        return Arrays.stream( patterns.trim().split(";") )
-            .map( DependencePattern::parsePattern )
-            .collect( Collectors.toList() );
+        return Arrays.stream(patterns.trim().split(";"))
+                .map(DependencePattern::parsePattern)
+                .collect(Collectors.toList());
     }
 
     public static DependencePattern parsePattern(String pattern) {
         pattern = pattern.trim();
 
-        Matcher matcher = PATTERN.matcher( pattern );
-        if ( !matcher.matches() ) {
-            throw new IllegalArgumentException( "Invalid dependence pattern: " + pattern );
+        Matcher matcher = PATTERN.matcher(pattern);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid dependence pattern: " + pattern);
         }
         else {
-            if ( matcher.group( 3 ) != null ) {
-                return new DependencePattern( matcher.group( 3 ), matcher.group( 2 ) );
+            if (matcher.group(3) != null) {
+                return new DependencePattern(matcher.group(3), matcher.group(2));
             }
             else {
-                return new DependencePattern( matcher.group( 2 ), null );
+                return new DependencePattern(matcher.group(2), null);
             }
         }
     }
@@ -74,20 +74,20 @@ public class DependencePattern {
             this.inclusive = true;
         }
 
-        this.pattern = Pattern.compile( pattern.replace( ".", "\\." ).replace( "*", ".*" ) );
+        this.pattern = Pattern.compile(pattern.replace(".", "\\.").replace("*", ".*"));
 
-        if ( modifiers == null ) {
+        if (modifiers == null) {
             this.modifiers = Collections.emptySet();
         }
         else {
-            this.modifiers = Arrays.stream( modifiers.split( "\\s" ) )
-                .map( String::trim )
-                .collect( Collectors.toSet() );
+            this.modifiers = Arrays.stream(modifiers.split("\\s"))
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
         }
     }
 
-    public boolean matches(String packageName ) {
-        return pattern.matcher( packageName ).matches();
+    public boolean matches(String packageName) {
+        return pattern.matcher(packageName).matches();
     }
 
     public Pattern getPattern() {
@@ -99,7 +99,7 @@ public class DependencePattern {
     }
 
     public boolean isMatchAll() {
-        return ".*".equals( pattern.pattern() );
+        return ".*".equals(pattern.pattern());
     }
 
     public boolean isInclusive() {

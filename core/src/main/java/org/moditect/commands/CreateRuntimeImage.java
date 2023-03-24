@@ -62,8 +62,8 @@ public class CreateRuntimeImage {
                               Path outputDirectory, Integer compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
                               boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
-        this.modulePath = ( modulePath != null ? modulePath : Collections.emptySet() );
-        this.modules = getModules( modules );
+        this.modulePath = (modulePath != null ? modulePath : Collections.emptySet());
+        this.modules = getModules(modules);
         this.jarInclusionPolicy = jarInclusionPolicy;
         this.dependencies = dependencies;
         this.projectJar = projectJar;
@@ -80,11 +80,11 @@ public class CreateRuntimeImage {
     }
 
     private static List<String> getModules(List<String> modules) {
-        if ( modules == null || modules.isEmpty() ) {
+        if (modules == null || modules.isEmpty()) {
             throw new IllegalArgumentException("At least one module must be added using the <modules> configuration property.");
         }
 
-        return Collections.unmodifiableList( modules );
+        return Collections.unmodifiableList(modules);
     }
 
     public void run() throws IOException {
@@ -157,54 +157,53 @@ public class CreateRuntimeImage {
                 File.separator + "jlink";
 
         List<String> command = new ArrayList<>();
-        command.add( jlinkBin );
+        command.add(jlinkBin);
 
-        command.add( "--add-modules" );
-        command.add( String.join( ",", modules ) );
-        command.add( "--module-path" );
-        command.add( modulePath.stream()
-                .map( Path::toString )
-                .collect( Collectors.joining( File.pathSeparator ) )
-        );
-        command.add( "--output" );
-        command.add( outputDirectory.toString() );
+        command.add("--add-modules");
+        command.add(String.join(",", modules));
+        command.add("--module-path");
+        command.add(modulePath.stream()
+                .map(Path::toString)
+                .collect(Collectors.joining(File.pathSeparator)));
+        command.add("--output");
+        command.add(outputDirectory.toString());
 
-        if ( launcher != null ) {
-            command.add( "--launcher" );
-            command.add( launcher );
+        if (launcher != null) {
+            command.add("--launcher");
+            command.add(launcher);
         }
 
-        if ( compression != null ) {
-            command.add( "--compress" );
-            command.add( compression.toString() );
+        if (compression != null) {
+            command.add("--compress");
+            command.add(compression.toString());
         }
 
-        if ( stripDebug ) {
-            command.add( "--strip-debug" );
+        if (stripDebug) {
+            command.add("--strip-debug");
         }
 
         if (ignoreSigningInformation) {
-            command.add( "--ignore-signing-information" );
+            command.add("--ignore-signing-information");
         }
 
-        if ( !excludeResourcesPatterns.isEmpty() ) {
-            command.add( "--exclude-resources=" + String.join( ",", excludeResourcesPatterns ) );
+        if (!excludeResourcesPatterns.isEmpty()) {
+            command.add("--exclude-resources=" + String.join(",", excludeResourcesPatterns));
         }
 
-        if ( noHeaderFiles ) {
-            command.add( "--no-header-files" );
+        if (noHeaderFiles) {
+            command.add("--no-header-files");
         }
 
-        if ( noManPages ) {
-            command.add( "--no-man-pages" );
+        if (noManPages) {
+            command.add("--no-man-pages");
         }
 
-        if ( bindServices ) {
-            command.add( "--bind-services" );
+        if (bindServices) {
+            command.add("--bind-services");
         }
 
-        log.debug( "Running jlink: " + String.join( " ", command ) );
+        log.debug("Running jlink: " + String.join(" ", command));
 
-        ProcessExecutor.run( "jlink", command, log );
+        ProcessExecutor.run("jlink", command, log);
     }
 }

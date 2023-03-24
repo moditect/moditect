@@ -41,13 +41,13 @@ public class ServiceLoaderUseScanner {
     public Set<String> getUsedServices(Path jar) {
         Set<String> usedServices = new HashSet<>();
 
-        try (JarFile jarFile = new JarFile( jar.toFile() ) ) {
+        try (JarFile jarFile = new JarFile(jar.toFile())) {
             jarFile.stream()
-                .filter( je -> !je.isDirectory() && je.getName().endsWith( ".class" ) )
-                .forEach( je -> usedServices.addAll( getUsedServices( jarFile, je ) ) );
+                    .filter(je -> !je.isDirectory() && je.getName().endsWith(".class"))
+                    .forEach(je -> usedServices.addAll(getUsedServices(jarFile, je)));
         }
         catch (IOException e) {
-            throw new RuntimeException( "Couldn't open or close JAR file " + jar, e );
+            throw new RuntimeException("Couldn't open or close JAR file " + jar, e);
         }
 
         return usedServices;
@@ -56,9 +56,9 @@ public class ServiceLoaderUseScanner {
     private Set<String> getUsedServices(JarFile jarFile, JarEntry je) {
         Set<String> usedServices = new HashSet<>();
 
-        try ( InputStream classFile = jarFile.getInputStream( je ) ) {
-            new ClassReader( classFile ).accept(
-                    new ClassVisitor( Opcodes.ASM9 ) {
+        try (InputStream classFile = jarFile.getInputStream(je)) {
+            new ClassReader(classFile).accept(
+                    new ClassVisitor(Opcodes.ASM9) {
 
                         @Override
                         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -69,31 +69,30 @@ public class ServiceLoaderUseScanner {
 
                                 @Override
                                 public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-                                    if ( owner.equals( "java/util/ServiceLoader" ) && name.equals( "load" ) ) {
-                                        if ( lastType == null ) {
+                                    if (owner.equals("java/util/ServiceLoader") && name.equals("load")) {
+                                        if (lastType == null) {
                                             // TODO Log class/method
-                                            log.warn( "Cannot derive uses clause from service loader invocation with non constant class literal" );
+                                            log.warn("Cannot derive uses clause from service loader invocation with non constant class literal");
                                         }
                                         else {
-                                            usedServices.add( lastType.getClassName() );
+                                            usedServices.add(lastType.getClassName());
                                         }
                                     }
                                 }
 
                                 @Override
                                 public void visitLdcInsn(Object cst) {
-                                    if ( cst instanceof Type ) {
+                                    if (cst instanceof Type) {
                                         lastType = (Type) cst;
                                     }
                                 };
                             };
                         }
                     },
-                    0
-            );
+                    0);
         }
         catch (IOException e) {
-            throw new RuntimeException( e );
+            throw new RuntimeException(e);
         }
 
         return usedServices;

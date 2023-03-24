@@ -25,15 +25,15 @@ public class HelloWorldServer {
 
     public static void main(final String[] args) {
         Undertow server = Undertow.builder()
-            .addHttpListener( 8080, "0.0.0.0" )
-            .setHandler( exchange -> {
-                String name = exchange.getQueryParameters()
-                    .getOrDefault( "name", new ArrayDeque<>( Collections.singleton( "nameless stranger" ) ) )
-                    .getFirst();
-                exchange.getResponseHeaders().put( Headers.CONTENT_TYPE, "text/plain" );
-                exchange.getResponseSender().send( "Hello, " + name + "!" );
-            } )
-            .build();
+                .addHttpListener(8080, "0.0.0.0")
+                .setHandler(exchange -> {
+                    String name = exchange.getQueryParameters()
+                            .getOrDefault("name", new ArrayDeque<>(Collections.singleton("nameless stranger")))
+                            .getFirst();
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+                    exchange.getResponseSender().send("Hello, " + name + "!");
+                })
+                .build();
 
         server.start();
     }
