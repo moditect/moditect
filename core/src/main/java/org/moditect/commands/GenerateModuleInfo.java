@@ -344,28 +344,20 @@ public class GenerateModuleInfo {
         command.add( workingDirectory.toString() );
 
         if ( !dependencies.isEmpty() ) {
-            StringBuilder modules = new StringBuilder();
-            StringBuilder modulePath = new StringBuilder();
-            boolean isFirst = true;
+            List<String> modules = new ArrayList<>();
+            List<String> modulePath = new ArrayList<>();
 
             for ( DependencyDescriptor dependency : dependencies ) {
-                if ( isFirst ) {
-                    isFirst = false;
-                }
-                else {
-                    modules.append( "," );
-                    modulePath.append( File.pathSeparator );
-                }
                 String moduleName = DependencyDescriptor.getAutoModuleNameFromInputJar(dependency.getPath(), dependency.getAssignedModuleName());
-                modules.append( moduleName );
+                modules.add( moduleName );
                 optionalityPerModule.put( moduleName, dependency.isOptional() );
-                modulePath.append( dependency.getPath() );
+                modulePath.add( dependency.getPath().toString() );
             }
 
             command.add( "--add-modules" );
-            command.add( modules.toString() );
+            command.add( modules.stream().distinct().collect( Collectors.joining( "," ) ) );
             command.add( "--module-path" );
-            command.add( modulePath.toString() );
+            command.add( modulePath.stream().distinct().collect( Collectors.joining( File.pathSeparator ) ) );
         }
 
         command.addAll( jdepsExtraArgs );
