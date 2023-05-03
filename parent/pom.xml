@@ -47,7 +47,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <version.surefire.plugin>3.0.0-M4</version.surefire.plugin>
         <!-- value comes from property git.commit.author.time -->
-        <project.build.outputTimestamp>2023-05-03T07:15:12Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
     </properties>
 
     <scm>
