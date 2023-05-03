@@ -87,6 +87,8 @@
                         <phase>package</phase>
                         <configuration>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                            <failOnWarning>false</failOnWarning>
                             <modules>
                                 <module>
                                     <artifact>
