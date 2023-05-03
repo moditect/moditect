@@ -84,7 +84,7 @@
             <plugin>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>moditect-maven-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <id>create-runtime-image</id>
