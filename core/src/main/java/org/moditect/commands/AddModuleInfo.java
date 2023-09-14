@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.HashMap;
@@ -119,7 +120,7 @@ public class AddModuleInfo {
                         StandardOpenOption.CREATE,
                         StandardOpenOption.WRITE,
                         StandardOpenOption.TRUNCATE_EXISTING);
-                Files.setLastModifiedTime(path, toFileTime(timestamp));
+                setTimes(path, toFileTime(timestamp));
             }
             else {
                 Path path = zipfs.getPath("META-INF/versions", jvmVersion.toString(), "module-info.class");
@@ -130,11 +131,11 @@ public class AddModuleInfo {
                         StandardOpenOption.TRUNCATE_EXISTING);
                 FileTime lastModifiedTime = toFileTime(timestamp);
                 // module-info.class
-                Files.setLastModifiedTime(path, lastModifiedTime);
+                setTimes(path, lastModifiedTime);
                 // jvmVersion
-                Files.setLastModifiedTime(path.getParent(), lastModifiedTime);
+                setTimes(path.getParent(), lastModifiedTime);
                 // versions
-                Files.setLastModifiedTime(path.getParent().getParent(), lastModifiedTime);
+                setTimes(path.getParent().getParent(), lastModifiedTime);
 
                 Path manifestPath = zipfs.getPath("META-INF/MANIFEST.MF");
                 Manifest manifest;
@@ -150,7 +151,7 @@ public class AddModuleInfo {
                 try (OutputStream manifestOs = Files.newOutputStream(manifestPath, StandardOpenOption.TRUNCATE_EXISTING)) {
                     manifest.write(manifestOs);
                 }
-                Files.setLastModifiedTime(manifestPath, lastModifiedTime);
+                setTimes(manifestPath, lastModifiedTime);
             }
         }
         catch (IOException e) {
@@ -160,5 +161,9 @@ public class AddModuleInfo {
 
     private FileTime toFileTime(Instant timestamp) {
         return FileTime.from(timestamp != null ? timestamp : Instant.now());
+    }
+
+    private void setTimes(Path path, FileTime time) throws IOException {
+        Files.getFileAttributeView(path, BasicFileAttributeView.class).setTimes(time, time, time);
     }
 }
