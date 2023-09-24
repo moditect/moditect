@@ -178,7 +178,7 @@
                     <plugin>
                         <groupId>org.jreleaser</groupId>
                         <artifactId>jreleaser-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <version>1.8.0</version>
                         <inherited>false</inherited>
                         <configuration>
                             <gitRootSearch>true</gitRootSearch>
