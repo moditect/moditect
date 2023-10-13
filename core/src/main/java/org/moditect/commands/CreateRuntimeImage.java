@@ -57,11 +57,13 @@ public class CreateRuntimeImage {
     private final List<String> excludeResourcesPatterns;
     private final boolean bindServices;
 
+    private final String includeLocale;
+
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, JarInclusionPolicy jarInclusionPolicy,
                               Set<Path> dependencies, Path projectJar, String launcherName, String launcherModule,
                               Path outputDirectory, Integer compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
-                              boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
+                              boolean noHeaderFiles, boolean noManPages, boolean bindServices, String includeLocale) {
         this.modulePath = (modulePath != null ? modulePath : Collections.emptySet());
         this.modules = getModules(modules);
         this.jarInclusionPolicy = jarInclusionPolicy;
@@ -77,6 +79,7 @@ public class CreateRuntimeImage {
         this.noHeaderFiles = noHeaderFiles;
         this.noManPages = noManPages;
         this.bindServices = bindServices;
+        this.includeLocale = includeLocale;
     }
 
     private static List<String> getModules(List<String> modules) {
@@ -200,6 +203,11 @@ public class CreateRuntimeImage {
 
         if (bindServices) {
             command.add("--bind-services");
+        }
+
+        if(!includeLocale.isEmpty()) {
+            command.add("--include-locales");
+            command.add(includeLocale);
         }
 
         log.debug("Running jlink: " + String.join(" ", command));
