@@ -28,6 +28,8 @@
     <artifactId>moditect-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>ModiTect Maven Plug-In</name>
+    <url>https://github.com/moditect/moditect</url>
+    <description>ModiTect Maven Plug-In</description>
 
     <dependencyManagement>
         <dependencies>
