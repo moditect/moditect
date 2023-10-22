@@ -82,14 +82,14 @@ jobs:
           export GPG_TTY=$(tty)
           ./mvnw -ntp -B --file pom.xml \
             -Drepository.url=https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
-            -Dmaven.site.skip=true -Drelease=true deploy
+            -Dmaven.site.skip=true -Ppublication,stage
 
       - name: Release to GitHub
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JRELEASER_BRANCH: ${{ env.BRANCH }}
         run: |
-          ./mvnw -B --file pom.xml -pl :moditect-parent -Pjreleaser jreleaser:release
+          ./mvnw -ntp -B --file pom.xml -pl :moditect-parent -Pjreleaser jreleaser:release
 
       - name: JReleaser output
         if: always()

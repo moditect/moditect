@@ -172,6 +172,15 @@
 
     <profiles>
         <profile>
+            <id>stage</id>
+            <properties>
+                <altDeploymentRepository>local::file:${rootdir}/target/staging-deploy</altDeploymentRepository>
+            </properties>
+            <build>
+                <defaultGoal>deploy</defaultGoal>
+            </build>
+        </profile>
+        <profile>
             <id>jreleaser</id>
             <build>
                 <plugins>
@@ -190,6 +199,24 @@
                                         <documentation>https://github.com/moditect/moditect</documentation>
                                     </links>
                                 </project>
+                                <signing>
+                                    <active>ALWAYS</active>
+                                    <armored>true</armored>
+                                </signing>
+                                <deploy>
+                                    <maven>
+                                        <nexus2>
+                                            <maven-central>
+                                                <active>ALWAYS</active>
+                                                <url>https://oss.sonatype.org/service/local</url>
+                                                <snapshotUrl>https://oss.sonatype.org/content/repositories/snapshots/</snapshotUrl>
+                                                <closeRepository>true</closeRepository>
+                                                <releaseRepository>true</releaseRepository>
+                                                <stagingRepositories>target/staging-deploy</stagingRepositories>
+                                            </maven-central>
+                                        </nexus2>
+                                    </maven>
+                                </deploy>
                                 <release>
                                     <github>
                                         <tagName>{{projectVersion}}</tagName>

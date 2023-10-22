@@ -29,6 +29,8 @@
     <artifactId>moditect</artifactId>
     <packaging>jar</packaging>
     <name>ModiTect</name>
+    <url>https://github.com/moditect/moditect</url>
+    <description>Module system tooling</description>
 
     <dependencies>
         <dependency>
