@@ -129,7 +129,7 @@
                             <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../etc</directory>
+                                    <directory>${maven.multiModuleProjectDirectory}/etc</directory>
                                     <include>LICENSE_ASM.txt</include>
                                     <filtering>false</filtering>
                                 </resource>
