@@ -15,26 +15,26 @@
  */
 package org.moditect.commands;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Enumeration;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.moditect.internal.compiler.ModuleInfoCompiler;
 
 import com.github.javaparser.ast.modules.ModuleDeclaration;
+
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 /**
  * Creates a copy of a given JAR file, adding a module-info.class descriptor.
@@ -43,7 +43,10 @@ import com.github.javaparser.ast.modules.ModuleDeclaration;
  */
 public class AddModuleInfo {
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     private static final String NO_JVM_VERSION = "base";
+    private static final String MANIFEST_ENTRY_NAME = "META-INF/MANIFEST.MF";
+    private static final String MODULE_INFO_CLASS = "module-info.class";
 
     private final String moduleInfoSource;
     private final String mainClass;
@@ -99,60 +102,65 @@ public class AddModuleInfo {
                     "File " + outputJar + " already exists; either set 'overwriteExistingFiles' to true or specify another output directory");
         }
 
+        ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo(moduleInfoSource);
+        byte[] clazz = ModuleInfoCompiler.compileModuleInfo(module, mainClass, version);
+
         try {
-            Files.copy(inputJar, outputJar, StandardCopyOption.REPLACE_EXISTING);
+            Files.createDirectories(outputJar.toAbsolutePath().getParent());
+            Files.createFile(outputJar.toAbsolutePath());
         }
         catch (IOException e) {
             throw new RuntimeException("Couldn't copy JAR file", e);
         }
 
-        ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo(moduleInfoSource);
-        byte[] clazz = ModuleInfoCompiler.compileModuleInfo(module, mainClass, version);
+        boolean versionedModuleInfo = jvmVersion != null;
+        String versionedModuleInfoClass = "META-INF/versions/" + jvmVersion + "/" + MODULE_INFO_CLASS;
+        long lastModifiedTime = toFileTime(timestamp).toMillis();
 
-        Map<String, String> env = new HashMap<>();
-        env.put("create", "true");
-        URI uri = URI.create("jar:" + outputJar.toUri());
+        // brute force copy all entries
+        try (JarFile jarFile = new JarFile(inputJar.toAbsolutePath().toFile());
+                JarOutputStream jarout = new JarOutputStream(Files.newOutputStream(outputJar.toAbsolutePath(), TRUNCATE_EXISTING))) {
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry inputEntry = entries.nextElement();
 
-        try (FileSystem zipfs = FileSystems.newFileSystem(uri, env)) {
-            if (jvmVersion == null) {
-                Path path = zipfs.getPath("module-info.class");
-                Files.write(path, clazz,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
-                setTimes(path, toFileTime(timestamp));
-            }
-            else {
-                Path path = zipfs.getPath("META-INF/versions", jvmVersion.toString(), "module-info.class");
-                Files.createDirectories(path.getParent());
-                Files.write(path, clazz,
-                        StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE,
-                        StandardOpenOption.TRUNCATE_EXISTING);
-                FileTime lastModifiedTime = toFileTime(timestamp);
-                // module-info.class
-                setTimes(path, lastModifiedTime);
-                // jvmVersion
-                setTimes(path.getParent(), lastModifiedTime);
-                // versions
-                setTimes(path.getParent().getParent(), lastModifiedTime);
+                // manifest requires extra care due to MRJARs
+                if (MANIFEST_ENTRY_NAME.equals(inputEntry.getName()) && versionedModuleInfo) {
+                    Manifest manifest = jarFile.getManifest();
+                    if (null == manifest) {
+                        manifest = new Manifest();
+                        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+                    }
+                    manifest.getMainAttributes().put(new Attributes.Name("Multi-Release"), "true");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    manifest.write(baos);
 
-                Path manifestPath = zipfs.getPath("META-INF/MANIFEST.MF");
-                Manifest manifest;
-                if (Files.exists(manifestPath)) {
-                    manifest = new Manifest(Files.newInputStream(manifestPath));
+                    JarEntry outputEntry = new JarEntry(inputEntry.getName());
+                    outputEntry.setTime(lastModifiedTime);
+                    jarout.putNextEntry(outputEntry);
+                    jarout.write(baos.toByteArray(), 0, baos.size());
+                    jarout.closeEntry();
+                }
+                else if ((MODULE_INFO_CLASS.equals(inputEntry.getName()) && !versionedModuleInfo) ||
+                        (versionedModuleInfoClass.equals(inputEntry.getName()) && versionedModuleInfo)) {
+                    // skip this entry as we'll overwrite it
                 }
                 else {
-                    manifest = new Manifest();
-                    manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+                    // copy entry as is, set timestamp
+                    JarEntry outputEntry = new JarEntry(inputEntry.getName());
+                    outputEntry.setTime(lastModifiedTime);
+                    jarout.putNextEntry(outputEntry);
+                    copy(jarFile.getInputStream(inputEntry), jarout);
+                    jarout.closeEntry();
                 }
-
-                manifest.getMainAttributes().put(new Attributes.Name("Multi-Release"), "true");
-                try (OutputStream manifestOs = Files.newOutputStream(manifestPath, StandardOpenOption.TRUNCATE_EXISTING)) {
-                    manifest.write(manifestOs);
-                }
-                setTimes(manifestPath, lastModifiedTime);
             }
+
+            // copy module descriptor
+            JarEntry outputEntry = versionedModuleInfo ? new JarEntry(versionedModuleInfoClass) : new JarEntry(MODULE_INFO_CLASS);
+            outputEntry.setTime(lastModifiedTime);
+            jarout.putNextEntry(outputEntry);
+            jarout.write(clazz, 0, clazz.length);
+            jarout.closeEntry();
         }
         catch (IOException e) {
             throw new RuntimeException("Couldn't add module-info.class to JAR", e);
@@ -163,7 +171,11 @@ public class AddModuleInfo {
         return FileTime.from(timestamp != null ? timestamp : Instant.now());
     }
 
-    private void setTimes(Path path, FileTime time) throws IOException {
-        Files.getFileAttributeView(path, BasicFileAttributeView.class).setTimes(time, time, time);
+    private void copy(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
+        int read;
+        while ((read = in.read(buffer, 0, DEFAULT_BUFFER_SIZE)) >= 0) {
+            out.write(buffer, 0, read);
+        }
     }
 }

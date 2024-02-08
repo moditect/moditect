@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
 import java.util.jar.Attributes;
@@ -118,6 +119,67 @@ public class AddModuleInfoTest {
     }
 
     @Test
+    public void addJvmVersionModuleInfoTwiceAndRunModular() throws Exception {
+        prepareTestJar();
+
+        String javaHome = System.getProperty("java.home");
+        String javaBin = javaHome +
+                File.separator + "bin" +
+                File.separator + "java";
+
+        ProcessBuilder builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_RESOURCES + File.separator + "example.jar", "--module", "com.example")
+                .redirectOutput(Redirect.INHERIT);
+
+        Process process = builder.start();
+        process.waitFor();
+
+        if (process.exitValue() == 0) {
+            throw new AssertionError();
+        }
+
+        new AddModuleInfo(
+                "module com.example {}",
+                "com.example.HelloWorld",
+                "1.42.3",
+                Paths.get("target", "generated-test-resources", "example.jar"),
+                Paths.get("target", "generated-test-modules"),
+                "9",
+                false,
+                null)
+                .run();
+
+        Files.copy(
+                Paths.get("target", "generated-test-modules", "example.jar"),
+                Paths.get("target", "generated-test-resources", "example2.jar"),
+                StandardCopyOption.REPLACE_EXISTING);
+
+        new AddModuleInfo(
+                "module com.example {}",
+                "com.example.HelloWorld",
+                "1.42.3",
+                Paths.get("target", "generated-test-resources", "example2.jar"),
+                Paths.get("target", "generated-test-modules"),
+                "9",
+                false,
+                null)
+                .run();
+
+        builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_MODULES + File.separator + "example2.jar", "--module", "com.example");
+
+        process = builder.start();
+        process.waitFor();
+
+        if (process.exitValue() != 0) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            process.getInputStream().transferTo(baos);
+            process.getErrorStream().transferTo(baos);
+            throw new AssertionError(baos.toString());
+        }
+    }
+
+    @Test
     public void addModuleInfoAndRunModular() throws Exception {
         prepareTestJar();
 
@@ -150,6 +212,64 @@ public class AddModuleInfoTest {
 
         builder = new ProcessBuilder(
                 javaBin, "--module-path", GENERATED_TEST_MODULES + File.separator + "example.jar", "--module", "com.example");
+
+        process = builder.start();
+        process.waitFor();
+
+        if (process.exitValue() != 0) {
+            throw new AssertionError();
+        }
+    }
+
+    @Test
+    public void addModuleInfoTwiceAndRunModular() throws Exception {
+        prepareTestJar();
+
+        String javaHome = System.getProperty("java.home");
+        String javaBin = javaHome +
+                File.separator + "bin" +
+                File.separator + "java";
+
+        ProcessBuilder builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_RESOURCES + File.separator + "example.jar", "--module", "com.example")
+                .redirectOutput(Redirect.INHERIT);
+
+        Process process = builder.start();
+        process.waitFor();
+
+        if (process.exitValue() == 0) {
+            throw new AssertionError();
+        }
+
+        new AddModuleInfo(
+                "module com.example {}",
+                "com.example.HelloWorld",
+                "1.42.3",
+                Paths.get("target", "generated-test-resources", "example.jar"),
+                Paths.get("target", "generated-test-modules"),
+                null,
+                false,
+                null)
+                .run();
+
+        Files.copy(
+                Paths.get("target", "generated-test-modules", "example.jar"),
+                Paths.get("target", "generated-test-resources", "example2.jar"),
+                StandardCopyOption.REPLACE_EXISTING);
+
+        new AddModuleInfo(
+                "module com.example {}",
+                "com.example.HelloWorld",
+                "1.42.3",
+                Paths.get("target", "generated-test-resources", "example2.jar"),
+                Paths.get("target", "generated-test-modules"),
+                null,
+                false,
+                null)
+                .run();
+
+        builder = new ProcessBuilder(
+                javaBin, "--module-path", GENERATED_TEST_MODULES + File.separator + "example2.jar", "--module", "com.example");
 
         process = builder.start();
         process.waitFor();
