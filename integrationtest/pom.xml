@@ -36,5 +36,6 @@
         <module>undertow</module>
         <module>vert.x</module>
         <module>hibernate-validator</module>
+        <module>snakeyaml</module>
     </modules>
 </project>
