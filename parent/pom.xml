@@ -41,10 +41,11 @@
         <project.identifier>moditect</project.identifier>
         <project.repository>moditect/moditect</project.repository>
         <local.repository.path>/tmp/repository</local.repository.path>
-        <java.version>1.8</java.version>
+        <!-- minimum build JDK -->
+        <jdk.version>11</jdk.version>
+        <java.version>8</java.version>
         <maven.version>3.8.7</maven.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <version.surefire.plugin>3.0.0-M4</version.surefire.plugin>
         <!-- value comes from property git.commit.author.time -->
         <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
@@ -123,6 +124,11 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.4.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>3.8.1</version>
                 </plugin>
@@ -144,6 +150,26 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>${jdk.version}</version>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
