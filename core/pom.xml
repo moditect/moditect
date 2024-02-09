@@ -84,14 +84,14 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>compile-java12</id>
+                        <id>compile-java11</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <release>12</release>
-                            <compileSourceRoots>${project.basedir}/src/main/java12</compileSourceRoots>
+                            <release>11</release>
+                            <compileSourceRoots>${project.basedir}/src/main/java11</compileSourceRoots>
                             <multiReleaseOutput>true</multiReleaseOutput>
                         </configuration>
                     </execution>
