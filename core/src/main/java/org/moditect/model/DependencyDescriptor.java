@@ -20,10 +20,10 @@ import java.nio.file.Path;
 public class DependencyDescriptor {
 
     public DependencyDescriptor(Path path, boolean optional, String assignedModuleName) {
-        throw new UnsupportedOperationException("new DependencyDescriptor() not supported on Java 8");
+        throw new UnsupportedOperationException("new DependencyDescriptor() requires Java 9");
     }
 
     public static String getAutoModuleNameFromInputJar(Path path, String invalidModuleName) {
-        throw new UnsupportedOperationException("getAutoModuleNameFromInputJar() not supported on Java 8");
+        throw new UnsupportedOperationException("getAutoModuleNameFromInputJar() requires Java 9");
     }
 }

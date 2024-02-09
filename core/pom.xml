@@ -78,15 +78,27 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <release>11</release>
-                            <compileSourceRoots>${project.basedir}/src/main/java11</compileSourceRoots>
+                            <release>9</release>
+                            <compileSourceRoots>${project.basedir}/src/main/java9</compileSourceRoots>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-java12</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <release>12</release>
+                            <compileSourceRoots>${project.basedir}/src/main/java12</compileSourceRoots>
                             <multiReleaseOutput>true</multiReleaseOutput>
                         </configuration>
                     </execution>
                     <execution>
                         <id>default-testCompile</id>
                         <configuration>
-                            <release>11</release>
+                            <release>9</release>
                         </configuration>
                     </execution>
                 </executions>

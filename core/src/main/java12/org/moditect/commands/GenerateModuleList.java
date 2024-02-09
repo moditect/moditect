@@ -54,7 +54,7 @@ public class GenerateModuleList {
         jdeps.run(out, System.err, "--version");
         out.close();
         int jdepsVersion = Runtime.Version
-            .parse(outStream.toString().strip())
+            .parse(outStream.toString().trim())
             .feature();
         if (jdepsVersion < 12) {
             log.error("The jdeps option this plugin uses to list JDK modules only works flawlessly on JDK 12+, so please use that to run this goal.");

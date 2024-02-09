@@ -24,11 +24,11 @@ import org.moditect.spi.log.Log;
 public class GenerateModuleList {
 
     public GenerateModuleList(Path projectJar, Set<Path> dependencies, Version jvmVersion, Log log) {
-        throw new UnsupportedOperationException("new GenerateModuleList() not supported on Java 8");
+        throw new UnsupportedOperationException("new GenerateModuleList() requires Java 12");
     }
 
     public void run() {
-        throw new UnsupportedOperationException("GenerateModuleList().run not supported on Java 8");
+        throw new UnsupportedOperationException("GenerateModuleList().run requires Java 12");
     }
 
 }
