@@ -50,7 +50,7 @@ public class CreateRuntimeImage {
     private boolean ignoreSigningInformation;
     private final String launcher;
     private final Log log;
-    private final Integer compression;
+    private final String compression;
     private final boolean stripDebug;
     private final boolean noHeaderFiles;
     private final boolean noManPages;
@@ -59,7 +59,7 @@ public class CreateRuntimeImage {
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, JarInclusionPolicy jarInclusionPolicy,
                               Set<Path> dependencies, Path projectJar, String launcherName, String launcherModule,
-                              Path outputDirectory, Integer compression, boolean stripDebug,
+                              Path outputDirectory, String compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
                               boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
         this.modulePath = (modulePath != null ? modulePath : Collections.emptySet());
@@ -175,7 +175,7 @@ public class CreateRuntimeImage {
 
         if (compression != null) {
             command.add("--compress");
-            command.add(compression.toString());
+            command.add(compression);
         }
 
         if (stripDebug) {
