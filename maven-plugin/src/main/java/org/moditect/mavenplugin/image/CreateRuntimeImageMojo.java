@@ -25,9 +25,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -109,7 +111,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private boolean bindServices;
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
@@ -118,12 +120,18 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
 
         effectiveModulePath.add(jmodsDir);
 
+        final Artifact primaryProjectArtifact = project.getArtifact();
+
+        if (primaryProjectArtifact == null || !primaryProjectArtifact.getFile().exists()) {
+            throw new MojoFailureException(getNoProjectArtifactMessage(primaryProjectArtifact));
+        }
+
         CreateRuntimeImage createRuntimeImage = new CreateRuntimeImage(
                 effectiveModulePath,
                 modules,
                 jarInclusionPolicy,
                 DependencyHelper.getDirectAndTransitiveDependencies(project),
-                project.getArtifact().getFile().toPath(),
+                primaryProjectArtifact.getFile().toPath(),
                 launcher != null ? launcher.getName() : null,
                 launcher != null ? launcher.getModule() : null,
                 outputDirectory.toPath(),
@@ -142,6 +150,22 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
             getLog().error(ex);
             throw new MojoExecutionException("Error creating runtime image", ex);
         }
+    }
+
+    private static String getNoProjectArtifactMessage(Artifact primaryProjectArtifact) {
+        final StringBuilder message = new StringBuilder();
+        message.append("No primary project artifact was found to create a runtime image.");
+
+        if (primaryProjectArtifact != null && primaryProjectArtifact.getFile() != null) {
+            message.append(" The file ");
+            message.append(primaryProjectArtifact.getFile());
+            message.append(" does not exist.");
+        }
+
+        message.append(" Please make sure the project artifact has been created (usually in the package lifecycle phase).");
+        message.append(" This goal should usually not run before artifact creation.");
+
+        return message.toString();
     }
 
     /**
