@@ -76,7 +76,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private Launcher launcher;
 
     @Parameter
-    private Integer compression;
+    private String compression;
 
     @Parameter(defaultValue = "false")
     private boolean stripDebug;
