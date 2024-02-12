@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -76,7 +76,8 @@ public class ArtifactConfiguration {
 
     @Override
     public String toString() {
-        return "ArtifactConfiguration [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + ", type=" + type + "]";
+        return "ArtifactConfiguration [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + ", type=" + type
+                + "]";
     }
 
     public void setDependencyString(String dependencyString) {
@@ -84,17 +85,17 @@ public class ArtifactConfiguration {
     }
 
     public String toDependencyString() {
-        if ( this.dependencyString != null ) {
+        if (this.dependencyString != null) {
             return dependencyString;
         }
 
         String dependencyString = groupId + ":" + artifactId + ":" + version;
 
-        if ( classifier != null ) {
+        if (classifier != null) {
             dependencyString += ":" + classifier;
         }
 
-        if ( type != null ) {
+        if (type != null) {
             dependencyString += ":" + type;
         }
 

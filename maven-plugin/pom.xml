@@ -1,6 +1,6 @@
 <!--
 
-     Copyright 2017 - 2018 The ModiTect authors
+     Copyright 2017 - 2023 The ModiTect authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -21,13 +21,15 @@
     <parent>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>moditect-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>ModiTect Maven Plug-In</name>
+    <url>https://github.com/moditect/moditect</url>
+    <description>ModiTect Maven Plug-In</description>
 
     <dependencyManagement>
         <dependencies>
@@ -39,17 +41,17 @@
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-component-annotations</artifactId>
-                <version>2.1.0</version>
+                <version>2.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-classworlds</artifactId>
-                <version>2.6.0</version>
+                <version>2.7.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -74,7 +76,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.6.0</version>
+            <version>3.8.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

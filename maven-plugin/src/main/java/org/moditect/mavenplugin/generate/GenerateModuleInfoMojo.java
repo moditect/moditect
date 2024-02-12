@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Component
     private ArtifactHandlerManager artifactHandlerManager;
 
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
 
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -58,10 +58,10 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     @Component
     private RepositorySystem repoSystem;
 
-    @Parameter( defaultValue = "${repositorySystemSession}", readonly = true, required = true )
+    @Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
     private RepositorySystemSession repoSession;
 
-    @Parameter( defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project.remoteProjectRepositories}", readonly = true, required = true)
     private List<RemoteRepository> remoteRepos;
 
     @Parameter(readonly = true, defaultValue = "${project.build.directory}/moditect")
@@ -96,46 +96,43 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-    	// Check if this plugin should be skipped
-    	if (skip) {
-    		getLog().debug("Mojo 'generate-module-info' skipped by configuration");
-    		return;
-    	}
-    	// Don't try to run this plugin, when packaging type is 'pom'
-    	// (may be better to only run it on specific packaging types, like 'jar')
-    	if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
-    		getLog().debug("Mojo 'generate-module-info' not executed on packaging type '"+project.getModel().getPackaging()+"'");
-    		return;
-    	}
+        // Check if this plugin should be skipped
+        if (skip) {
+            getLog().debug("Mojo 'generate-module-info' skipped by configuration");
+            return;
+        }
+        // Don't try to run this plugin, when packaging type is 'pom'
+        // (may be better to only run it on specific packaging types, like 'jar')
+        if (project.getModel().getPackaging().equalsIgnoreCase("pom")) {
+            getLog().debug("Mojo 'generate-module-info' not executed on packaging type '" + project.getModel().getPackaging() + "'");
+            return;
+        }
 
-    	createDirectories();
+        createDirectories();
 
-        ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper( repoSystem, repoSession, remoteRepos );
+        ArtifactResolutionHelper artifactResolutionHelper = new ArtifactResolutionHelper(repoSystem, repoSession, remoteRepos);
         ModuleInfoGenerator moduleInfoGenerator = new ModuleInfoGenerator(
-                project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, jdepsExtraArgs, getLog(), workingDirectory, outputDirectory
-        );
+                project, repoSystem, repoSession, remoteRepos, artifactResolutionHelper, jdepsExtraArgs, getLog(), workingDirectory, outputDirectory);
 
-        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule( artifactResolutionHelper );
+        Map<ArtifactIdentifier, String> assignedNamesByModule = getAssignedModuleNamesByModule(artifactResolutionHelper);
 
-        if ( artifactOverride != null ) {
+        if (artifactOverride != null) {
             ModuleConfiguration moduleConfiguration = getModuleConfigurationFromOverrides();
             moduleInfoGenerator.generateModuleInfo(
                     moduleConfiguration.getArtifact(),
                     moduleConfiguration.getAdditionalDependencies(),
                     moduleConfiguration.getModuleInfo(),
                     assignedNamesByModule,
-                    Collections.emptyMap()
-            );
+                    Collections.emptyMap());
         }
         else {
-            for ( ModuleConfiguration moduleConfiguration : modules ) {
+            for (ModuleConfiguration moduleConfiguration : modules) {
                 moduleInfoGenerator.generateModuleInfo(
                         moduleConfiguration.getArtifact(),
                         moduleConfiguration.getAdditionalDependencies(),
                         moduleConfiguration.getModuleInfo(),
                         assignedNamesByModule,
-                        Collections.emptyMap()
-                );
+                        Collections.emptyMap());
             }
         }
     }
@@ -143,11 +140,10 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     private Map<ArtifactIdentifier, String> getAssignedModuleNamesByModule(ArtifactResolutionHelper artifactResolutionHelper) throws MojoExecutionException {
         Map<ArtifactIdentifier, String> assignedNamesByModule = new HashMap<>();
 
-        for ( ModuleConfiguration configuredModule : modules ) {
+        for (ModuleConfiguration configuredModule : modules) {
             assignedNamesByModule.put(
-                new ArtifactIdentifier( artifactResolutionHelper.resolveArtifact( configuredModule.getArtifact() ) ),
-                configuredModule.getModuleInfo().getName()
-            );
+                    new ArtifactIdentifier(artifactResolutionHelper.resolveArtifact(configuredModule.getArtifact())),
+                    configuredModule.getModuleInfo().getName());
         }
 
         return assignedNamesByModule;
@@ -156,31 +152,31 @@ public class GenerateModuleInfoMojo extends AbstractMojo {
     private ModuleConfiguration getModuleConfigurationFromOverrides() {
         ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
 
-        moduleConfiguration.setArtifact( new ArtifactConfiguration( artifactOverride ) );
-        moduleConfiguration.setModuleInfo( new ModuleInfoConfiguration() );
-        moduleConfiguration.getModuleInfo().setName( moduleNameOverride );
+        moduleConfiguration.setArtifact(new ArtifactConfiguration(artifactOverride));
+        moduleConfiguration.setModuleInfo(new ModuleInfoConfiguration());
+        moduleConfiguration.getModuleInfo().setName(moduleNameOverride);
 
-        if ( additionalDependenciesOverride != null ) {
-            for ( String additionalDependency : additionalDependenciesOverride.split( "\\," ) ) {
-                moduleConfiguration.getAdditionalDependencies().add( new ArtifactConfiguration( additionalDependency ) );
+        if (additionalDependenciesOverride != null) {
+            for (String additionalDependency : additionalDependenciesOverride.split("\\,")) {
+                moduleConfiguration.getAdditionalDependencies().add(new ArtifactConfiguration(additionalDependency));
             }
         }
 
-        if ( exportExcludesOverride != null ) {
-            moduleConfiguration.getModuleInfo().setExports( exportExcludesOverride );
+        if (exportExcludesOverride != null) {
+            moduleConfiguration.getModuleInfo().setExports(exportExcludesOverride);
         }
 
-        moduleConfiguration.getModuleInfo().setAddServiceUses( addServiceUsesOverride );
+        moduleConfiguration.getModuleInfo().setAddServiceUses(addServiceUsesOverride);
 
         return moduleConfiguration;
     }
 
     private void createDirectories() {
-        if ( !workingDirectory.exists() ) {
+        if (!workingDirectory.exists()) {
             workingDirectory.mkdirs();
         }
 
-        if ( !outputDirectory.exists() ) {
+        if (!outputDirectory.exists()) {
             outputDirectory.mkdirs();
         }
     }

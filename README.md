@@ -1,6 +1,6 @@
 # ModiTect - Tooling for the Java Module System
 
-Version 1.0.0.RC2 - 2021-10-04
+Version 1.0.0.Final - 2023-05-03
 
 The ModiTect project aims at providing productivity tools for working with
 the Java module system ("Jigsaw").
@@ -51,7 +51,7 @@ _generate-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.Final</version>
     <executions>
         <execution>
             <id>generate-module-info</id>
@@ -201,7 +201,7 @@ the _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.Final</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -211,6 +211,8 @@ the _add-module-info_ goal as follows:
             </goals>
             <configuration>
                 <jvmVersion>11</jvmVersion>
+                <failOnWarning>false</failOnWarning>
+                <outputTimestamp>1980-01-01T00:00:02Z</outputTimestamp>
                 <module>
                     <moduleInfo>
                         <name>com.example</name>
@@ -220,6 +222,12 @@ the _add-module-info_ goal as follows:
                         </exports>
                     </moduleInfo>
                 </module>
+              <exclusions>
+                <exclusion>
+                  <groupId>com.acme</groupId>
+                  <artifactId>thing</artifactId>
+                </exclusion>
+              </exclusions>
             </configuration>
         </execution>
     </executions>
@@ -234,6 +242,15 @@ The value must be `9` or greater.
 The special value `base` (the default) can be used to add the descriptor to the root of the final JAR.
 Putting the descriptor under `META-INF/versions` can help to increase compatibility with older libraries scanning class files that may fail when encountering the `module-info.class` file
 (as chances are lower that such tool will look for class files under `META-INF/versions/...`).
+
+The optional `outputTimestamp` element may be used to create reproducible output archive entries, either formatted as 
+ISO 8601 extended offset date-time (e.g. in UTC such as '2011-12-03T10:15:30Z' or with an offset '2019-10-05T20:37:42+06:00'),
+or as an int representing seconds since the epoch. As an alternative you may set `${project.build.outputTimestamp}` which also
+matches the user property used by other Maven plugins such as `maven-jar-plugin`.
+
+The optional `failOnWarning` option prevents the build from failing when set to `false`. The default is to fail.
+
+The optional `exclusions` option may be used to filter out any `compile` or `runtime` dependencies that should not be used, as it might be the case when shading internal dependencies.
 
 The `jdepsExtraArgs` option can be used to specify a list of arguments passed to the _jdeps_ invocation for creating a "candidate descriptor".
 
@@ -262,7 +279,7 @@ _add-module-info_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.Final</version>
     <executions>
         <execution>
             <id>add-module-infos</id>
@@ -331,7 +348,7 @@ _create-runtime-image_ goal as follows:
 <plugin>
     <groupId>org.moditect</groupId>
     <artifactId>moditect-maven-plugin</artifactId>
-    <version>1.0.0.RC2</version>
+    <version>1.0.0.Final</version>
     <executions>
         <execution>
             <id>create-runtime-image</id>

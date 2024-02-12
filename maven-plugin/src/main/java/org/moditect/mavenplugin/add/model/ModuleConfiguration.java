@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -107,9 +107,9 @@ public class ModuleConfiguration {
     }
 
     public Artifact getResolvedArtifact() {
-            if ( resolvedArtifact == null ) {
-                throw new IllegalStateException( "Artifact must be resolved first" );
-            }
+        if (resolvedArtifact == null) {
+            throw new IllegalStateException("Artifact must be resolved first");
+        }
 
         return resolvedArtifact;
     }

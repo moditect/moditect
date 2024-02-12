@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,40 +15,40 @@
  */
 package org.moditect.test.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 import org.moditect.model.DependencePattern;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DependencePatternTest {
 
     @Test
     public void all() {
-        DependencePattern pattern = DependencePattern.parsePattern( "*" );
-        assertThat( pattern.getPattern().pattern() ).isEqualTo( Pattern.compile( ".*" ).pattern() );
-        assertThat( pattern.getModifiers() ).isEmpty();
+        DependencePattern pattern = DependencePattern.parsePattern("*");
+        assertThat(pattern.getPattern().pattern()).isEqualTo(Pattern.compile(".*").pattern());
+        assertThat(pattern.getModifiers()).isEmpty();
     }
 
     @Test
     public void noModifiers() {
-        DependencePattern pattern = DependencePattern.parsePattern( "java.validation" );
-        assertThat( pattern.getPattern().pattern() ).isEqualTo( Pattern.compile( "java\\.validation" ).pattern() );
-        assertThat( pattern.getModifiers() ).isEmpty();
+        DependencePattern pattern = DependencePattern.parsePattern("java.validation");
+        assertThat(pattern.getPattern().pattern()).isEqualTo(Pattern.compile("java\\.validation").pattern());
+        assertThat(pattern.getModifiers()).isEmpty();
     }
 
     @Test
     public void oneModifier() {
-        DependencePattern pattern = DependencePattern.parsePattern( "static java.validation" );
-        assertThat( pattern.getPattern().pattern() ).isEqualTo( Pattern.compile( "java\\.validation" ).pattern() );
-        assertThat( pattern.getModifiers() ).containsOnly( "static" );
+        DependencePattern pattern = DependencePattern.parsePattern("static java.validation");
+        assertThat(pattern.getPattern().pattern()).isEqualTo(Pattern.compile("java\\.validation").pattern());
+        assertThat(pattern.getModifiers()).containsOnly("static");
     }
 
     @Test
     public void twoModifiers() {
-        DependencePattern pattern = DependencePattern.parsePattern( "static transitive java.validation" );
-        assertThat( pattern.getPattern().pattern() ).isEqualTo( Pattern.compile( "java\\.validation" ).pattern() );
-        assertThat( pattern.getModifiers() ).containsOnly( "static", "transitive" );
+        DependencePattern pattern = DependencePattern.parsePattern("static transitive java.validation");
+        assertThat(pattern.getPattern().pattern()).isEqualTo(Pattern.compile("java\\.validation").pattern());
+        assertThat(pattern.getModifiers()).containsOnly("static", "transitive");
     }
 }

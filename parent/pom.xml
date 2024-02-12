@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-     Copyright 2017 - 2018 The ModiTect authors
+     Copyright 2017 - 2023 The ModiTect authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@
     <parent>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-org-parent</artifactId>
-        <version>1.0.0.Final</version>
+        <version>1.4.0.Final</version>
         <relativePath/>
     </parent>
 
     <artifactId>moditect-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ModiTect Parent</name>
@@ -42,8 +42,12 @@
         <project.repository>moditect/moditect</project.repository>
         <local.repository.path>/tmp/repository</local.repository.path>
         <java.version>1.8</java.version>
+        <maven.version>3.8.7</maven.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <version.surefire.plugin>3.0.0-M4</version.surefire.plugin>
+        <!-- value comes from property git.commit.author.time -->
+        <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
     </properties>
 
     <scm>
@@ -63,12 +67,12 @@
             <dependency>
                 <groupId>com.github.javaparser</groupId>
                 <artifactId>javaparser-core</artifactId>
-                <version>3.15.6</version>
+                <version>3.25.1</version>
             </dependency>
             <dependency>
                 <groupId>com.google.testing.compile</groupId>
                 <artifactId>compile-testing</artifactId>
-                <version>0.10</version>
+                <version>0.21.0</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.sun</groupId>
@@ -77,9 +81,29 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.31.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>31.1-jre</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.18.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>9.6</version>
+            </dependency>
+            <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.8.0</version>
+                <version>3.24.2</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -89,7 +113,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.30</version>
+                <version>1.7.36</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -100,17 +124,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.8.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.4</version>
+                    <version>3.4.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>${project.groupId}</groupId>
@@ -124,7 +148,7 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration combine.self="override">
-                    <header>${rootdir}/etc/license.txt</header>
+                    <header>${maven.multiModuleProjectDirectory}/etc/license.txt</header>
                     <strictCheck>true</strictCheck>
                     <excludes>
                         <exclude>README.md</exclude>
@@ -148,78 +172,68 @@
 
     <profiles>
         <profile>
+            <id>stage</id>
+            <properties>
+                <altDeploymentRepository>local::file:${maven.multiModuleProjectDirectory}/target/staging-deploy</altDeploymentRepository>
+            </properties>
+            <build>
+                <defaultGoal>deploy</defaultGoal>
+            </build>
+        </profile>
+        <profile>
             <id>jreleaser</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.jreleaser</groupId>
                         <artifactId>jreleaser-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>${version.jreleaser.plugin}</version>
                         <inherited>false</inherited>
                         <configuration>
                             <gitRootSearch>true</gitRootSearch>
                             <jreleaser>
                                 <project>
                                     <name>ModiTect</name>
+                                    <links>
+                                        <homepage>https://github.com/moditect/moditect</homepage>
+                                        <documentation>https://github.com/moditect/moditect</documentation>
+                                    </links>
                                 </project>
+                                <signing>
+                                    <active>ALWAYS</active>
+                                    <armored>true</armored>
+                                </signing>
+                                <deploy>
+                                    <maven>
+                                        <nexus2>
+                                            <maven-central>
+                                                <active>ALWAYS</active>
+                                                <url>https://oss.sonatype.org/service/local</url>
+                                                <snapshotUrl>https://oss.sonatype.org/content/repositories/snapshots/</snapshotUrl>
+                                                <closeRepository>true</closeRepository>
+                                                <releaseRepository>true</releaseRepository>
+                                                <stagingRepositories>${maven.multiModuleProjectDirectory}/target/staging-deploy</stagingRepositories>
+                                            </maven-central>
+                                        </nexus2>
+                                    </maven>
+                                </deploy>
                                 <release>
                                     <github>
                                         <tagName>{{projectVersion}}</tagName>
                                         <releaseName>{{projectVersion}}</releaseName>
                                         <overwrite>true</overwrite>
-                                        <skipTag>true</skipTag>
+                                        <issues>
+                                            <enabled>true</enabled>
+                                        </issues>
                                         <changelog>
                                             <formatted>ALWAYS</formatted>
-                                            <format>- {{commitShortHash}} {{commitTitle}}</format>
+                                            <formatted>ALWAYS</formatted>
+                                            <preset>conventional-commits</preset>
+                                            <skipMergeCommits>true</skipMergeCommits>
                                             <contributors>
-                                                <format>- {{contributorName}}</format>
+                                                <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
                                             </contributors>
-                                            <labelers>
-                                                <labeler>
-                                                    <label>dependencies</label>
-                                                    <title>Bump</title>
-                                                </labeler>
-                                                <labeler>
-                                                    <label>issue</label>
-                                                    <title>regex:.*#[0-9].*</title>
-                                                </labeler>
-                                                <labeler>
-                                                    <label>merge_pull</label>
-                                                    <title>Merge pull</title>
-                                                </labeler>
-                                                <labeler>
-                                                    <label>merge_branch</label>
-                                                    <title>Merge branch</title>
-                                                </labeler>
-                                                <labeler>
-                                                    <label>task_prep</label>
-                                                    <title>Preparing</title>
-                                                </labeler>
-                                                <labeler>
-                                                    <label>task_rel</label>
-                                                    <title>Releasing</title>
-                                                </labeler>
-                                            </labelers>
-                                            <categories>
-                                                <category>
-                                                    <title>Merge</title>
-                                                    <labels>merge_pull,merge_branch</labels>
-                                                </category>
-                                                <category>
-                                                    <title>✅ Issues</title>
-                                                    <labels>issue</labels>
-                                                </category>
-                                                <category>
-                                                    <title>🧰 Tasks</title>
-                                                    <labels>task_prep,task_rel</labels>
-                                                </category>
-                                                <category>
-                                                    <title>⚙️  Dependencies</title>
-                                                    <labels>dependencies</labels>
-                                                </category>
-                                            </categories>
                                             <hide>
-                                                <categories>Merge</categories>
                                                 <contributors>GitHub,dependabot</contributors>
                                             </hide>
                                         </changelog>
@@ -227,15 +241,6 @@
                                 </release>
                             </jreleaser>
                         </configuration>
-                        <executions>
-                            <execution>
-                                <id>create-release</id>
-                                <goals>
-                                    <goal>release</goal>
-                                </goals>
-                                <phase>initialize</phase>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

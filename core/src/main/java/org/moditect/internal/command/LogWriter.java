@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.moditect.spi.log.Log;
  */
 public class LogWriter
         extends PrintWriter {
-    private static final String ERROR_PREFIX   = "Error:";
+    private static final String ERROR_PREFIX = "Error:";
     private static final String WARNING_PREFIX = "Warning:";
 
     private final Log log;

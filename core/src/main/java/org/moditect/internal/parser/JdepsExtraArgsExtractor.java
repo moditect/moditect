@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 package org.moditect.internal.parser;
 
-import org.moditect.spi.log.Log;
-
 import java.util.List;
 import java.util.Optional;
-import java.util.jar.JarFile;
+
+import org.moditect.spi.log.Log;
 
 public final class JdepsExtraArgsExtractor {
 
@@ -66,7 +65,7 @@ public final class JdepsExtraArgsExtractor {
             return Optional.empty();
         }
 
-        String versionString = multiReleaseArgument.substring(MULTI_RELEASE_ARGUMENT.length()+1);
+        String versionString = multiReleaseArgument.substring(MULTI_RELEASE_ARGUMENT.length() + 1);
         debug("Version extracted from the same argument: " + versionString);
         return parseVersionNumber(versionString);
     }
@@ -81,7 +80,8 @@ public final class JdepsExtraArgsExtractor {
         }
         try {
             return Optional.of(Integer.parseInt(versionString));
-        } catch (NumberFormatException ex) {
+        }
+        catch (NumberFormatException ex) {
             error("Invalid argument value for " + MULTI_RELEASE_ARGUMENT + ": " + versionString);
             return Optional.empty();
         }

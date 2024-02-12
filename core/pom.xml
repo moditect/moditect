@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-     Copyright 2017 - 2018 The ModiTect authors
+     Copyright 2017 - 2023 The ModiTect authors
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -22,13 +22,15 @@
     <parent>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>moditect</artifactId>
     <packaging>jar</packaging>
     <name>ModiTect</name>
+    <url>https://github.com/moditect/moditect</url>
+    <description>Module system tooling</description>
 
     <dependencies>
         <dependency>
@@ -38,12 +40,11 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>6.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>
             <artifactId>jcommander</artifactId>
-            <version>1.60</version>
+            <version>1.82</version>
         </dependency>
 
         <!-- Test -->
@@ -128,7 +129,7 @@
                             <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../etc</directory>
+                                    <directory>${maven.multiModuleProjectDirectory}/etc</directory>
                                     <include>LICENSE_ASM.txt</include>
                                     <filtering>false</filtering>
                                 </resource>

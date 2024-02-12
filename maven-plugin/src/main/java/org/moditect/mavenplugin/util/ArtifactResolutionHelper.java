@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class ArtifactResolutionHelper {
     private List<RemoteRepository> remoteRepos;
 
     public ArtifactResolutionHelper(RepositorySystem repoSystem, RepositorySystemSession repoSession,
-            List<RemoteRepository> remoteRepos) {
+                                    List<RemoteRepository> remoteRepos) {
         this.repoSystem = repoSystem;
         this.repoSession = repoSession;
         this.remoteRepos = remoteRepos;
@@ -60,21 +60,19 @@ public class ArtifactResolutionHelper {
                         artifact.getArtifactId(),
                         artifact.getClassifier(),
                         artifact.getType() != null ? artifact.getType() : "jar",
-                        artifact.getVersion()
-                )
-            );
+                        artifact.getVersion()));
     }
 
     public Artifact resolveArtifact(Artifact inputArtifact) throws MojoExecutionException {
         ArtifactRequest request = new ArtifactRequest();
-        request.setArtifact( inputArtifact );
-        request.setRepositories( remoteRepos );
+        request.setArtifact(inputArtifact);
+        request.setRepositories(remoteRepos);
 
         try {
-            return repoSystem.resolveArtifact( repoSession, request ).getArtifact();
+            return repoSystem.resolveArtifact(repoSession, request).getArtifact();
         }
         catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException( e.getMessage(), e );
+            throw new MojoExecutionException(e.getMessage(), e);
         }
     }
 
@@ -85,30 +83,28 @@ public class ArtifactResolutionHelper {
      */
     public List<DependencyNode> getCompilationDependencies(Artifact inputArtifact) throws MojoExecutionException {
         try {
-            CollectRequest collectRequest = new CollectRequest( new Dependency( inputArtifact, "compile" ), remoteRepos );
+            CollectRequest collectRequest = new CollectRequest(new Dependency(inputArtifact, "compile"), remoteRepos);
 
             DefaultRepositorySystemSession sessionWithProvided = MavenRepositorySystemUtils.newSession();
             sessionWithProvided.setDependencySelector(
                     new AndDependencySelector(
-                        new CompileScopeDependencySelector(),
-                        new OptionalDependencySelector(),
-                        new ExclusionDependencySelector()
-                    )
-                );
-            sessionWithProvided.setLocalRepositoryManager( repoSession.getLocalRepositoryManager() );
+                            new CompileScopeDependencySelector(),
+                            new OptionalDependencySelector(),
+                            new ExclusionDependencySelector()));
+            sessionWithProvided.setLocalRepositoryManager(repoSession.getLocalRepositoryManager());
 
-            CollectResult collectResult = repoSystem.collectDependencies( sessionWithProvided, collectRequest );
+            CollectResult collectResult = repoSystem.collectDependencies(sessionWithProvided, collectRequest);
 
             PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-            collectResult.getRoot().accept( nlg );
+            collectResult.getRoot().accept(nlg);
 
             List<DependencyNode> dependencies = nlg.getNodes();
 
             // remove the input artifact itself
             Iterator<DependencyNode> it = dependencies.iterator();
-            while ( it.hasNext() ) {
+            while (it.hasNext()) {
                 DependencyNode next = it.next();
-                if ( next.getDependency() == collectRequest.getRoot() ) {
+                if (next.getDependency() == collectRequest.getRoot()) {
                     it.remove();
                 }
             }
@@ -116,7 +112,7 @@ public class ArtifactResolutionHelper {
             return dependencies;
         }
         catch (DependencyCollectionException e) {
-            throw new MojoExecutionException( "Couldn't collect dependencies of artifact " + inputArtifact, e );
+            throw new MojoExecutionException("Couldn't collect dependencies of artifact " + inputArtifact, e);
         }
     }
 }

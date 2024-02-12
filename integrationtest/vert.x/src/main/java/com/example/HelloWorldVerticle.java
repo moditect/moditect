@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,17 +25,17 @@ public class HelloWorldVerticle extends AbstractVerticle {
     @Override
     public void start(Future<Void> future) {
         vertx.createHttpServer()
-            .requestHandler(r -> {
-                String name = Optional.ofNullable( r.getParam( "name" ) ).orElse( "nameless stranger" );
-                r.response().end ( "Hello, " + name + "!" );
-            })
-            .listen( 8080, result -> {
-                if ( result.succeeded() ) {
-                    future.complete();
-                }
-                else {
-                    future.fail(result.cause());
-                }
-            } );
+                .requestHandler(r -> {
+                    String name = Optional.ofNullable(r.getParam("name")).orElse("nameless stranger");
+                    r.response().end("Hello, " + name + "!");
+                })
+                .listen(8080, result -> {
+                    if (result.succeeded()) {
+                        future.complete();
+                    }
+                    else {
+                        future.fail(result.cause());
+                    }
+                });
     }
 }

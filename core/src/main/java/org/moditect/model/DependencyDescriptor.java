@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class DependencyDescriptor {
         this.path = path;
         this.optional = optional;
         this.originalModuleName = getAutoModuleNameFromInputJar(path, assignedModuleName);
-        if(this.originalModuleName == null) {
+        if (this.originalModuleName == null) {
             throw new IllegalArgumentException("No assignedModuleName provided for jar with invalid module name: " + path);
         }
         this.assignedModuleName = assignedModuleName;
@@ -46,7 +46,7 @@ public class DependencyDescriptor {
 
     public static String getAutoModuleNameFromInputJar(Path path, String invalidModuleName) {
         try {
-            return ModuleFinder.of( path )
+            return ModuleFinder.of(path)
                     .findAll()
                     .iterator()
                     .next()
@@ -54,7 +54,7 @@ public class DependencyDescriptor {
                     .name();
         }
         catch (FindException e) {
-            if ( e.getCause() != null && e.getCause().getMessage().contains( "Invalid module name" ) ) {
+            if (e.getCause() != null && e.getCause().getMessage().contains("Invalid module name")) {
                 return invalidModuleName;
             }
             throw e;
@@ -87,18 +87,19 @@ public class DependencyDescriptor {
 
     @Override
     public boolean equals(Object obj) {
-        if ( this == obj )
+        if (this == obj)
             return true;
-        if ( obj == null )
+        if (obj == null)
             return false;
-        if ( getClass() != obj.getClass() )
+        if (getClass() != obj.getClass())
             return false;
         DependencyDescriptor other = (DependencyDescriptor) obj;
-        return path.equals( other.path );
+        return path.equals(other.path);
     }
 
     @Override
     public String toString() {
-        return "DependencyDescriptor [path=" + path + ", optional=" + optional + ", originalModuleName=" + originalModuleName + ", assignedModuleName=" + assignedModuleName + "]";
+        return "DependencyDescriptor [path=" + path + ", optional=" + optional + ", originalModuleName=" + originalModuleName + ", assignedModuleName="
+                + assignedModuleName + "]";
     }
 }

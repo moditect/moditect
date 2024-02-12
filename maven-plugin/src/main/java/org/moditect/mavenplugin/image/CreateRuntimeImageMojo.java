@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -39,17 +40,14 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.moditect.commands.CreateRuntimeImage;
 import org.moditect.mavenplugin.image.model.Launcher;
-import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.mavenplugin.util.DependencyHelper;
+import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.JarInclusionPolicy;
 
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "create-runtime-image",
-      defaultPhase = LifecyclePhase.PACKAGE,
-      requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME,
-      threadSafe = true)
+@Mojo(name = "create-runtime-image", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class CreateRuntimeImageMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
@@ -58,7 +56,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Component
     private ToolchainManager toolchainManager;
 
-    @Parameter( defaultValue = "${session}", readonly = true )
+    @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession mavenSession;
 
     @Parameter
@@ -80,7 +78,7 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private Launcher launcher;
 
     @Parameter
-    private Integer compression;
+    private String compression;
 
     @Parameter(defaultValue = "false")
     private boolean stripDebug;
@@ -91,17 +89,17 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter(property = "ignoreSigningInformation", defaultValue = "false")
     private boolean ignoreSigningInformation;
 
-//    @Parameter(property = "moditect.artifact")
-//    private String artifactOverride;
-//
-//    @Parameter(property = "moditect.additionalDependencies")
-//    private String additionalDependenciesOverride;
-//
-//    @Parameter(property = "moditect.moduleName")
-//    private String moduleNameOverride;
-//
-//    @Parameter(property = "moditect.exportExcludes")
-//    private String exportExcludesOverride;
+    // @Parameter(property = "moditect.artifact")
+    // private String artifactOverride;
+    //
+    // @Parameter(property = "moditect.additionalDependencies")
+    // private String additionalDependenciesOverride;
+    //
+    // @Parameter(property = "moditect.moduleName")
+    // private String moduleNameOverride;
+    //
+    // @Parameter(property = "moditect.exportExcludes")
+    // private String exportExcludesOverride;
 
     @Parameter(defaultValue = "false")
     private boolean noHeaderFiles;
@@ -113,39 +111,61 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     private boolean bindServices;
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
 
         Set<Path> effectiveModulePath = this.modulePath.stream()
-                .map( File::toPath )
-                .collect( Collectors.toSet() );
+                .map(File::toPath)
+                .collect(Collectors.toSet());
 
-        effectiveModulePath.add( jmodsDir );
+        effectiveModulePath.add(jmodsDir);
+
+        final Artifact primaryProjectArtifact = project.getArtifact();
+
+        if (primaryProjectArtifact == null || !primaryProjectArtifact.getFile().exists()) {
+            throw new MojoFailureException(getNoProjectArtifactMessage(primaryProjectArtifact));
+        }
 
         CreateRuntimeImage createRuntimeImage = new CreateRuntimeImage(
-            effectiveModulePath,
-            modules,
-            jarInclusionPolicy,
-            DependencyHelper.getDirectAndTransitiveDependencies(project),
-            project.getArtifact().getFile().toPath(),
-            launcher != null ? launcher.getName() : null,
-            launcher != null ? launcher.getModule() : null,
-            outputDirectory.toPath(),
-            compression,
-            stripDebug,
-            ignoreSigningInformation,
-            getExcludeResourcesPatterns(),
-            new MojoLog(getLog()),
-            noHeaderFiles,
-            noManPages,
-            bindServices
-        );
+                effectiveModulePath,
+                modules,
+                jarInclusionPolicy,
+                DependencyHelper.getDirectAndTransitiveDependencies(project),
+                primaryProjectArtifact.getFile().toPath(),
+                launcher != null ? launcher.getName() : null,
+                launcher != null ? launcher.getModule() : null,
+                outputDirectory.toPath(),
+                compression,
+                stripDebug,
+                ignoreSigningInformation,
+                getExcludeResourcesPatterns(),
+                new MojoLog(getLog()),
+                noHeaderFiles,
+                noManPages,
+                bindServices);
         try {
             createRuntimeImage.run();
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             getLog().error(ex);
             throw new MojoExecutionException("Error creating runtime image", ex);
         }
+    }
+
+    private static String getNoProjectArtifactMessage(Artifact primaryProjectArtifact) {
+        final StringBuilder message = new StringBuilder();
+        message.append("No primary project artifact was found to create a runtime image.");
+
+        if (primaryProjectArtifact != null && primaryProjectArtifact.getFile() != null) {
+            message.append(" The file ");
+            message.append(primaryProjectArtifact.getFile());
+            message.append(" does not exist.");
+        }
+
+        message.append(" Please make sure the project artifact has been created (usually in the package lifecycle phase).");
+        message.append(" This goal should usually not run before artifact creation.");
+
+        return message.toString();
     }
 
     /**
@@ -155,54 +175,54 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
      * will be used.
      */
     private Path getJModsDir() throws MojoExecutionException {
-        if ( baseJdk != null ) {
-            List<Toolchain> toolChains = toolchainManager.getToolchains( mavenSession, "jdk", getToolChainRequirements( baseJdk ) );
-            if ( toolChains.isEmpty() ) {
-                throw new MojoExecutionException( "Found no tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
+        if (baseJdk != null) {
+            List<Toolchain> toolChains = toolchainManager.getToolchains(mavenSession, "jdk", getToolChainRequirements(baseJdk));
+            if (toolChains.isEmpty()) {
+                throw new MojoExecutionException("Found no tool chain of type 'jdk' and matching requirements '" + baseJdk + "'");
             }
-            else if ( toolChains.size() > 1 ) {
-                throw new MojoExecutionException( "Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'" );
+            else if (toolChains.size() > 1) {
+                throw new MojoExecutionException("Found more than one tool chain of type 'jdk' and matching requirements '" + baseJdk + "'");
             }
             else {
-                Toolchain toolchain = toolChains.get( 0 );
+                Toolchain toolchain = toolChains.get(0);
 
-                String javac = toolchain.findTool( "javac" );
+                String javac = toolchain.findTool("javac");
 
                 // #63; when building on Linux / OS X but creating a Windows runtime image
                 // the tool lookup must be for javac.exe explicitly (as the toolchain mechanism
                 // itself won't append the suffix if not running this build on Windows
                 if (javac == null) {
-                    javac = toolchain.findTool( "javac.exe" );
+                    javac = toolchain.findTool("javac.exe");
                 }
                 if (javac == null) {
-                    throw new MojoExecutionException ("Couldn't locate toolchain directory" );
+                    throw new MojoExecutionException("Couldn't locate toolchain directory");
                 }
-                return new File( javac )
+                return new File(javac)
                         .toPath()
                         .getParent()
                         .getParent()
-                        .resolve( "jmods" );
+                        .resolve("jmods");
             }
         }
         else {
-            String javaHome = System.getProperty( "java.home" );
-            return new File( javaHome ).toPath().resolve( "jmods" );
+            String javaHome = System.getProperty("java.home");
+            return new File(javaHome).toPath().resolve("jmods");
         }
     }
 
     private Map<String, String> getToolChainRequirements(String baseJdk) throws MojoExecutionException {
         Map<String, String> toolChainRequirements = new HashMap<>();
-        String[] requirements = baseJdk.split( "," );
+        String[] requirements = baseJdk.split(",");
 
         for (String requirement : requirements) {
             String[] keyAndValue = requirement.split("=");
-            if ( keyAndValue.length != 2 ) {
+            if (keyAndValue.length != 2) {
                 throw new MojoExecutionException(
                         "Toolchain requirements must be given in the form 'key1=value1,key2=value2,...'." +
-                                "Given value '" + baseJdk + "' doesn't match this pattern." );
+                                "Given value '" + baseJdk + "' doesn't match this pattern.");
             }
 
-            toolChainRequirements.put( keyAndValue[0].trim(), keyAndValue[1].trim() );
+            toolChainRequirements.put(keyAndValue[0].trim(), keyAndValue[1].trim());
         }
 
         return toolChainRequirements;

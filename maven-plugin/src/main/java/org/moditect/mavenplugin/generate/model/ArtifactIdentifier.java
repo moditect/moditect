@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -91,27 +91,32 @@ public class ArtifactIdentifier {
         if (artifactId == null) {
             if (other.artifactId != null)
                 return false;
-        } else if (!artifactId.equals(other.artifactId))
+        }
+        else if (!artifactId.equals(other.artifactId))
             return false;
         if (classifier == null) {
             if (other.classifier != null)
                 return false;
-        } else if (!classifier.equals(other.classifier))
+        }
+        else if (!classifier.equals(other.classifier))
             return false;
         if (extension == null) {
             if (other.extension != null)
                 return false;
-        } else if (!extension.equals(other.extension))
+        }
+        else if (!extension.equals(other.extension))
             return false;
         if (groupId == null) {
             if (other.groupId != null)
                 return false;
-        } else if (!groupId.equals(other.groupId))
+        }
+        else if (!groupId.equals(other.groupId))
             return false;
         if (version == null) {
             if (other.version != null)
                 return false;
-        } else if (!version.equals(other.version))
+        }
+        else if (!version.equals(other.version))
             return false;
         return true;
     }

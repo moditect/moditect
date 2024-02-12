@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
 package org.moditect.model;
 
 public enum JarInclusionPolicy {
-	NONE, APP, APP_WITH_DEPENDENCIES;
+    NONE,
+    APP,
+    APP_WITH_DEPENDENCIES;
 
-	public boolean includeAppJar() {
-		return this == APP || this == APP_WITH_DEPENDENCIES;
-	}
+    public boolean includeAppJar() {
+        return this == APP || this == APP_WITH_DEPENDENCIES;
+    }
 
-	public boolean includeDependencies() {
-		return this == APP_WITH_DEPENDENCIES;
-	}
+    public boolean includeDependencies() {
+        return this == APP_WITH_DEPENDENCIES;
+    }
 }

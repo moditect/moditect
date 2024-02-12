@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 - 2018 The ModiTect authors
+ *  Copyright 2017 - 2023 The ModiTect authors
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,21 +36,21 @@ import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
 public class CompileScopeDependencySelector implements DependencySelector {
 
     private boolean level1 = true;
-    private DependencySelector delegate = new ScopeDependencySelector( "test" ).deriveChildSelector( new MockDependencyCollectionContext() );
+    private DependencySelector delegate = new ScopeDependencySelector("test").deriveChildSelector(new MockDependencyCollectionContext());
 
     @Override
     public boolean selectDependency(Dependency dependency) {
-        return delegate.selectDependency( dependency );
+        return delegate.selectDependency(dependency);
     }
 
     @Override
     public DependencySelector deriveChildSelector(DependencyCollectionContext context) {
-        if ( level1 ) {
+        if (level1) {
             level1 = false;
             return this;
         }
         else {
-            return new ScopeDependencySelector( "test", "provided" ).deriveChildSelector( new MockDependencyCollectionContext() );
+            return new ScopeDependencySelector("test", "provided").deriveChildSelector(new MockDependencyCollectionContext());
         }
     }
 
@@ -70,7 +70,7 @@ public class CompileScopeDependencySelector implements DependencySelector {
 
         @Override
         public Dependency getDependency() {
-            return new Dependency( new DefaultArtifact( "com.example:example:1.0" ), null );
+            return new Dependency(new DefaultArtifact("com.example:example:1.0"), null);
         }
 
         @Override
