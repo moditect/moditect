@@ -43,7 +43,7 @@ import org.moditect.mavenplugin.util.ArtifactResolutionHelper;
 /**
  * @author Gunnar Morling
  */
-@Mojo(name = "generate-module-info", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(name = "generate-module-info", defaultPhase = LifecyclePhase.GENERATE_SOURCES, threadSafe = true)
 public class GenerateModuleInfoMojo extends AbstractMojo {
 
     @Component

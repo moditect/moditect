@@ -29,7 +29,7 @@ import org.moditect.mavenplugin.util.DependencyHelper;
 import org.moditect.mavenplugin.util.MojoLog;
 import org.moditect.model.Version;
 
-@Mojo(name = "list-application-image-modules", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "list-application-image-modules", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class GenerateModuleListMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
