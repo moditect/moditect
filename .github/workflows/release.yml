@@ -99,6 +99,7 @@ jobs:
       - name: Set next version
         run: |
           ./mvnw -ntp -B versions:set versions:commit -DnewVersion=${{ env.NEXT_VERSION }} -pl :moditect-parent
+          sed -i -e "s@project.build.outputTimestamp>.*</project.build.outputTimestamp@project.build.outputTimestamp>\${git.commit.author.time}</project.build.outputTimestamp@g" parent/pom.xml
           git config --global user.email "moditect-release-bot@moditect.org"
           git config --global user.name "moditect-release-bot"
           git commit -a -m "Next version ${{ env.NEXT_VERSION }}"
