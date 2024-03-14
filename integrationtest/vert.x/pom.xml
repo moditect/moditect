@@ -86,6 +86,9 @@
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                             <failOnWarning>false</failOnWarning>
+                            <jdepsExtraArgs>
+                                <arg>--ignore-missing-deps</arg>
+                            </jdepsExtraArgs>
                             <modules>
                                 <module>
                                     <artifact>
@@ -343,6 +346,7 @@
                                         <name>helloWorld</name>
                                         <module>com.example</module>
                                     </launcher>
+                                    <jarInclusionPolicy>NONE</jarInclusionPolicy>
                                     <compression>2</compression>
                                     <stripDebug>true</stripDebug>
                                     <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
