@@ -87,6 +87,8 @@
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                             <failOnWarning>false</failOnWarning>
                             <jdepsExtraArgs>
+                                <arg>--module-path</arg>
+                                <arg>${project.build.directory}/modules</arg>
                                 <arg>--ignore-missing-deps</arg>
                             </jdepsExtraArgs>
                             <modules>
@@ -138,15 +140,6 @@
                                 <module>
                                     <artifact>
                                         <groupId>io.netty</groupId>
-                                        <artifactId>netty-codec</artifactId>
-                                    </artifact>
-                                    <moduleInfo>
-                                        <name>io.netty.codec</name>
-                                    </moduleInfo>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>io.netty</groupId>
                                         <artifactId>netty-resolver</artifactId>
                                     </artifact>
                                     <moduleInfo>
@@ -160,6 +153,15 @@
                                     </artifact>
                                     <moduleInfo>
                                         <name>io.netty.transport</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>io.netty</groupId>
+                                        <artifactId>netty-codec</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>io.netty.codec</name>
                                     </moduleInfo>
                                 </module>
                                 <module>
@@ -204,48 +206,27 @@
                                         <groupId>io.netty</groupId>
                                         <artifactId>netty-transport-native-epoll</artifactId>
                                     </artifact>
-                                    <!-- TODO <moduleInfo>, needs handling of native unix-common dependency -->
-                                    <moduleInfoSource>
-                                        module io.netty.channel.epoll {
-                                            requires io.netty.buffer;
-                                            requires io.netty.channel.unix;
-                                            requires io.netty.common;
-                                            requires io.netty.transport;
-                                            exports io.netty.channel.epoll;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>io.netty.channel.epoll</name>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
                                         <groupId>io.netty</groupId>
                                         <artifactId>netty-transport-native-kqueue</artifactId>
                                     </artifact>
-                                    <!-- TODO <moduleInfo>, needs handling of native unix-common dependency -->
-                                    <moduleInfoSource>
-                                        module io.netty.channel.kqueue {
-                                            exports io.netty.channel.kqueue;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>io.netty.channel.kqueue</name>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
                                         <groupId>io.netty</groupId>
                                         <artifactId>netty-handler</artifactId>
                                     </artifact>
-                                    <moduleInfoSource>
-                                        module io.netty.handler {
-                                            exports io.netty.handler.flow;
-                                            exports io.netty.handler.flush;
-                                            exports io.netty.handler.ipfilter;
-                                            exports io.netty.handler.logging;
-                                            exports io.netty.handler.ssl;
-                                            exports io.netty.handler.ssl.ocsp;
-                                            exports io.netty.handler.ssl.util;
-                                            exports io.netty.handler.stream;
-                                            exports io.netty.handler.timeout;
-                                            exports io.netty.handler.traffic;
-                                        }
-                                    </moduleInfoSource>
+                                    <moduleInfo>
+                                        <name>io.netty.handler</name>
+                                    </moduleInfo>
                                 </module>
                                 <module>
                                     <artifact>
@@ -281,16 +262,6 @@
                                     </artifact>
                                     <moduleInfo>
                                         <name>io.vertx.core</name>
-                                        <requires>
-                                            static log4j.api;
-                                            static log4j;
-                                            static slf4j.api;
-                                            *;
-                                        </requires>
-                                        <exports>
-                                            !*impl*;
-                                            *;
-                                        </exports>
                                         <uses>
                                             io.vertx.core.spi.VertxFactory;
                                             io.vertx.core.spi.VerticleFactory;
@@ -302,12 +273,10 @@
                             </modules>
                             <module>
                                 <mainClass>com.example.HelloWorldServer</mainClass>
-                                <moduleInfo>
-                                    <name>com.example</name>
-                                    <exports>
-                                        com.example to io.vertx.core;
-                                    </exports>
-                                </moduleInfo>
+                                <moduleInfoSource>open module com.example {
+                                    requires transitive io.vertx.core;
+                                    }
+                                </moduleInfoSource>
                             </module>
                         </configuration>
                         <goals>
