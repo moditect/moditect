@@ -273,8 +273,9 @@
                             </modules>
                             <module>
                                 <mainClass>com.example.HelloWorldServer</mainClass>
-                                <moduleInfoSource>open module com.example {
-                                    requires transitive io.vertx.core;
+                                <moduleInfoSource>module com.example {
+                                    exports com.example to io.vertx.core;
+                                    requires io.vertx.core;
                                     }
                                 </moduleInfoSource>
                             </module>
