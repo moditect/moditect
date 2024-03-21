@@ -42,11 +42,11 @@
         </dependency>
 
         <!-- TODO why causes this an exception -->
-<!--         <dependency> -->
-<!--             <groupId>io.netty</groupId> -->
-<!--             <artifactId>netty-transport-native-kqueue</artifactId> -->
-<!--             <version>${io.netty.version}</version> -->
-<!--         </dependency> -->
+        <!--         <dependency> -->
+        <!--             <groupId>io.netty</groupId> -->
+        <!--             <artifactId>netty-transport-native-kqueue</artifactId> -->
+        <!--             <version>${io.netty.version}</version> -->
+        <!--         </dependency> -->
 
     </dependencies>
 
@@ -93,7 +93,7 @@
                                 <module>
                                     <artifact>
                                         <groupId>com.fasterxml.jackson.core</groupId>
-                                          <artifactId>jackson-core</artifactId>
+                                        <artifactId>jackson-core</artifactId>
                                     </artifact>
                                     <moduleInfo>
                                         <name>com.fasterxml.jackson.core</name>
@@ -102,7 +102,7 @@
                                 <module>
                                     <artifact>
                                         <groupId>com.fasterxml.jackson.core</groupId>
-                                          <artifactId>jackson-annotations</artifactId>
+                                        <artifactId>jackson-annotations</artifactId>
                                     </artifact>
                                     <moduleInfo>
                                         <name>com.fasterxml.jackson.annotations</name>
@@ -271,7 +271,8 @@
                             </modules>
                             <module>
                                 <mainClass>com.example.HelloWorldServer</mainClass>
-                                <moduleInfoSource>module com.example {
+                                <moduleInfoSource>
+                                    module com.example {
                                     exports com.example to io.vertx.core;
                                     requires io.vertx.core;
                                     }
@@ -317,7 +318,8 @@
                                     <jarInclusionPolicy>NONE</jarInclusionPolicy>
                                     <compression>2</compression>
                                     <stripDebug>true</stripDebug>
-                                    <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/jlink-image
+                                    </outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -365,7 +367,8 @@
                                     </modules>
                                     <compression>2</compression>
                                     <stripDebug>true</stripDebug>
-                                    <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/jlink-image
+                                    </outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
@@ -387,7 +390,9 @@
                                             <alias>vertx-helloworld-base</alias>
                                             <name>moditect/vertx-helloworld-base</name>
                                             <build>
-                                                <dockerFileDir>${project.basedir}/src/main/docker-base</dockerFileDir>
+                                                <dockerFileDir>
+                                                    ${project.basedir}/src/main/docker-base
+                                                </dockerFileDir>
                                                 <assembly>
                                                     <descriptor>assembly-base.xml</descriptor>
                                                 </assembly>
@@ -423,7 +428,8 @@
                                             <alias>vertx-helloworld</alias>
                                             <name>moditect/vertx-helloworld</name>
                                             <build>
-                                                <dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
+                                                <dockerFileDir>${project.basedir}/src/main/docker
+                                                </dockerFileDir>
                                                 <assembly>
                                                     <descriptor>assembly.xml</descriptor>
                                                 </assembly>
