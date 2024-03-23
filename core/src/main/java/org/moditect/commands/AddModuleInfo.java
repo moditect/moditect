@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.util.Enumeration;
@@ -97,12 +98,12 @@ public class AddModuleInfo {
         ModuleDeclaration module = ModuleInfoCompiler.parseModuleInfo(moduleInfoSource);
         byte[] clazz = ModuleInfoCompiler.compileModuleInfo(module, mainClass, version);
 
+        Path tmpOutputJar = null;
         try {
-            Files.createDirectories(outputJar.toAbsolutePath().getParent());
-            Files.createFile(outputJar.toAbsolutePath());
+            tmpOutputJar = Files.createTempFile("moditect", "jar");
         }
         catch (IOException e) {
-            throw new RuntimeException("Couldn't copy JAR file", e);
+            throw new RuntimeException("Couldn't create tmp JAR file", e);
         }
 
         boolean versionedModuleInfo = jvmVersion != null;
@@ -111,7 +112,7 @@ public class AddModuleInfo {
 
         // brute force copy all entries
         try (JarFile jarFile = new JarFile(inputJar.toAbsolutePath().toFile());
-                JarOutputStream jarout = new JarOutputStream(Files.newOutputStream(outputJar.toAbsolutePath(), TRUNCATE_EXISTING))) {
+                JarOutputStream jarout = new JarOutputStream(Files.newOutputStream(tmpOutputJar.toAbsolutePath(), TRUNCATE_EXISTING))) {
             Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry inputEntry = entries.nextElement();
@@ -156,6 +157,14 @@ public class AddModuleInfo {
         }
         catch (IOException e) {
             throw new RuntimeException("Couldn't add module-info.class to JAR", e);
+        }
+
+        try {
+            Files.createDirectories(outputJar.toAbsolutePath().getParent());
+            Files.move(tmpOutputJar, outputJar, StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Couldn't copy JAR file", e);
         }
     }
 
