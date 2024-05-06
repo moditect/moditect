@@ -71,7 +71,7 @@ public class ModuleInfoCompiler {
         ModuleVisitor mv = classWriter.visitModule(module.getNameAsString(), moduleAccess, version);
 
         if (mainClass != null) {
-            mv.visitMainClass(getNameForBinary(mainClass));
+            mv.visitMainClass(getNameForBinary(mainClass, Kind.CLASS));
         }
 
         for (ModuleRequiresDirective requires : module.findAll(ModuleRequiresDirective.class)) {
@@ -83,7 +83,7 @@ public class ModuleInfoCompiler {
 
         for (ModuleExportsDirective export : module.findAll(ModuleExportsDirective.class)) {
             mv.visitExport(
-                    getNameForBinary(export.getNameAsString()),
+                    getNameForBinary(export.getNameAsString(), Kind.PACKAGE),
                     0,
                     export.getModuleNames()
                             .stream()
@@ -93,20 +93,20 @@ public class ModuleInfoCompiler {
 
         for (ModuleProvidesDirective provides : module.findAll(ModuleProvidesDirective.class)) {
             mv.visitProvide(
-                    getNameForBinary(provides.getName()),
+                    getNameForBinary(provides.getName(), Kind.CLASS),
                     provides.getWith()
                             .stream()
-                            .map(ModuleInfoCompiler::getNameForBinary)
+                            .map(name -> getNameForBinary(name, Kind.CLASS))
                             .toArray(String[]::new));
         }
 
         for (ModuleUsesDirective uses : module.findAll(ModuleUsesDirective.class)) {
-            mv.visitUse(getNameForBinary(uses.getName()));
+            mv.visitUse(getNameForBinary(uses.getName(), Kind.CLASS));
         }
 
         for (ModuleOpensDirective opens : module.findAll(ModuleOpensDirective.class)) {
             mv.visitOpen(
-                    getNameForBinary(opens.getNameAsString()),
+                    getNameForBinary(opens.getNameAsString(), Kind.PACKAGE),
                     0,
                     opens.getModuleNames()
                             .stream()
@@ -122,11 +122,16 @@ public class ModuleInfoCompiler {
         return classWriter.toByteArray();
     }
 
-    private static String getNameForBinary(Name name) {
-        return getNameForBinary(name.asString());
+    private static String getNameForBinary(Name name, Kind kind) {
+        return getNameForBinary(name.asString(), kind);
     }
 
-    private static String getNameForBinary(String typeName) {
+    private enum Kind {
+        CLASS,
+        PACKAGE
+    }
+
+    private static String getNameForBinary(String typeName, Kind kind) {
         Iterator<String> parts = Arrays.asList(typeName.split("\\.")).iterator();
         StringBuilder typeNameForBinary = new StringBuilder();
 
@@ -137,7 +142,7 @@ public class ModuleInfoCompiler {
             // if the current part is upper-case, we assume it's a class and the following part is a nested class
             // that's as good as it gets without fully resolving all the type names against the module's classes
             if (parts.hasNext()) {
-                if (Character.isUpperCase(part.charAt(0))) {
+                if (kind == Kind.CLASS && Character.isUpperCase(part.charAt(0))) {
                     typeNameForBinary.append("$");
                 }
                 else {
