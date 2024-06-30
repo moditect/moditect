@@ -21,7 +21,7 @@
     </parent>
 
     <artifactId>moditect-parent</artifactId>
-    <version>1.2.2.Final</version>
+    <version>1.3.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ModiTect Parent</name>
@@ -39,7 +39,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <version.surefire.plugin>3.2.5</version.surefire.plugin>
         <!-- value comes from property git.commit.author.time -->
-        <project.build.outputTimestamp>2024-06-30T16:29:07Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
     </properties>
 
     <scm>
