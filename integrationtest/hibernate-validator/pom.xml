@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.moditect</groupId>
         <artifactId>moditect-integrationtest-parent</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.2.2.Final</version>
     </parent>
 
     <artifactId>moditect-integrationtest-hibernate-validator</artifactId>
