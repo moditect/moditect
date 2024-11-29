@@ -40,6 +40,8 @@
         <version.surefire.plugin>3.2.5</version.surefire.plugin>
         <!-- value comes from property git.commit.author.time -->
         <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
+        <version.compiler.plugin>3.13.0</version.compiler.plugin>
+        <version.dependency.plugin>3.8.1</version.dependency.plugin>
     </properties>
 
     <scm>
