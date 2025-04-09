@@ -16,7 +16,12 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -39,6 +44,7 @@ public class AddModuleInfo {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
     private static final String NO_JVM_VERSION = "base";
     private static final String MANIFEST_ENTRY_NAME = "META-INF/MANIFEST.MF";
+    private static final String META_INF_VERSIONS_DIR = "META-INF/versions/";
     private static final String MODULE_INFO_CLASS = "module-info.class";
 
     private final String moduleInfoSource;
@@ -107,8 +113,20 @@ public class AddModuleInfo {
         }
 
         boolean versionedModuleInfo = jvmVersion != null;
-        String versionedModuleInfoClass = "META-INF/versions/" + jvmVersion + "/" + MODULE_INFO_CLASS;
+        String moduleInfoDir = versionedModuleInfo ? META_INF_VERSIONS_DIR + jvmVersion + "/" : "";
+        String moduleInfoEntryName = moduleInfoDir + MODULE_INFO_CLASS;
         long lastModifiedTime = toFileTime(timestamp).toMillis();
+
+        // For compatibility with Eclipse IDE create directory entries for the multi-version dir
+        // See https://github.com/moditect/moditect/issues/254
+        List<String> dirEntriesToCreate = Collections.emptyList();
+        if (versionedModuleInfo) {
+            dirEntriesToCreate = Arrays.asList(META_INF_VERSIONS_DIR, moduleInfoDir);
+        }
+
+        Set<String> overwrittenEntries = new HashSet<>();
+        overwrittenEntries.add(moduleInfoEntryName);
+        overwrittenEntries.addAll(dirEntriesToCreate);
 
         // brute force copy all entries
         try (JarFile jarFile = new JarFile(inputJar.toAbsolutePath().toFile());
@@ -116,9 +134,10 @@ public class AddModuleInfo {
             Enumeration<JarEntry> entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry inputEntry = entries.nextElement();
+                String entryName = inputEntry.getName();
 
                 // manifest requires extra care due to MRJARs
-                if (MANIFEST_ENTRY_NAME.equals(inputEntry.getName()) && versionedModuleInfo) {
+                if (versionedModuleInfo && MANIFEST_ENTRY_NAME.equals(entryName)) {
                     Manifest manifest = jarFile.getManifest();
                     if (null == manifest) {
                         manifest = new Manifest();
@@ -128,19 +147,18 @@ public class AddModuleInfo {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     manifest.write(baos);
 
-                    JarEntry outputEntry = new JarEntry(inputEntry.getName());
+                    JarEntry outputEntry = new JarEntry(entryName);
                     outputEntry.setTime(lastModifiedTime);
                     jarout.putNextEntry(outputEntry);
                     jarout.write(baos.toByteArray(), 0, baos.size());
                     jarout.closeEntry();
                 }
-                else if ((MODULE_INFO_CLASS.equals(inputEntry.getName()) && !versionedModuleInfo) ||
-                        (versionedModuleInfoClass.equals(inputEntry.getName()) && versionedModuleInfo)) {
+                else if (overwrittenEntries.contains(entryName)) {
                     // skip this entry as we'll overwrite it
                 }
                 else {
                     // copy entry as is, set timestamp
-                    JarEntry outputEntry = new JarEntry(inputEntry.getName());
+                    JarEntry outputEntry = new JarEntry(entryName);
                     outputEntry.setTime(lastModifiedTime);
                     jarout.putNextEntry(outputEntry);
                     copy(jarFile.getInputStream(inputEntry), jarout);
@@ -148,8 +166,15 @@ public class AddModuleInfo {
                 }
             }
 
+            for (String dirEntryName : dirEntriesToCreate) {
+                JarEntry dirEntry = new JarEntry(dirEntryName);
+                dirEntry.setTime(lastModifiedTime);
+                jarout.putNextEntry(dirEntry);
+                jarout.closeEntry();
+            }
+
             // copy module descriptor
-            JarEntry outputEntry = versionedModuleInfo ? new JarEntry(versionedModuleInfoClass) : new JarEntry(MODULE_INFO_CLASS);
+            JarEntry outputEntry = new JarEntry(moduleInfoEntryName);
             outputEntry.setTime(lastModifiedTime);
             jarout.putNextEntry(outputEntry);
             jarout.write(clazz, 0, clazz.length);
