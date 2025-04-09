@@ -20,11 +20,15 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
@@ -36,6 +40,8 @@ import org.moditect.commands.AddModuleInfo;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.Compiler;
 import com.google.testing.compile.JavaFileObjects;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Gunnar Morling
@@ -93,6 +99,10 @@ public class AddModuleInfoTest {
                 .run();
 
         Path outputJar = GENERATED_TEST_MODULES.resolve(inputJar.getFileName());
+        assertJarEntries(outputJar,
+                List.of("META-INF/MANIFEST.MF", "com/", "com/example/", "com/example/HelloWorld.class",
+                        "META-INF/versions/", "META-INF/versions/9/", "META-INF/versions/9/module-info.class"));
+
         builder = new ProcessBuilder(
                 JAVA_BIN, "--module-path", outputJar.toString(), "--module", "com.example");
 
@@ -193,6 +203,9 @@ public class AddModuleInfoTest {
                 .run();
 
         Path outputJar = GENERATED_TEST_MODULES.resolve(inputJar.getFileName());
+        assertJarEntries(outputJar,
+                List.of("META-INF/MANIFEST.MF", "com/", "com/example/", "com/example/HelloWorld.class", "module-info.class"));
+
         builder = new ProcessBuilder(
                 JAVA_BIN, "--module-path", outputJar.toString(), "--module", "com.example");
 
@@ -306,5 +319,15 @@ public class AddModuleInfoTest {
         }
 
         return exampleJar;
+    }
+
+    private void assertJarEntries(Path jarPath, List<String> expectedEntries) throws Exception {
+        List<String> entries = new ArrayList<>();
+        // Read as ZIP instead of JAR to avoid any special handling of META-INF by JarFile or JarInputStream
+        try (ZipFile zipFile = new ZipFile(jarPath.toFile())) {
+            zipFile.stream().map(ZipEntry::getName).forEach(entries::add);
+        }
+
+        assertEquals(expectedEntries, entries);
     }
 }
