@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.moditect.internal.command.ProcessExecutor;
+import org.moditect.model.DependencyJar;
 import org.moditect.model.JarInclusionPolicy;
 import org.moditect.spi.log.Log;
 
@@ -36,7 +37,7 @@ public class CreateRuntimeImage {
     private final Set<Path> modulePath;
     private final List<String> modules;
     private final JarInclusionPolicy jarInclusionPolicy;
-    private final Set<Path> dependencies;
+    private final Set<DependencyJar> dependencies;
     private final Path projectJar;
     private final Path outputDirectory;
     private boolean ignoreSigningInformation;
@@ -50,7 +51,7 @@ public class CreateRuntimeImage {
     private final boolean bindServices;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, JarInclusionPolicy jarInclusionPolicy,
-                              Set<Path> dependencies, Path projectJar, String launcherName, String launcherModule,
+                              Set<DependencyJar> dependencies, Path projectJar, String launcherName, String launcherModule,
                               Path outputDirectory, String compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
                               boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
@@ -132,9 +133,9 @@ public class CreateRuntimeImage {
     private void copyDependencyJars(Path jarDirectory) throws IOException {
         log.info("Copying project dependencies");
 
-        for (Path dependency : dependencies) {
-            Path target = jarDirectory.resolve(dependency.getFileName());
-            Files.copy(dependency, target);
+        for (DependencyJar dependency : dependencies) {
+            Path target = jarDirectory.resolve(dependency.jarPath().getFileName());
+            Files.copy(dependency.jarPath(), target);
             log.debug(String.format("Done copying dependency %s to %s", dependency, target));
         }
 

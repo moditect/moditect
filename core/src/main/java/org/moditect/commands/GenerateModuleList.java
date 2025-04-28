@@ -18,19 +18,20 @@ import java.util.spi.ToolProvider;
 import java.util.stream.Collectors;
 
 import org.moditect.internal.command.LogWriter;
+import org.moditect.model.DependencyJar;
 import org.moditect.model.Version;
 import org.moditect.spi.log.Log;
 
 public class GenerateModuleList {
 
     private final Path projectJar;
-    private final Set<Path> dependencies;
+    private final Set<DependencyJar> dependencies;
     private final Version jvmVersion;
     private final Log log;
 
     private final ToolProvider jdeps;
 
-    public GenerateModuleList(Path projectJar, Set<Path> dependencies, Version jvmVersion, Log log) {
+    public GenerateModuleList(Path projectJar, Set<DependencyJar> dependencies, Version jvmVersion, Log log) {
         this.projectJar = projectJar;
         this.dependencies = dependencies;
         this.jvmVersion = jvmVersion;
@@ -61,6 +62,7 @@ public class GenerateModuleList {
         command.add(String.valueOf(jvmVersion.feature()));
         command.add("--class-path");
         String classPath = dependencies.stream()
+                .map(DependencyJar::jarPath)
                 .map(Path::toAbsolutePath)
                 .map(Path::toString)
                 .collect(Collectors.joining(File.pathSeparator));

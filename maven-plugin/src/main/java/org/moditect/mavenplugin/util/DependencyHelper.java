@@ -7,18 +7,22 @@
  */
 package org.moditect.mavenplugin.util;
 
-import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
+import org.moditect.model.DependencyJar;
 
 public class DependencyHelper {
 
-    public static Set<Path> getDirectAndTransitiveDependencies(MavenProject project) {
+    public static Set<DependencyJar> getDirectAndTransitiveDependencies(MavenProject project) {
         return project.getArtifacts()
                 .stream()
-                .map(a -> a.getFile().toPath())
+                .map(a -> new DependencyJar(
+                        a.getGroupId(),
+                        a.getArtifactId(),
+                        a.getVersion(),
+                        a.getFile().toPath()))
                 .collect(Collectors.toSet());
     }
 
