@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.moditect.internal.command.ProcessExecutor;
 import org.moditect.model.DependencyJar;
+import org.moditect.model.DependencyJar.FileCopy;
 import org.moditect.model.JarInclusionPolicy;
 import org.moditect.spi.log.Log;
 
@@ -133,10 +134,9 @@ public class CreateRuntimeImage {
     private void copyDependencyJars(Path jarDirectory) throws IOException {
         log.info("Copying project dependencies");
 
-        for (DependencyJar dependency : dependencies) {
-            Path target = jarDirectory.resolve(dependency.jarPath().getFileName());
-            Files.copy(dependency.jarPath(), target);
-            log.debug(String.format("Done copying dependency %s to %s", dependency, target));
+        for (FileCopy fc : DependencyJar.uniqueDestinations(jarDirectory, dependencies)) {
+            Files.copy(fc.source(), fc.sink());
+            log.debug(String.format("Done copying dependency %s to %s", fc.source(), fc.sink()));
         }
 
         log.info("Done copying project dependencies");
