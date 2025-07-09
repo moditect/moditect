@@ -30,6 +30,7 @@ manner.
 * [Example](#examples)
    * [Undertow](#undertow)
    * [Vert.x](#vertx)
+   * [CDI SE](#cdi)
 * [Status](#status)
 * [Further Planned Features](#further-planned-features)
 * [Related Work](#related-work)
@@ -518,6 +519,23 @@ To run that image execute
 ```
 docker run --rm -t -i -p 8080:8080 moditect/vertx-helloworld
 ```
+
+## CDI
+
+The [POM file](integrationtest/cdi/pom.xml) in _integrationtest/cdi_
+shows another example. It uses Jakarta EE API (already modularized) adn adds module descriptors for
+[Weld](http://vertx.io) and its dependencies.
+
+Your can launch the build of the project and image with:
+
+`mvn clean package`
+
+The `target` directory now contains a `jlink-image` directory.
+
+You can launch the application by calling:
+
+`target/jlink-image/bin/myApp`
+
 
 ## Status
 
