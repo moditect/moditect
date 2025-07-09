@@ -102,6 +102,9 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean bindServices;
 
+    @Parameter(property = "includeLocales", defaultValue = "en")
+    private String includeLocales;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         Path jmodsDir = getJModsDir();
@@ -134,7 +137,8 @@ public class CreateRuntimeImageMojo extends AbstractMojo {
                 new MojoLog(getLog()),
                 noHeaderFiles,
                 noManPages,
-                bindServices);
+                bindServices,
+                includeLocales);
         try {
             createRuntimeImage.run();
         }
