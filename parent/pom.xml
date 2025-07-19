@@ -38,6 +38,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <version.surefire.plugin>3.2.5</version.surefire.plugin>
+        <version.jreleaser.plugin>1.19.0</version.jreleaser.plugin>
         <!-- value comes from property git.commit.author.time -->
         <project.build.outputTimestamp>${git.commit.author.time}</project.build.outputTimestamp>
     </properties>
@@ -201,16 +202,13 @@
                                 </signing>
                                 <deploy>
                                     <maven>
-                                        <nexus2>
-                                            <maven-central>
+                                        <mavenCentral>
+                                            <sonatype>
                                                 <active>ALWAYS</active>
-                                                <url>https://oss.sonatype.org/service/local</url>
-                                                <snapshotUrl>https://oss.sonatype.org/content/repositories/snapshots/</snapshotUrl>
-                                                <closeRepository>true</closeRepository>
-                                                <releaseRepository>true</releaseRepository>
+                                                <url>https://central.sonatype.com/api/v1/publisher</url>
                                                 <stagingRepositories>${maven.multiModuleProjectDirectory}/target/staging-deploy</stagingRepositories>
-                                            </maven-central>
-                                        </nexus2>
+                                            </sonatype>
+                                        </mavenCentral>
                                     </maven>
                                 </deploy>
                                 <release>
