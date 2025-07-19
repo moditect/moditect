@@ -228,8 +228,28 @@
                                                 <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
                                             </contributors>
                                             <hide>
-                                                <contributors>GitHub,dependabot</contributors>
+                                                <contributors>GitHub,dependabot,moditect-release-bot</contributors>
                                             </hide>
+                                            <labelers>
+                                                <labeler>
+                                                    <label>dependencies</label>
+                                                    <title>regex:^(?:deps(?:\(.*\))?!?):\s.*</title>
+                                                    <order>130</order>
+                                                </labeler>
+                                            </labelers>
+                                            <categories>
+                                                <category>
+                                                    <title>⚙️  Dependencies</title>
+                                                    <key>dependencies</key>
+                                                    <order>80</order>
+                                                    <labels>dependencies</labels>
+                                                </category>
+                                            </categories>
+                                            <replacers>
+                                                <replacer>
+                                                    <search>deps: </search>
+                                                </replacer>
+                                            </replacers>
                                         </changelog>
                                     </github>
                                 </release>
