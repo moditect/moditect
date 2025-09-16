@@ -23,7 +23,7 @@
   <properties>
     <weld.version>6.0.3.Final</weld.version>
     <jakartaee-web-api.version>11.0.0</jakartaee-web-api.version>
-    <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+    <jboss-logging.version>3.5.3.Final</jboss-logging.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
