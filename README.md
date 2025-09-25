@@ -375,6 +375,9 @@ _create-runtime-image_ goal as follows:
                 <outputDirectory>
                     ${project.build.directory}/jlink-image
                 </outputDirectory>
+                <addOptions>
+                    <option>--some-vm-option</option>
+                </addOptions>
             </configuration>
         </execution>
     </executions>
@@ -408,6 +411,8 @@ to the runtime image.
 * `jarInclusionPolicy`: Whether to add the application JAR and optionally its dependencies
 to the runtime image, under the _jars_ directory, allowing to run a classpath-based
 application on a modular runtime image; allowed values are `NONE`, `APP`, and `APP_WITH_DEPENDENCIES`.
+* `addOptions`: Provide a list of VM options. These options will be appended to the end of the 
+`jlink` command as `--add-options="<option 1> <option 2> ... <option n>"`
 
 In order to identify the JDK images which should go into a custom runtime image for a classpath-based application,
 you can run the following goal:

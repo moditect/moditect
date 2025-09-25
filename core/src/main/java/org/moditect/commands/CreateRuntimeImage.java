@@ -48,12 +48,13 @@ public class CreateRuntimeImage {
     private final boolean noManPages;
     private final List<String> excludeResourcesPatterns;
     private final boolean bindServices;
+    private final List<String> options;
 
     public CreateRuntimeImage(Set<Path> modulePath, List<String> modules, JarInclusionPolicy jarInclusionPolicy,
                               Set<Path> dependencies, Path projectJar, String launcherName, String launcherModule,
                               Path outputDirectory, String compression, boolean stripDebug,
                               boolean ignoreSigningInformation, List<String> excludeResourcesPatterns, Log log,
-                              boolean noHeaderFiles, boolean noManPages, boolean bindServices) {
+                              boolean noHeaderFiles, boolean noManPages, boolean bindServices, List<String> options) {
         this.modulePath = (modulePath != null ? modulePath : Collections.emptySet());
         this.modules = getModules(modules);
         this.jarInclusionPolicy = jarInclusionPolicy;
@@ -69,6 +70,7 @@ public class CreateRuntimeImage {
         this.noHeaderFiles = noHeaderFiles;
         this.noManPages = noManPages;
         this.bindServices = bindServices;
+        this.options = options;
     }
 
     private static List<String> getModules(List<String> modules) {
@@ -192,6 +194,10 @@ public class CreateRuntimeImage {
 
         if (bindServices) {
             command.add("--bind-services");
+        }
+
+        if (options != null && !options.isEmpty()) {
+            command.add("--add-options=\"" + String.join(" ", options) + "\"");
         }
 
         log.debug("Running jlink: " + String.join(" ", command));
