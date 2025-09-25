@@ -376,7 +376,7 @@ _create-runtime-image_ goal as follows:
                     ${project.build.directory}/jlink-image
                 </outputDirectory>
                 <addOptions>
-                    <option>--some-vm-option</option>
+                    <addOption>--some-vm-option</addOption>
                 </addOptions>
             </configuration>
         </execution>
